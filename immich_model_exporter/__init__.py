@@ -40,16 +40,11 @@ This repo is specifically intended for use with [Immich](https://immich.app/), a
 """
 
 
-def clean_name(model_name: str) -> str:
-    hf_model_name = model_name.split("/")[-1]
-    hf_model_name = hf_model_name.replace("xlm-roberta-large", "XLM-Roberta-Large")
-    hf_model_name = hf_model_name.replace("xlm-roberta-base", "XLM-Roberta-Base")
-    return hf_model_name
-
-
 @app.command()
-def export(model_name: str, model_source: ModelSource, output_dir: Path = Path("models"), cache: bool = True) -> None:
-    hf_model_name = clean_name(model_name)
+def export(model_name: str, model_source: ModelSource, hf_model_name: Annotated[str, typer.Argument()] = '', output_dir: Path = Path("models"),
+           cache: bool = True) -> None:
+    if not hf_model_name:
+        hf_model_name = model_name
     output_dir = output_dir / hf_model_name
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
@@ -75,6 +70,7 @@ def export(model_name: str, model_source: ModelSource, output_dir: Path = Path("
             f.write(generate_readme(model_name, model_source))
 
 
+# TODO: Args shape parity with the other commands? (eg taking model_name, default base dir)
 @app.command()
 def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
     from timeit import timeit
@@ -142,14 +138,16 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
 
 @app.command()
 def upload(
-    model_name: str,
-    input_dir: Path = Path("models"),
-    hf_organization: str = "immich-app",
-    hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
+        model_name: str,
+        hf_model_name: Annotated[str, typer.Argument()] = '',
+        input_dir: Path = Path("models"),
+        hf_organization: str = "immich-app",
+        hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
     from huggingface_hub import create_repo, upload_folder
 
-    hf_model_name = clean_name(model_name)
+    if not hf_model_name:
+        hf_model_name = model_name
     model_dir = input_dir / hf_model_name
     repo_id = f"{hf_organization}/{hf_model_name}"
 

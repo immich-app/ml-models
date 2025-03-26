@@ -31,3 +31,4 @@ jobs:
     with:
       model-name: ${{ matrix.name }}
       model-source: ${{ matrix.source }}
+      hf-name: ${{ matrix.hf-name }}
