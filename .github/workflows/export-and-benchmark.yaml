@@ -1,0 +1,38 @@
+on:
+  workflow_call:
+    inputs:
+      model-name:
+        required: true
+        type: string
+      model-source:
+        required: true
+        type: string
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
+
+      - run: uv run python -m immich_model_exporter.export --no-push --hf-organization "immich-testing" "${{ inputs.model-name }}" "${{ inputs.model-source }}"
+
+      # TODO: upload-artifact the exported model
+
+  # Just for testing right now
+  benchmark:
+    runs-on: mich
+    needs: export
+    steps:
+      - run: echo "Benchmarking would go here!"
+        # download the artifact, run benchmark, upload benchmark result artifact
+
+  upload:
+    runs-on: ubuntu-latest
+    needs: [export, benchmark]
+    steps:
+      - run: echo "And upload the combined result!"
+        # download both artifacts, combine, and upload to HF

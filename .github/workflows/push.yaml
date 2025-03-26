@@ -20,7 +20,7 @@ jobs:
           cmd: yq eval '.models' -o=json -I=0 models.yaml
 
   export:
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/export-and-benchmark.yaml
     needs: configure
     strategy:
       # Prevent a failure in one image from stopping the other builds
@@ -28,12 +28,6 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.configure.outputs.matrix) }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync # TODO: cache uv env
-
-      - run: uv run python -m immich_model_exporter.export --no-push --hf-organization "immich-testing" "${{ matrix.name }}" "${{ matrix.source }}"
+    with:
+      model-name: ${{ matrix.name }}
+      model-source: ${{ matrix.source }}
