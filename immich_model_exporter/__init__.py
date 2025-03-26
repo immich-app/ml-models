@@ -142,13 +142,16 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
 
 @app.command()
 def upload(
-    model_dir: Path,
+    model_name: str,
+    input_dir: Path = Path("models"),
     hf_organization: str = "immich-app",
     hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
     from huggingface_hub import create_repo, upload_folder
 
-    repo_id = f"{hf_organization}/{model_dir.name}"
+    hf_model_name = clean_name(model_name)
+    model_dir = input_dir / hf_model_name
+    repo_id = f"{hf_organization}/{hf_model_name}"
 
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
     def upload_model() -> None:

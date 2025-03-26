@@ -1,0 +1,33 @@
+name: Model export
+on:
+  # TODO: A proper release trigger?
+  push:
+
+# TODO: concurrency block?
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-versions.outputs.result }}
+    steps:
+      - name: Checkout to repository
+        uses: actions/checkout@v4
+      - name: Get dependency versions
+        uses: mikefarah/yq@v4.45.1
+        id: get-versions
+        with:
+          cmd: yq eval '.models' -o=json -I=0 models.yaml
+
+  export:
+    uses: ./.github/workflows/export.yaml
+    needs: configure
+    strategy:
+      # Prevent a failure in one image from stopping the other builds
+      # TODO: Is this what we want to do with failures?
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.configure.outputs.matrix) }}
+    with:
+      model-name: ${{ matrix.name }}
+      model-source: ${{ matrix.source }}
