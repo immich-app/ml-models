@@ -20,7 +20,7 @@ jobs:
           cmd: yq eval '.models' -o=json -I=0 models.yaml
 
   export:
-    uses: ./.github/workflows/export-and-benchmark.yaml
+    uses: ./.github/workflows/reusable/export.yaml
     needs: configure
     strategy:
       # Prevent a failure in one image from stopping the other builds

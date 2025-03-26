@@ -7,6 +7,9 @@ on:
       model-source:
         required: true
         type: string
+      upload:
+        type: boolean
+        default: false
 
 jobs:
   export:
@@ -22,17 +25,13 @@ jobs:
 
       # TODO: upload-artifact the exported model
 
-  # Just for testing right now
-  benchmark:
-    runs-on: mich
-    needs: export
-    steps:
-      - run: echo "Benchmarking would go here!"
-        # download the artifact, run benchmark, upload benchmark result artifact
+  # When doing benchmarking, that goes here
+  # Download the exported artifact, and upload an artifact with the benchmark result to be used below
 
   upload:
+    if: ${{ inputs.upload }}
     runs-on: ubuntu-latest
-    needs: [export, benchmark]
+    needs: export
     steps:
       - run: echo "And upload the combined result!"
         # download both artifacts, combine, and upload to HF
