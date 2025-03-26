@@ -14,6 +14,8 @@ on:
 jobs:
   export:
     runs-on: ubuntu-latest
+    outputs:
+      artifact-name: ${{ steps.artifact-name.outputs.artifact-name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,9 +24,15 @@ jobs:
       - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
 
       - run: uv run immich_model_exporter export "${{ inputs.model-name }}" "${{ inputs.model-source }}"
+
+      - id: artifact-name
+        run: |
+          IN="${{ inputs.model-name }}"
+          echo "artifact-name=${IN//\//_}" >> "$GITHUB_OUTPUT" # Replace / with _
+
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.model-name }}
+          name: ${{ steps.artifact-name.outputs.artifact-name }}
           path: models/
 
   # When doing benchmarking, that goes here
@@ -43,7 +51,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.model-name }}
+          name: ${{ needs.export.outputs.artifact-name }}
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
