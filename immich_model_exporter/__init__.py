@@ -45,7 +45,7 @@ def export(model_name: str, model_source: ModelSource, hf_model_name: Annotated[
            cache: bool = True) -> None:
     if not hf_model_name:
         hf_model_name = model_name
-    output_dir = output_dir / hf_model_name
+    output_dir = output_dir / model_name
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
             output_dir.mkdir(parents=True, exist_ok=True)
