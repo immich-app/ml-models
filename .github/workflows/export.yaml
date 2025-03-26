@@ -21,7 +21,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
 
-      - run: uv run python -m immich_model_exporter.main export "${{ inputs.model-name }}" "${{ inputs.model-source }}"
+      - run: uv run immich_model_exporter export "${{ inputs.model-name }}" "${{ inputs.model-source }}"
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.model-name }}
@@ -47,4 +47,4 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
-      - run: uv run python -m immich_model_exporter.main upload "${{ inputs.model-name }}" --hf-organization immich-testing
+      - run: uv run immich_model_exporter upload "${{ inputs.model-name }}" --hf-organization immich-testing
