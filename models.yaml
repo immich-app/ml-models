@@ -1,0 +1,11 @@
+models:
+  - name: 'LABSE-Vit-L-14'
+    hf-name: 'M-CLIP/LABSE-Vit-L-14' # Do this for all mclip models
+    source: 'mclip'
+  - name: 'XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k'
+    hf-name: 'xlm-roberta-base-ViT-B-32__laion5b_s13b_b90k' # Do this for both xlm models
+    source: 'openclip'
+  - name: 'RN101__openai'
+    source: 'openclip'
+  - name: 'antelopev2'
+    source: 'insightface'
