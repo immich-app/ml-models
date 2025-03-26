@@ -49,7 +49,7 @@ def export(model_name: str, model_source: ModelSource, hf_model_name: Annotated[
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
             output_dir.mkdir(parents=True, exist_ok=True)
-            onnx_export(model_name, model_source, output_dir, cache=cache)
+            onnx_export(hf_model_name, model_source, output_dir, cache=cache)
         case ModelSource.INSIGHTFACE:
             from huggingface_hub import snapshot_download
 
