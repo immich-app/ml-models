@@ -21,7 +21,7 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
 
-      - run: uv run python -m immich_model_exporter.export --no-push --hf-organization "immich-testing" "${{ inputs.model-name }}" "${{ inputs.model-source }}"
+      - run: uv run python -m immich_model_exporter.main export "${{ inputs.model-name }}" "${{ inputs.model-source }}"
 
       # TODO: upload-artifact the exported model
 

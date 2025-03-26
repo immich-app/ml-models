@@ -10,7 +10,14 @@ from .exporters.rknn import export as rknn_export
 
 from huggingface_hub import create_repo, upload_folder
 
-app = typer.Typer(pretty_exceptions_show_locals=False)
+app = typer.Typer(pretty_exceptions_show_locals=False, no_args_is_help=True)
+
+
+def to_hf_name(model_name):
+  hf_model_name = model_name.split("/")[-1]
+  hf_model_name = hf_model_name.replace("xlm-roberta-large", "XLM-Roberta-Large")
+  hf_model_name = hf_model_name.replace("xlm-roberta-base", "XLM-Roberta-Base")
+  return hf_model_name
 
 
 def generate_readme(model_name: str, model_source: ModelSource) -> str:
@@ -41,18 +48,13 @@ This repo is specifically intended for use with [Immich](https://immich.app/), a
 
 
 @app.command()
-def main(
+def export(
     model_name: str,
     model_source: ModelSource,
     output_dir: Path = Path("./models"),
-    no_cache: bool = False,
-    push: bool = False,
-    hf_organization: str = "immich-app",
-    hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
+    no_cache: bool = False
 ) -> None:
-    hf_model_name = model_name.split("/")[-1]
-    hf_model_name = hf_model_name.replace("xlm-roberta-large", "XLM-Roberta-Large")
-    hf_model_name = hf_model_name.replace("xlm-roberta-base", "XLM-Roberta-Base")
+    hf_model_name = to_hf_name(model_name)
     output_dir = output_dir / hf_model_name
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
@@ -77,29 +79,38 @@ def main(
         with open(readme_path, "w") as f:
             f.write(generate_readme(model_name, model_source))
 
-    repo_id = f"{hf_organization}/{hf_model_name}"
+    print(f"Model exported to {output_dir}")
 
-    print(f"Preparing push to {repo_id}")
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
-    def upload_model() -> None:
-        print("Pushing")
-        create_repo(repo_id, exist_ok=True, token=hf_auth_token)
-        upload_folder(
-            repo_id=repo_id,
-            folder_path=output_dir,
-            # remote repo files to be deleted before uploading
-            # deletion is in the same commit as the upload, so it's atomic
-            delete_patterns=DELETE_PATTERNS,
-            token=hf_auth_token,
-        )
+@app.command()
+def push(
+  model_name: str,
+  output_dir: Path = Path("./models"),
+  hf_organization: str = "immich-app",
+  hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None
+) -> None:
 
-    if push and hf_auth_token is not None:
-      upload_model()
-      print("Completed push")
-    else:
-      print("Skipping push")
+  hf_model_name = to_hf_name(model_name)
+  repo_id = f"{hf_organization}/{hf_model_name}"
+
+  print(f"Preparing push to {repo_id}")
+
+  @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
+  def upload_model() -> None:
+    print("Pushing")
+    create_repo(repo_id, exist_ok=True, token=hf_auth_token)
+    upload_folder(
+      repo_id=repo_id,
+      folder_path=output_dir,
+      # remote repo files to be deleted before uploading
+      # deletion is in the same commit as the upload, so it's atomic
+      delete_patterns=DELETE_PATTERNS,
+      token=hf_auth_token,
+    )
+
+  upload_model()
+  print("Completed push")
 
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()
