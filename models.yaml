@@ -1,0 +1,9 @@
+models:
+  - name: 'M-CLIP/LABSE-Vit-L-14'
+    source: 'mclip'
+  - name: 'RN101__openai'
+    source: 'openclip'
+  - name: 'ViT-L-16-SigLIP2-256__webli'
+    source: 'openclip'
+  - name: 'antelopev2'
+    source: 'insightface'

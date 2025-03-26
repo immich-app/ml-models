@@ -1,0 +1,39 @@
+name: Model export
+on:
+  # TODO: A proper release trigger?
+  push:
+
+# TODO: concurrency block?
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-versions.outputs.result }}
+    steps:
+      - name: Checkout to repository
+        uses: actions/checkout@v4
+      - name: Get dependency versions
+        uses: mikefarah/yq@v4.45.1
+        id: get-versions
+        with:
+          cmd: yq eval '.models' -o=json -I=0 models.yaml
+
+  export:
+    runs-on: ubuntu-latest
+    needs: configure
+    strategy:
+      # Prevent a failure in one image from stopping the other builds
+      # TODO: Is this what we want to do with failures?
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.configure.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync # TODO: cache uv env
+
+      - run: uv run python -m immich_model_exporter.export --no-push --hf-organization "immich-testing" "${{ matrix.name }}" "${{ matrix.source }}"
