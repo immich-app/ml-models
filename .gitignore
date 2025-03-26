@@ -11,7 +11,8 @@ onnx__*
 *.latent
 *.pos_embed
 vocab.txt
-immich_model_exporter/models/**/README.md
+immich_model_exporter/models/
+models/
 tokenizer.json
 tokenizer_config.json
 special_tokens_map.json

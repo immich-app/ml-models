@@ -8,6 +8,8 @@ from .exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSourc
 from .exporters.onnx import export as onnx_export
 from .exporters.rknn import export as rknn_export
 
+from huggingface_hub import create_repo, upload_folder
+
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
 
@@ -44,6 +46,7 @@ def main(
     model_source: ModelSource,
     output_dir: Path = Path("./models"),
     no_cache: bool = False,
+    push: bool = False,
     hf_organization: str = "immich-app",
     hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
@@ -74,24 +77,28 @@ def main(
         with open(readme_path, "w") as f:
             f.write(generate_readme(model_name, model_source))
 
-    if hf_auth_token is not None:
-        from huggingface_hub import create_repo, upload_folder
+    repo_id = f"{hf_organization}/{hf_model_name}"
 
-        repo_id = f"{hf_organization}/{hf_model_name}"
+    print(f"Preparing push to {repo_id}")
 
-        @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
-        def upload_model() -> None:
-            create_repo(repo_id, exist_ok=True, token=hf_auth_token)
-            upload_folder(
-                repo_id=repo_id,
-                folder_path=output_dir,
-                # remote repo files to be deleted before uploading
-                # deletion is in the same commit as the upload, so it's atomic
-                delete_patterns=DELETE_PATTERNS,
-                token=hf_auth_token,
-            )
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
+    def upload_model() -> None:
+        print("Pushing")
+        create_repo(repo_id, exist_ok=True, token=hf_auth_token)
+        upload_folder(
+            repo_id=repo_id,
+            folder_path=output_dir,
+            # remote repo files to be deleted before uploading
+            # deletion is in the same commit as the upload, so it's atomic
+            delete_patterns=DELETE_PATTERNS,
+            token=hf_auth_token,
+        )
 
-        upload_model()
+    if push and hf_auth_token is not None:
+      upload_model()
+      print("Completed push")
+    else:
+      print("Skipping push")
 
 
 if __name__ == "__main__":
