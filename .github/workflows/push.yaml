@@ -81,6 +81,7 @@ jobs:
   export:
     uses: ./.github/workflows/export.yaml
     needs: configure
+    secrets: inherit
     strategy:
       # Prevent a failure in one image from stopping the other builds
       # TODO: Is this what we want to do with failures?
