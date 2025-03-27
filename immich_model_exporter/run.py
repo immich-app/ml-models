@@ -113,6 +113,7 @@ if __name__ == "__main__":
     dataset_root = Path("datasets")
     dataset_root.mkdir(exist_ok=True)
 
+    crossmodal3600_root = dataset_root / "crossmodal3600"
     subprocess.check_call(
         [
             "clip_benchmark",
@@ -123,6 +124,8 @@ if __name__ == "__main__":
             "zeroshot_retrieval",
             "--dataset",
             "crossmodal3600",
+            "--dataset_root",
+            crossmodal3600_root.as_posix(),
             "--batch_size",
             "64",
             "--language",
