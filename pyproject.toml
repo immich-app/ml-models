@@ -14,8 +14,9 @@ dependencies = [
   "rknn-toolkit2>=2.3.0",
   "transformers>=4.49.0",
   "tenacity>=9.0.0",
-  "clip-benchmark>=1.6.1",
   "polars>=1.25.2",
+  "kaggle>=1.7.4.2",
+  "clip-benchmark",
 ]
 
 [dependency-groups]
@@ -28,6 +29,9 @@ override-dependencies = [
   "torch>=2.4",
   "torchvision>=0.21",
 ]
+
+[tool.uv.sources]
+clip-benchmark = { git = "https://github.com/mertalev/CLIP_benchmark.git", rev = "1770a603e0d37dfc44ddda5094a93c113b3528f6" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_model_exporter"]
