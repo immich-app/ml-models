@@ -68,58 +68,17 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const newModels = JSON.parse('${{ steps.new-models.outputs.result }}');
-            const oldModels = JSON.parse('${{ steps.old-models.outputs.result }}');
+            const modelLists = {
+              old: JSON.parse('${{ steps.old-models.outputs.result }}'),
+              new: JSON.parse('${{ steps.new-models.outputs.result }}')
+            };
+            const hashes = {
+              old: '${{ steps.old-files.outputs.hash }}',
+              new: '${{ steps.new-files.outputs.hash }}'
+            };
+            const script = require('./.github/scripts/scope.js')
+            script({context, core, modelLists, hashes})
 
-            const oldHash = '${{ steps.old-files.outputs.hash }}';
-            const newHash = '${{ steps.new-files.outputs.hash }}';
-            let force = false;
-            if (context.eventName === 'workflow_dispatch' && core.getBooleanInput('force')) {
-              force = true;
-            }
-            if (oldHash != newHash) {
-              force = true;
-            }
-            if (force) {
-              console.log("Workflow files or code changed; forcing full export");
-              core.setOutput('to_export', JSON.stringify(newModels));
-              core.setOutput('unchanged', JSON.stringify([]));
-              return;
-            }
-
-            const oldMap = Object.fromEntries(oldModels.map((m) => [m.name, m]));
-            const newMap = Object.fromEntries(newModels.map((m) => [m.name, m]));
-
-            const keys = new Set([...Object.keys(oldMap), ...Object.keys(newMap)]);
-
-            const to_export = [];
-            const unchanged = [];
-
-            function equal(m, n) {
-              if (!m && !n) return true;
-              if (!m || !n) return false;
-              return m["name"] === n["name"] &&
-                m["source"] === n["source"] &&
-                m["hf-name"] === n["hf-name"];
-            }
-
-            for (const key of keys) {
-              const o = oldMap[key];
-              const n = newMap[key];
-              const eq = equal(o, n);
-
-              if (eq) {
-                unchanged.push(n);
-              }
-              if (!eq && n) {
-                to_export.push(n);
-              }
-              // !n: deleted, which we ignore
-            }
-
-            core.setOutput('to_export', JSON.stringify(to_export));
-            core.setOutput('unchanged', JSON.stringify(unchanged));
-            return;
 
   export:
     uses: ./.github/workflows/export.yaml
