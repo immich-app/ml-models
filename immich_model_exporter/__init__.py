@@ -144,8 +144,8 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
 @app.command()
 def upload(
     model_name: str,
-    hf_model_name: str | None = None,
     input_dir: Path = Path("models"),
+    hf_model_name: str | None = None,
     hf_organization: str = "immich-app",
     hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
