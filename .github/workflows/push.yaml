@@ -134,3 +134,4 @@ jobs:
       model-name: ${{ matrix.name }}
       model-source: ${{ matrix.source }}
       hf-name: ${{ matrix.hf-name }}
+      upload: ${{ inputs.force || github.event_name == 'release'}}
