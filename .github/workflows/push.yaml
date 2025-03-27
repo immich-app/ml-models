@@ -68,7 +68,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           # Editor checks warn on these being "undefined", but they get passed to the script regardless.
-          force: ${{ inputs.force }}
+          force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
           oldHash: ${{ steps.old-files.outputs.hash }}
