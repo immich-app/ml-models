@@ -50,4 +50,4 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
-      - run: uv run immich_model_exporter upload "${{ inputs.model-name }}" "${{ inputs.hf-name }}" --hf-organization immich-testing
+      - run: uv run immich_model_exporter upload "${{ inputs.model-name }}" --hf-model-name "${{ inputs.hf-name }}" --hf-organization immich-testing
