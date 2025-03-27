@@ -67,17 +67,15 @@ jobs:
       - id: scope
         uses: actions/github-script@v7
         with:
+          # Editor checks warn on these being "undefined", but they get passed to the script regardless.
+          force: ${{ inputs.force }}
+          oldModels: ${{ steps.old-models.outputs.result }}
+          newModels: ${{ steps.new-models.outputs.result }}
+          oldHash: ${{ steps.old-files.outputs.hash }}
+          newHash: ${{ steps.new-files.outputs.hash }}
           script: |
-            const modelLists = {
-              old: JSON.parse('${{ steps.old-models.outputs.result }}'),
-              new: JSON.parse('${{ steps.new-models.outputs.result }}')
-            };
-            const hashes = {
-              old: '${{ steps.old-files.outputs.hash }}',
-              new: '${{ steps.new-files.outputs.hash }}'
-            };
             const script = require('./.github/scripts/scope.js')
-            script({context, core, modelLists, hashes})
+            script({core})
 
 
   export:

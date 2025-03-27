@@ -1,20 +1,22 @@
-module.exports = ({context, core, modelLists, hashes}) => {
-  let force = false;
-  if (context.eventName === 'workflow_dispatch' && core.getBooleanInput('force')) {
-    force = true;
-  }
-  if (hashes.old !== hashes.new) {
+module.exports = ({core}) => {
+  let force = core.getBooleanInput('force');
+  let oldModels = JSON.parse(core.getInput('oldModels'));
+  let newModels = JSON.parse(core.getInput('newModels'));
+  let oldHash = core.getInput('oldHash');
+  let newHash = core.getInput('newHash');
+
+  if (oldHash !== newHash) {
     force = true;
   }
   if (force) {
     console.log("Workflow files or code changed; forcing full export");
-    core.setOutput('to_export', JSON.stringify(modelLists.new));
+    core.setOutput('to_export', JSON.stringify(newModels));
     core.setOutput('unchanged', JSON.stringify([]));
     return;
   }
 
-  const oldMap = Object.fromEntries(modelLists.old.map((m) => [m.name, m]));
-  const newMap = Object.fromEntries(modelLists.new.map((m) => [m.name, m]));
+  const oldMap = Object.fromEntries(oldModels.map((m) => [m.name, m]));
+  const newMap = Object.fromEntries(newModels.map((m) => [m.name, m]));
 
   const keys = new Set([...Object.keys(oldMap), ...Object.keys(newMap)]);
 
