@@ -58,19 +58,28 @@ eval_df = pl.scan_ndjson("results/*.json").select("model", "pretrained", "langua
 eval_df = eval_df.with_columns(
     model=pl.col("model")
     .str.replace("xlm-roberta-base", "XLM-Roberta-Base")
-    .str.replace("xlm-roberta-large", "XLM-Roberta-Large")
+    .str.replace("xlm-roberta-large", "XLM-Roberta-Large"),
+    language=pl.when(pl.col("language") == "jp").then(pl.lit("ja")).otherwise("language"),
 )
-eval_df = eval_df.with_columns(pretrained_model=pl.concat_str(pl.col("model"), pl.col("pretrained"), separator="__"))
+eval_df = eval_df.with_columns(pretrained_model=pl.concat_str("model", "pretrained", separator="__"))
 eval_df = eval_df.drop("model", "pretrained")
+eval_df = eval_df.unnest("metrics")
 eval_df = eval_df.join(profile_df, on="pretrained_model")
 
+eval_df = eval_df.group_by("pretrained_model", "language").agg(
+    [
+        pl.mean("peak_rss"),
+        pl.mean("exec_time_ms"),
+        pl.mean("image_retrieval_recall@1"),
+        pl.mean("image_retrieval_recall@5"),
+        pl.mean("image_retrieval_recall@10"),
+    ]
+)
 eval_df = eval_df.with_columns(
     recall=(
-        pl.col("metrics").struct.field("image_retrieval_recall@1")
-        + pl.col("metrics").struct.field("image_retrieval_recall@5")
-        + pl.col("metrics").struct.field("image_retrieval_recall@10")
-    )
-    * (100 / 3)
+        (pl.col("image_retrieval_recall@1") + pl.col("image_retrieval_recall@5") + pl.col("image_retrieval_recall@10"))
+        * (100 / 3)
+    ).round(2)
 )
 
 pareto_front = eval_df.join_where(
@@ -101,17 +110,19 @@ eval_df = (
 )
 eval_df.write_parquet("model_info.parquet")
 
-eval_df = eval_df.drop("metrics")
 eval_df = eval_df.filter(pl.col("recall") >= 20)
-eval_df = eval_df.sort("recall", descending=True)
 eval_df = eval_df.select(
     pl.col("pretrained_model").alias("Model"),
     (pl.col("peak_rss") / 1024).round().cast(pl.UInt32).alias("Memory (MiB)"),
     pl.col("exec_time_ms").round(2).alias("Execution Time (ms)"),
     pl.col("language").alias("Language"),
-    pl.col("recall").round(2).alias("Recall (%)"),
-    pl.when(pl.col("is_pareto")).then(pl.lit("✅")).otherwise(pl.lit("❌")).alias("Pareto Optimal"),
+    # pl.col("image_retrieval_recall@1").mul(100).round(2).alias("Recall@1 (%)"),
+    # pl.col("image_retrieval_recall@5").mul(100).round(2).alias("Recall@5 (%)"),
+    # pl.col("image_retrieval_recall@10").mul(100).round(2).alias("Recall@10 (%)"),
+    pl.col("recall").alias("Recall (%)"),
+    pl.when("is_pareto").then(pl.lit("✅")).otherwise(pl.lit("❌")).alias("Pareto Optimal"),
 )
+eval_df = eval_df.sort("Recall (%)", "Memory (MiB)", descending=[True, False])
 
 
 for language in languages:

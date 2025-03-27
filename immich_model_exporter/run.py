@@ -110,9 +110,12 @@ if __name__ == "__main__":
     export_models(insightface, ModelSource.INSIGHTFACE)
 
     Path("results").mkdir(exist_ok=True)
+    dataset_root = Path("datasets")
+    dataset_root.mkdir(exist_ok=True)
+
+    crossmodal3600_root = dataset_root / "crossmodal3600"
     subprocess.check_call(
         [
-            "python",
             "clip_benchmark",
             "eval",
             "--pretrained_model",
@@ -121,6 +124,8 @@ if __name__ == "__main__":
             "zeroshot_retrieval",
             "--dataset",
             "crossmodal3600",
+            "--dataset_root",
+            crossmodal3600_root.as_posix(),
             "--batch_size",
             "64",
             "--language",
@@ -159,6 +164,72 @@ if __name__ == "__main__":
             "tr",
             "uk",
             "vi",
+            "zh",
+            "--recall_k",
+            "1",
+            "5",
+            "10",
+            "--no_amp",
+            "--output",
+            "results/{dataset}_{language}_{model}_{pretrained}.json",
+        ]
+    )
+
+    xtd10_root = dataset_root / "xtd10"
+    subprocess.check_call(
+        [
+            "clip_benchmark",
+            "eval",
+            "--pretrained_model",
+            *[name.replace("__", ",") for name in openclip],
+            "--task",
+            "zeroshot_retrieval",
+            "--dataset",
+            "xtd10",
+            "--dataset_root",
+            xtd10_root.as_posix(),
+            "--batch_size",
+            "64",
+            "--language",
+            "de",
+            "en",
+            "es",
+            "fr",
+            "it",
+            "jp",
+            "ko",
+            "pl",
+            "ru",
+            "tr",
+            "zh",
+            "--recall_k",
+            "1",
+            "5",
+            "10",
+            "--no_amp",
+            "--output",
+            "results/{dataset}_{language}_{model}_{pretrained}.json",
+        ]
+    )
+
+    flickr30k_root = dataset_root / "flickr30k"
+    # note: need ~/.kaggle/kaggle.json to download the dataset automatically
+    subprocess.check_call(
+        [
+            "clip_benchmark",
+            "eval",
+            "--pretrained_model",
+            *[name.replace("__", ",") for name in openclip],
+            "--task",
+            "zeroshot_retrieval",
+            "--dataset",
+            "flickr30k",
+            "--dataset_root",
+            flickr30k_root.as_posix(),
+            "--batch_size",
+            "64",
+            "--language",
+            "en",
             "zh",
             "--recall_k",
             "1",

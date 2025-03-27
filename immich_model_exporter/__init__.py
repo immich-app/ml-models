@@ -41,8 +41,13 @@ This repo is specifically intended for use with [Immich](https://immich.app/), a
 
 
 @app.command()
-def export(model_name: str, model_source: ModelSource, hf_model_name: Annotated[str, typer.Argument()] = '', output_dir: Path = Path("models"),
-           cache: bool = True) -> None:
+def export(
+    model_name: str,
+    model_source: ModelSource,
+    hf_model_name: str | None = None,
+    output_dir: Path = Path("models"),
+    cache: bool = True,
+) -> None:
     if not hf_model_name:
         hf_model_name = model_name
     output_dir = output_dir / model_name
@@ -138,11 +143,11 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
 
 @app.command()
 def upload(
-        model_name: str,
-        hf_model_name: Annotated[str, typer.Argument()] = '',
-        input_dir: Path = Path("models"),
-        hf_organization: str = "immich-app",
-        hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
+    model_name: str,
+    input_dir: Path = Path("models"),
+    hf_model_name: str | None = None,
+    hf_organization: str = "immich-app",
+    hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
     from huggingface_hub import create_repo, upload_folder
 
