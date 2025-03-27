@@ -1,7 +1,16 @@
 name: Model export
 on:
-  # TODO: A proper release trigger?
   push:
+    branches: ['main']
+  pull_request:
+  release:
+    types: ['published']
+  workflow_dispatch:
+    inputs:
+      force:
+        type: boolean
+        required: false
+        description: 'Force export all models'
 
 # TODO: concurrency block?
 
@@ -9,15 +18,67 @@ jobs:
   configure:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.get-versions.outputs.result }}
+      to_export: ${{ steps.scope.outputs.to_export }}
+      unchanged: ${{ steps.scope.outputs.unchanged }}
     steps:
-      - name: Checkout to repository
+      - name: Checkout new ref
         uses: actions/checkout@v4
-      - name: Get dependency versions
-        uses: mikefarah/yq@v4.45.1
-        id: get-versions
+      - name: Determine previous ref
+        id: ref
+        run: |
+          ev="${{ github.event_name }}"
+          if [[ "$ev" == "push" ]]; then
+            ref="${{ github.event.before }}"
+          elif [[ "$ev" == "pull_request" ]]; then
+            ref="${{ github.event.pull_request.base.sha }}"
+          elif [[ "$ev" == "workflow_dispatch" ]]; then
+            # TODO: This will currently never diff
+            # What ref to diff against on a dispatch?
+            ref="${{ github.event.ref }}"
+          elif [[ "$ev" == "release" ]]; then
+            ref=$(git rev-list --tags --max-count=1 --skip=1 --no-walk)
+          fi
+          echo "previous-ref=$ref" >> $GITHUB_OUTPUT
+      - name: Checkout previous ref
+        uses: actions/checkout@v4
         with:
-          cmd: yq eval '.models' -o=json -I=0 models.yaml
+          path: before
+          ref: ${{ steps.ref.outputs.previous-ref }}
+      - id: new-files
+        run: |
+          workflows="${{ hashFiles('.github/workflows/**')}}"
+          exporter="${{ hashFiles('immich_model_exporter/**', 'pyproject.toml', 'uv.lock')}}"
+          hash=$(echo "$workflows$exporter" | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> $GITHUB_OUTPUT
+      - id: old-files
+        run: |
+          workflows="${{ hashFiles('./before/.github/workflows/**')}}"
+          exporter="${{ hashFiles('./before/immich_model_exporter/**', './before/pyproject.toml', './before/uv.lock')}}"
+          hash=$(echo "$workflows$exporter" | sha256sum | cut -d' ' -f1)
+          echo "hash=$hash" >> $GITHUB_OUTPUT
+      - id: new-models
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq eval '.models' -o=json -I=0 ./models.yaml
+      - id: old-models
+        uses: mikefarah/yq@v4.45.1
+        with:
+          cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
+      - id: scope
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const modelLists = {
+              old: JSON.parse('${{ steps.old-models.outputs.result }}'),
+              new: JSON.parse('${{ steps.new-models.outputs.result }}')
+            };
+            const hashes = {
+              old: '${{ steps.old-files.outputs.hash }}',
+              new: '${{ steps.new-files.outputs.hash }}'
+            };
+            const script = require('./.github/scripts/scope.js')
+            script({context, core, modelLists, hashes})
+
 
   export:
     uses: ./.github/workflows/export.yaml
@@ -27,8 +88,9 @@ jobs:
       # TODO: Is this what we want to do with failures?
       fail-fast: false
       matrix:
-        include: ${{ fromJson(needs.configure.outputs.matrix) }}
+        include: ${{ fromJson(needs.configure.outputs.to_export) }}
     with:
       model-name: ${{ matrix.name }}
       model-source: ${{ matrix.source }}
       hf-name: ${{ matrix.hf-name }}
+      upload: ${{ inputs.force || github.event_name == 'release'}}
