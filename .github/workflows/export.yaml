@@ -10,6 +10,9 @@ on:
       model-source:
         required: true
         type: string
+      runner:
+        required: true
+        type: string
       hf-name:
         required: false
         type: string
@@ -19,13 +22,13 @@ on:
 
 jobs:
   export:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
+      - run: uv sync
 
       - run: uv run immich_model_exporter export "${{ inputs.model-name }}" "${{ inputs.model-source }}" --hf-model-name "${{ inputs.hf-name }}"
       - uses: actions/upload-artifact@v4
@@ -38,14 +41,14 @@ jobs:
 
   upload:
     if: ${{ inputs.upload }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     needs: export
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
+      - run: uv sync
 
       - uses: actions/download-artifact@v4
         with:
