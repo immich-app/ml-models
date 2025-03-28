@@ -1,5 +1,8 @@
 on:
   workflow_call:
+    secrets:
+      HF_AUTH_TOKEN:
+        required: true
     inputs:
       model-name:
         required: true
@@ -51,3 +54,5 @@ jobs:
           path: models/
 
       - run: uv run immich_model_exporter upload "${{ inputs.model-name }}" --hf-model-name "${{ inputs.hf-name }}" --hf-organization immich-testing
+        env:
+          HF_AUTH_TOKEN: ${{ secrets.HF_AUTH_TOKEN }}
