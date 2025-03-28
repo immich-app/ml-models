@@ -44,18 +44,6 @@ jobs:
         with:
           path: before
           ref: ${{ steps.ref.outputs.previous-ref }}
-      - id: new-files
-        run: |
-          workflows="${{ hashFiles('.github/workflows/**')}}"
-          exporter="${{ hashFiles('immich_model_exporter/**', 'pyproject.toml', 'uv.lock')}}"
-          hash=$(echo "$workflows$exporter" | sha256sum | cut -d' ' -f1)
-          echo "hash=$hash" >> $GITHUB_OUTPUT
-      - id: old-files
-        run: |
-          workflows="${{ hashFiles('./before/.github/workflows/**')}}"
-          exporter="${{ hashFiles('./before/immich_model_exporter/**', './before/pyproject.toml', './before/uv.lock')}}"
-          hash=$(echo "$workflows$exporter" | sha256sum | cut -d' ' -f1)
-          echo "hash=$hash" >> $GITHUB_OUTPUT
       - id: new-models
         uses: mikefarah/yq@v4.45.1
         with:
@@ -71,8 +59,8 @@ jobs:
           force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
-          oldHash: ${{ steps.old-files.outputs.hash }}
-          newHash: ${{ steps.new-files.outputs.hash }}
+          oldHash: ${{ hashFiles('./before/immich_model_exporter/exporters/**') }}
+          newHash: ${{ hashFiles('./immich_model_exporter/exporters/**') }}
           script: |
             const script = require('./.github/scripts/scope.js')
             script({core})
