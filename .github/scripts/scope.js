@@ -28,7 +28,8 @@ module.exports = ({core}) => {
     if (!m || !n) return false;
     return m["name"] === n["name"] &&
       m["source"] === n["source"] &&
-      m["hf-name"] === n["hf-name"];
+      m["hf-name"] === n["hf-name"] &&
+      m["runner"] === n["runner"];
   }
 
   for (const key of keys) {
