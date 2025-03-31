@@ -1,13 +1,16 @@
 on:
   workflow_call:
     secrets:
-      HF_AUTH_TOKEN:
+      HF_TOKEN:
         required: true
     inputs:
       model-name:
         required: true
         type: string
       model-source:
+        required: true
+        type: string
+      runner:
         required: true
         type: string
       hf-name:
@@ -19,15 +22,18 @@ on:
 
 jobs:
   export:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
+      - run: uv sync
 
       - run: uv run immich_model_exporter export "${{ inputs.model-name }}" "${{ inputs.model-source }}" --hf-model-name "${{ inputs.hf-name }}"
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.model-name }}
@@ -38,14 +44,14 @@ jobs:
 
   upload:
     if: ${{ inputs.upload }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     needs: export
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
+      - run: uv sync
 
       - uses: actions/download-artifact@v4
         with:
@@ -55,4 +61,4 @@ jobs:
 
       - run: uv run immich_model_exporter upload "${{ inputs.model-name }}" --hf-model-name "${{ inputs.hf-name }}" --hf-organization immich-testing
         env:
-          HF_AUTH_TOKEN: ${{ secrets.HF_AUTH_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}

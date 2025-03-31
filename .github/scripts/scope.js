@@ -28,7 +28,8 @@ module.exports = ({core}) => {
     if (!m || !n) return false;
     return m["name"] === n["name"] &&
       m["source"] === n["source"] &&
-      m["hf-name"] === n["hf-name"];
+      m["hf-name"] === n["hf-name"] &&
+      m["runner"] === n["runner"];
   }
 
   for (const key of keys) {
@@ -45,6 +46,11 @@ module.exports = ({core}) => {
     // !n: deleted, which we ignore
   }
 
+  // Potential shape change:
+  // Instead of this binary choice, output all the models
+  // And annotate each model with which tasks should run for it
+  // (like export, benchmark, upload, etc)
+  // That means every model will make it to the index job through the same path
   core.setOutput('to_export', JSON.stringify(to_export));
   core.setOutput('unchanged', JSON.stringify(unchanged));
 }
