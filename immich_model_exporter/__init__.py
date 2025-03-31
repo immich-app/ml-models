@@ -147,7 +147,6 @@ def upload(
     input_dir: Path = Path("models"),
     hf_model_name: str | None = None,
     hf_organization: str = "immich-app",
-    hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
 ) -> None:
     from huggingface_hub import create_repo, upload_folder
 
@@ -158,14 +157,13 @@ def upload(
 
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
     def upload_model() -> None:
-        create_repo(repo_id, exist_ok=True, token=hf_auth_token)
+        create_repo(repo_id, exist_ok=True)
         upload_folder(
             repo_id=repo_id,
             folder_path=model_dir,
             # remote repo files to be deleted before uploading
             # deletion is in the same commit as the upload, so it's atomic
             delete_patterns=DELETE_PATTERNS,
-            token=hf_auth_token,
         )
 
     upload_model()
