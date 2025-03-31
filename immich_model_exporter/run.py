@@ -3,15 +3,16 @@ from pathlib import Path
 from typing import NamedTuple
 
 import yaml
-
 from exporters.constants import ModelSource
 
 from immich_model_exporter.exporters.constants import SOURCE_TO_TASK
 
+
 class ModelSpec(NamedTuple):
-  name: str
-  hfName: str
-  source: ModelSource
+    name: str
+    hf_name: str
+    source: ModelSource
+
 
 def export_models(models: list[ModelSpec]) -> None:
     profiling_dir = Path("profiling")
@@ -22,7 +23,7 @@ def export_models(models: list[ModelSpec]) -> None:
             task = SOURCE_TO_TASK[model.source]
 
             print(f"Processing model {model.name}")
-            subprocess.check_call(["python", "-m", "immich_model_exporter", "export", model.hfName, model.source])
+            subprocess.check_call(["python", "-m", "immich_model_exporter", "export", model.hf_name, model.source])
             subprocess.check_call(
                 [
                     "python",
@@ -39,17 +40,18 @@ def export_models(models: list[ModelSpec]) -> None:
         except Exception as e:
             print(f"Failed to export model {model}: {e}")
 
+
 def read_models() -> list[ModelSpec]:
-  with open('../models.yaml') as f:
-    y = yaml.safe_load(f)
-  models = []
-  for m in y['models']:
-    name = m['name']
-    source = ModelSource(m['source'])
-    hfName = m['hf-name'] if 'hf-name' in m else name
-    model = ModelSpec(name, hfName, source)
-    models.append(model)
-  return models
+    with open("../models.yaml") as f:
+        y = yaml.safe_load(f)
+    models = []
+    for m in y["models"]:
+        name = m["name"]
+        source = ModelSource(m["source"])
+        hfName = m["hf-name"] if "hf-name" in m else name
+        model = ModelSpec(name, hfName, source)
+        models.append(model)
+    return models
 
 
 if __name__ == "__main__":
@@ -57,8 +59,7 @@ if __name__ == "__main__":
 
     export_models(models)
 
-    openclip_names = [m.hfName for m in models if m.source == ModelSource.OPENCLIP]
-    openclip_names_cleaned = [name.replace("__", ",") for name in openclip_names]
+    openclip_names = [m.hf_name.replace("__", ",") for m in models if m.source == ModelSource.OPENCLIP]
 
     Path("results").mkdir(exist_ok=True)
     dataset_root = Path("datasets")
@@ -70,7 +71,7 @@ if __name__ == "__main__":
             "clip_benchmark",
             "eval",
             "--pretrained_model",
-            *openclip_names_cleaned,
+            *openclip_names,
             "--task",
             "zeroshot_retrieval",
             "--dataset",
@@ -132,7 +133,7 @@ if __name__ == "__main__":
             "clip_benchmark",
             "eval",
             "--pretrained_model",
-            *openclip_names_cleaned,
+            *openclip_names,
             "--task",
             "zeroshot_retrieval",
             "--dataset",
@@ -170,7 +171,7 @@ if __name__ == "__main__":
             "clip_benchmark",
             "eval",
             "--pretrained_model",
-            *openclip_names_cleaned,
+            *openclip_names,
             "--task",
             "zeroshot_retrieval",
             "--dataset",
