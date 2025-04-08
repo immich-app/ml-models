@@ -22,7 +22,7 @@ jobs:
       unchanged: ${{ steps.scope.outputs.unchanged }}
     steps:
       - name: Checkout new ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Determine previous ref
         id: ref
         run: |
@@ -40,20 +40,20 @@ jobs:
           fi
           echo "previous-ref=$ref" >> $GITHUB_OUTPUT
       - name: Checkout previous ref
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           path: before
           ref: ${{ steps.ref.outputs.previous-ref }}
       - id: new-models
-        uses: mikefarah/yq@v4.45.1
+        uses: mikefarah/yq@8bf425b4d1344db7cd469a8d10a390876e0c77fd # v4.45.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./models.yaml
       - id: old-models
-        uses: mikefarah/yq@v4.45.1
+        uses: mikefarah/yq@8bf425b4d1344db7cd469a8d10a390876e0c77fd # v4.45.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
       - id: scope
-        uses: actions/github-script@v7
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           # Editor checks warn on these being "undefined", but they get passed to the script regardless.
           force: ${{ inputs.force || 'false' }}
