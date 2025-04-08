@@ -161,7 +161,7 @@ wheels = [
 [[package]]
 name = "clip-benchmark"
 version = "1.6.1"
-source = { git = "https://github.com/mertalev/CLIP_benchmark.git?rev=1770a603e0d37dfc44ddda5094a93c113b3528f6#1770a603e0d37dfc44ddda5094a93c113b3528f6" }
+source = { git = "https://github.com/mertalev/CLIP_benchmark.git?rev=77e733ee241399611296d3c4aca583ec89cf5190#77e733ee241399611296d3c4aca583ec89cf5190" }
 dependencies = [
     { name = "open-clip-torch" },
     { name = "pycocoevalcap" },
@@ -432,7 +432,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "clip-benchmark", git = "https://github.com/mertalev/CLIP_benchmark.git?rev=1770a603e0d37dfc44ddda5094a93c113b3528f6" },
+    { name = "clip-benchmark", git = "https://github.com/mertalev/CLIP_benchmark.git?rev=77e733ee241399611296d3c4aca583ec89cf5190" },
     { name = "huggingface-hub", specifier = ">=0.29.3" },
     { name = "kaggle", specifier = ">=1.7.4.2" },
     { name = "multilingual-clip", specifier = ">=1.0.10" },
