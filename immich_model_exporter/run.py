@@ -1,5 +1,6 @@
 import subprocess
 from pathlib import Path
+import numpy as np
 
 from exporters.constants import ModelSource
 
@@ -105,6 +106,8 @@ def export_models(models: list[str], source: ModelSource) -> None:
 
 
 if __name__ == "__main__":
+    rand = np.random.rand(1,77)
+    np.save("randtextualinput.npy",rand)
     export_models(mclip, ModelSource.MCLIP)
     export_models(openclip, ModelSource.OPENCLIP)
     export_models(insightface, ModelSource.INSIGHTFACE)
