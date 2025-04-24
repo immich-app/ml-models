@@ -37,7 +37,7 @@ def _export_platform(
     ret = rknn.build(do_quantization=False)
 
     if "textual" in input_path.as_posix():
-        ret = rknn.accuracy_analysis(inputs=["rand.npy"])
+        ret = rknn.accuracy_analysis(inputs=["randtextualinput.npy"])
         if ret != 0:
             RuntimeError("Accuracy analysis failed!")
         analysis_result= open("./snapshot/error_analysis.txt","r")
