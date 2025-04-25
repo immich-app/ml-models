@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .constants import RKNN_SOCS, RKNN_BLOCKED_OPS
+from .constants import RKNN_BLOCKED_OPS, RKNN_SOCS
 
 
 def _export_platform(
