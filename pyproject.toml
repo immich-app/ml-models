@@ -31,7 +31,7 @@ override-dependencies = [
 ]
 
 [tool.uv.sources]
-clip-benchmark = { git = "https://github.com/mertalev/CLIP_benchmark.git", rev = "1770a603e0d37dfc44ddda5094a93c113b3528f6" }
+clip-benchmark = { git = "https://github.com/mertalev/CLIP_benchmark.git", rev = "77e733ee241399611296d3c4aca583ec89cf5190" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_model_exporter"]
