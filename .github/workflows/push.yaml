@@ -45,15 +45,15 @@ jobs:
           path: before
           ref: ${{ steps.ref.outputs.previous-ref }}
       - id: new-models
-        uses: mikefarah/yq@f03c9dc599c37bfcaf533427211d05e51e6fee64 # v4.47.1
+        uses: mikefarah/yq@0ecdce24e83f0fa127940334be98c86b07b0c488 # v4.48.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./models.yaml
       - id: old-models
-        uses: mikefarah/yq@f03c9dc599c37bfcaf533427211d05e51e6fee64 # v4.47.1
+        uses: mikefarah/yq@0ecdce24e83f0fa127940334be98c86b07b0c488 # v4.48.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
       - id: scope
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           # Editor checks warn on these being "undefined", but they get passed to the script regardless.
           force: ${{ inputs.force || 'false' }}
