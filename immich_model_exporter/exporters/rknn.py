@@ -69,13 +69,17 @@ def _export_platforms(
     inputs: list[str] | None = None,
     input_size_list: list[list[int]] | None = None,
     cache: bool = True,
+    target_platform: str | None = None,
 ) -> None:
     input_path = model_dir / "model.onnx"
-    
+
+    # Filter platforms to only target platform if specified
+    platforms = [target_platform] if target_platform else RKNN_SOCS
+
     # Check for CumSum once for all platforms
     temp_dir = None
     rknn_input_path = input_path
-    
+
     if _has_cumsum(input_path):
         print(f"Detected CumSum ops in {input_path}, applying replacement...")
         temp_dir = tempfile.mkdtemp()
@@ -90,10 +94,10 @@ def _export_platforms(
                 shutil.rmtree(temp_dir)
             temp_dir = None
             rknn_input_path = input_path
-    
+
     try:
         fuse_matmul_softmax_matmul_to_sdpa = True
-        for soc in RKNN_SOCS:
+        for soc in platforms:
             try:
                 _export_platform(
                     rknn_input_path,
@@ -124,20 +128,20 @@ def _export_platforms(
             shutil.rmtree(temp_dir)
 
 
-def export(model_dir: Path, cache: bool = True) -> None:
+def export(model_dir: Path, cache: bool = True, target_platform: str | None = None) -> None:
     textual = model_dir / "textual"
     visual = model_dir / "visual"
     detection = model_dir / "detection"
     recognition = model_dir / "recognition"
 
     if textual.is_dir():
-        _export_platforms(textual, cache=cache)
+        _export_platforms(textual, cache=cache, target_platform=target_platform)
 
     if visual.is_dir():
-        _export_platforms(visual, cache=cache)
+        _export_platforms(visual, cache=cache, target_platform=target_platform)
 
     if detection.is_dir():
-        _export_platforms(detection, inputs=["input.1"], input_size_list=[[1, 3, 640, 640]], cache=cache)
+        _export_platforms(detection, inputs=["input.1"], input_size_list=[[1, 3, 640, 640]], cache=cache, target_platform=target_platform)
 
     if recognition.is_dir():
-        _export_platforms(recognition, inputs=["input.1"], input_size_list=[[1, 3, 112, 112]], cache=cache)
+        _export_platforms(recognition, inputs=["input.1"], input_size_list=[[1, 3, 112, 112]], cache=cache, target_platform=target_platform)

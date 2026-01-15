@@ -378,8 +378,25 @@ def process_model(model_path, output_path):
     graph = model.graph
     new_graph_nodes = []
     
-    replaced_count = 0
     print(f"DEBUG: Total nodes in graph: {len(graph.node)}")
+    
+    # Pre-pass: Upgrade Cast inputs to CumSum to Float to avoid INT32 Mul issues in RKNN
+    print("DEBUG: Running Pre-pass to upgrade Cast nodes for CumSum compatibility...")
+    cumsum_inputs = set()
+    for node in graph.node:
+        if node.op_type == 'CumSum':
+            for inp in node.input:
+                cumsum_inputs.add(inp)
+
+    for node in graph.node:
+        if node.op_type == 'Cast' and len(node.output) > 0 and node.output[0] in cumsum_inputs:
+             # Check if casting to INT32 (6) or INT64 (7)
+             for attr in node.attribute:
+                 if attr.name == 'to' and attr.i in [6, 7]: # TensorProto.INT32=6, INT64=7
+                     print(f"Pre-pass: Upgrading Cast node {node.name} (to={attr.i}) to FLOAT for CumSum.")
+                     attr.i = TensorProto.FLOAT
+
+    replaced_count = 0
     for node in graph.node:
         if node.op_type == 'CumSum':
             print(f"DEBUG: Found CumSum node: {node.name}")
