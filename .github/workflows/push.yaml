@@ -45,11 +45,11 @@ jobs:
           path: before
           ref: ${{ steps.ref.outputs.previous-ref }}
       - id: new-models
-        uses: mikefarah/yq@065b200af9851db0d5132f50bc10b1406ea5c0a8 # v4.50.1
+        uses: mikefarah/yq@4973c355e6740937ade1dfe3aab04b257b893191 # v4.51.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./models.yaml
       - id: old-models
-        uses: mikefarah/yq@065b200af9851db0d5132f50bc10b1406ea5c0a8 # v4.50.1
+        uses: mikefarah/yq@4973c355e6740937ade1dfe3aab04b257b893191 # v4.51.1
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
       - id: scope
