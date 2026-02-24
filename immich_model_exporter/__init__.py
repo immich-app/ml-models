@@ -2,6 +2,7 @@ import json
 import resource
 from pathlib import Path
 
+import numpy as np
 import typer
 from tenacity import retry, stop_after_attempt, wait_fixed
 from typing_extensions import Annotated
@@ -53,6 +54,8 @@ def export(
     output_dir = output_dir / model_name
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
+            rand = np.random.rand(1,77)
+            np.save("randtextualinput.npy",rand)
             output_dir.mkdir(parents=True, exist_ok=True)
             onnx_export(hf_model_name, model_source, output_dir, cache=cache)
         case ModelSource.INSIGHTFACE:
