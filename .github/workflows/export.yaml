@@ -47,7 +47,7 @@ jobs:
       - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
       - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
 
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: ${{ inputs.model-name }}
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
