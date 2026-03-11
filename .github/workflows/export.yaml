@@ -28,7 +28,7 @@ jobs:
       - run: uv sync # TODO: cache uv env (does setup-uv do that already automatically?)
 
       - run: uv run immich_model_exporter export "${{ inputs.model-name }}" "${{ inputs.model-source }}" --hf-model-name "${{ inputs.hf-name }}"
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ inputs.model-name }}
           path: models/
