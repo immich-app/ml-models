@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .constants import RKNN_SOCS
+from .constants import RKNN_BLOCKED_OPS, RKNN_SOCS
 
 
 def _export_platform(
@@ -35,6 +35,15 @@ def _export_platform(
         raise RuntimeError("Load failed!")
 
     ret = rknn.build(do_quantization=False)
+
+    if "textual" in input_path.as_posix():
+        ret = rknn.accuracy_analysis(inputs=["randtextualinput.npy"])
+        if ret != 0:
+            RuntimeError("Accuracy analysis failed!")
+        analysis_result= open("./snapshot/error_analysis.txt","r")
+        for ops in RKNN_BLOCKED_OPS:
+            if ops in analysis_result.read():
+                raise RuntimeError("ONNX Model contains Unsupported OPs!")
 
     if ret != 0:
         raise RuntimeError("Build failed!")
