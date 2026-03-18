@@ -47,6 +47,7 @@ def export(
     hf_model_name: str | None = None,
     output_dir: Path = Path("models"),
     cache: bool = True,
+    target_platform: str | None = None,
 ) -> None:
     if not hf_model_name:
         hf_model_name = model_name
@@ -64,7 +65,7 @@ def export(
             raise ValueError(f"Unsupported model source {model_source}")
 
     try:
-        rknn_export(output_dir, cache=cache)
+        rknn_export(output_dir, cache=cache, target_platform=target_platform)
     except Exception as e:
         print(f"Failed to export model {model_name} to rknn: {e}")
         (output_dir / "rknpu").unlink(missing_ok=True)
