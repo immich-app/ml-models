@@ -31,7 +31,13 @@ def _export_platform(
     cache: bool = True,
     op_target: dict[str, str] | None = None,
 ) -> None:
-    from rknn.api import RKNN
+    try:
+        from rknn.api import RKNN
+    except ModuleNotFoundError as e:
+        raise RuntimeError(
+            "RKNN export requires optional dependency 'rknn-toolkit2'. "
+            "Use Python 3.12/3.11 and install with: uv sync --extra rknn"
+        ) from e
 
     output_path = model_dir / "rknpu" / target_platform / "model.rknn"
     if cache and output_path.exists():
