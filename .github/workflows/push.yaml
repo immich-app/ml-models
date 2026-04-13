@@ -22,7 +22,7 @@ jobs:
       unchanged: ${{ steps.scope.outputs.unchanged }}
     steps:
       - name: Checkout new ref
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Determine previous ref
         id: ref
         run: |
@@ -40,16 +40,16 @@ jobs:
           fi
           echo "previous-ref=$ref" >> $GITHUB_OUTPUT
       - name: Checkout previous ref
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           path: before
           ref: ${{ steps.ref.outputs.previous-ref }}
       - id: new-models
-        uses: mikefarah/yq@065b200af9851db0d5132f50bc10b1406ea5c0a8 # v4.50.1
+        uses: mikefarah/yq@0f4fb8d35ec1a939d78dd6862f494d19ec589f19 # v4.52.5
         with:
           cmd: yq eval '.models' -o=json -I=0 ./models.yaml
       - id: old-models
-        uses: mikefarah/yq@065b200af9851db0d5132f50bc10b1406ea5c0a8 # v4.50.1
+        uses: mikefarah/yq@0f4fb8d35ec1a939d78dd6862f494d19ec589f19 # v4.52.5
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
       - id: scope
