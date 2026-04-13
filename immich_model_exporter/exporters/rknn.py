@@ -29,6 +29,7 @@ def _export_platform(
     input_size_list: list[list[int]] | None = None,
     fuse_matmul_softmax_matmul_to_sdpa: bool = True,
     cache: bool = True,
+    op_target: dict[str, str] | None = None,
 ) -> None:
     from rknn.api import RKNN
 
@@ -46,6 +47,7 @@ def _export_platform(
         disable_rules=["fuse_matmul_softmax_matmul_to_sdpa"] if not fuse_matmul_softmax_matmul_to_sdpa else [],
         enable_flash_attention=False,
         model_pruning=True,
+        op_target=op_target,
     )
     
     ret = rknn.load_onnx(model=model_path.as_posix(), inputs=inputs, input_size_list=input_size_list)
@@ -70,6 +72,7 @@ def _export_platforms(
     input_size_list: list[list[int]] | None = None,
     cache: bool = True,
     target_platform: str | None = None,
+    op_target: dict[str, str] | None = None,
 ) -> None:
     input_path = model_dir / "model.onnx"
 
@@ -107,6 +110,7 @@ def _export_platforms(
                     input_size_list=input_size_list,
                     fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
                     cache=cache,
+                    op_target=op_target,
                 )
             except Exception as e:
                 print(f"Failed to export model for {soc}: {e}")
@@ -121,27 +125,49 @@ def _export_platforms(
                         input_size_list=input_size_list,
                         fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
                         cache=cache,
+                        op_target=op_target,
                     )
+                    continue
+                raise
     finally:
         # Clean up temporary directory after all platforms are done
         if temp_dir and Path(temp_dir).exists():
             shutil.rmtree(temp_dir)
 
 
-def export(model_dir: Path, cache: bool = True, target_platform: str | None = None) -> None:
+def export(
+    model_dir: Path,
+    cache: bool = True,
+    target_platform: str | None = None,
+    op_target: dict[str, str] | None = None,
+) -> None:
     textual = model_dir / "textual"
     visual = model_dir / "visual"
     detection = model_dir / "detection"
     recognition = model_dir / "recognition"
 
     if textual.is_dir():
-        _export_platforms(textual, cache=cache, target_platform=target_platform)
+        _export_platforms(textual, cache=cache, target_platform=target_platform, op_target=op_target)
 
     if visual.is_dir():
-        _export_platforms(visual, cache=cache, target_platform=target_platform)
+        _export_platforms(visual, cache=cache, target_platform=target_platform, op_target=op_target)
 
     if detection.is_dir():
-        _export_platforms(detection, inputs=["input.1"], input_size_list=[[1, 3, 640, 640]], cache=cache, target_platform=target_platform)
+        _export_platforms(
+            detection,
+            inputs=["input.1"],
+            input_size_list=[[1, 3, 640, 640]],
+            cache=cache,
+            target_platform=target_platform,
+            op_target=op_target,
+        )
 
     if recognition.is_dir():
-        _export_platforms(recognition, inputs=["input.1"], input_size_list=[[1, 3, 112, 112]], cache=cache, target_platform=target_platform)
+        _export_platforms(
+            recognition,
+            inputs=["input.1"],
+            input_size_list=[[1, 3, 112, 112]],
+            cache=cache,
+            target_platform=target_platform,
+            op_target=op_target,
+        )

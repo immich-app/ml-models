@@ -4,6 +4,21 @@ import numpy as np
 import os
 import gc
 
+INTEGER_TENSOR_TYPES = {
+    TensorProto.UINT8,
+    TensorProto.UINT16,
+    TensorProto.UINT32,
+    TensorProto.UINT64,
+    TensorProto.INT8,
+    TensorProto.INT16,
+    TensorProto.INT32,
+    TensorProto.INT64,
+}
+
+
+def is_integer_tensor_type(tensor_type):
+    return tensor_type in INTEGER_TENSOR_TYPES
+
 def get_tensor_type(name, graph):
     for info in graph.value_info:
         if info.name == name:
@@ -380,23 +395,8 @@ def process_model(model_path, output_path):
     
     print(f"DEBUG: Total nodes in graph: {len(graph.node)}")
     
-    # Pre-pass: Upgrade Cast inputs to CumSum to Float to avoid INT32 Mul issues in RKNN
-    print("DEBUG: Running Pre-pass to upgrade Cast nodes for CumSum compatibility...")
-    cumsum_inputs = set()
-    for node in graph.node:
-        if node.op_type == 'CumSum':
-            for inp in node.input:
-                cumsum_inputs.add(inp)
-
-    for node in graph.node:
-        if node.op_type == 'Cast' and len(node.output) > 0 and node.output[0] in cumsum_inputs:
-             # Check if casting to INT32 (6) or INT64 (7)
-             for attr in node.attribute:
-                 if attr.name == 'to' and attr.i in [6, 7]: # TensorProto.INT32=6, INT64=7
-                     print(f"Pre-pass: Upgrading Cast node {node.name} (to={attr.i}) to FLOAT for CumSum.")
-                     attr.i = TensorProto.FLOAT
-
     replaced_count = 0
+    affected_tensors = set()
     for node in graph.node:
         if node.op_type == 'CumSum':
             print(f"DEBUG: Found CumSum node: {node.name}")
@@ -406,6 +406,7 @@ def process_model(model_path, output_path):
                 # data is a list of new nodes
                 new_graph_nodes.extend(data)
                 replaced_count += 1
+                affected_tensors.add(node.output[0])
             else:
                 new_graph_nodes.append(node)
         else:
@@ -419,6 +420,7 @@ def process_model(model_path, output_path):
     # Clear old nodes and refilling
     del graph.node[:]
     graph.node.extend(new_graph_nodes)
+    normalize_integer_arithmetic(model, affected_tensors)
         
     print(f"Replaced {replaced_count} CumSum nodes.")
     save_safe(model, output_path)
@@ -456,6 +458,70 @@ def save_safe(model, output_path):
             onnx.save(model, output_basename, save_as_external_data=True, all_tensors_to_one_file=True, location=data_path)
     finally:
         os.chdir(original_dir)
+
+
+def normalize_integer_arithmetic(model, affected_tensors):
+    graph = model.graph
+    rewritten_nodes = []
+    rewritten_count = 0
+    affected_tensors = set(affected_tensors)
+
+    for node in graph.node:
+        if node.op_type not in {"Mul", "Add", "Sub"}:
+            rewritten_nodes.append(node)
+            continue
+        if not any(name in affected_tensors for name in node.input):
+            rewritten_nodes.append(node)
+            continue
+
+        input_types = [get_tensor_type(name, graph) for name in node.input]
+        if not input_types or any(t is None for t in input_types):
+            rewritten_nodes.append(node)
+            continue
+        if not all(is_integer_tensor_type(t) for t in input_types):
+            rewritten_nodes.append(node)
+            continue
+        if len(set(input_types)) != 1:
+            rewritten_nodes.append(node)
+            continue
+
+        output_type = input_types[0]
+        original_output = node.output[0]
+        float_output = f"{original_output}__float"
+        cast_inputs = []
+        for idx, input_name in enumerate(node.input):
+            cast_output = f"{input_name}__float_for_{node.name}_{idx}"
+            rewritten_nodes.append(
+                helper.make_node(
+                    "Cast",
+                    inputs=[input_name],
+                    outputs=[cast_output],
+                    to=TensorProto.FLOAT,
+                    name=f"{node.name}_pre_cast_{idx}",
+                )
+            )
+            cast_inputs.append(cast_output)
+
+        node.input[:] = cast_inputs
+        node.output[0] = float_output
+        rewritten_nodes.append(node)
+        rewritten_nodes.append(
+            helper.make_node(
+                "Cast",
+                inputs=[float_output],
+                outputs=[original_output],
+                to=output_type,
+                name=f"{node.name}_post_cast",
+            )
+        )
+        rewritten_count += 1
+
+    if rewritten_count:
+        del graph.node[:]
+        graph.node.extend(rewritten_nodes)
+        print(f"Rewrote {rewritten_count} integer arithmetic nodes to float-cast wrappers.")
+    else:
+        print("No integer arithmetic nodes required rewriting.")
 
 
 import argparse

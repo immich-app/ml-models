@@ -17,12 +17,20 @@ _MCLIP_TO_OPENCLIP = {
 def to_onnx(
     model_name: str,
     opset_version: int,
-    output_dir_visual: Path | str,
-    output_dir_textual: Path | str,
+    output_dir_visual: Path | str | None,
+    output_dir_textual: Path | str | None,
     cache: bool = True,
-) -> tuple[Path, Path]:
-    textual_path = get_model_path(output_dir_textual)
-    if not cache or not textual_path.exists():
+) -> tuple[Path | None, Path | None]:
+    visual_path = None
+    textual_path = None
+    if output_dir_visual is not None:
+        output_dir_visual = Path(output_dir_visual)
+        visual_path = get_model_path(output_dir_visual)
+    if output_dir_textual is not None:
+        output_dir_textual = Path(output_dir_textual)
+        textual_path = get_model_path(output_dir_textual)
+
+    if textual_path is not None and (not cache or not textual_path.exists()):
         import torch
         from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
         from transformers import AutoTokenizer
@@ -30,6 +38,7 @@ def to_onnx(
         torch.backends.mha.set_fastpath_enabled(False)
 
         model = MultilingualCLIP.from_pretrained(model_name)
+        assert output_dir_textual is not None
         AutoTokenizer.from_pretrained(model_name).save_pretrained(output_dir_textual)
 
         model.eval()
@@ -37,10 +46,18 @@ def to_onnx(
             param.requires_grad_(False)
 
         _export_text_encoder(model, textual_path, opset_version)
-    else:
+    elif textual_path is not None:
         print(f"Model {textual_path} already exists, skipping")
-    visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], opset_version, output_dir_visual, cache=cache)
-    assert visual_path is not None, "Visual model export failed"
+
+    if output_dir_visual is not None:
+        visual_path, _ = openclip_to_onnx(
+            _MCLIP_TO_OPENCLIP[model_name],
+            opset_version,
+            output_dir_visual,
+            None,
+            cache=cache,
+        )
+        assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
 
 
