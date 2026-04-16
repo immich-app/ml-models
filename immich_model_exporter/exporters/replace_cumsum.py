@@ -15,15 +15,27 @@ INTEGER_TENSOR_TYPES = {
     TensorProto.INT64,
 }
 
+FLOAT_TENSOR_TYPES = {
+    TensorProto.FLOAT16,
+    TensorProto.FLOAT,
+    TensorProto.DOUBLE,
+}
+
 
 def is_integer_tensor_type(tensor_type):
     return tensor_type in INTEGER_TENSOR_TYPES
+
+def is_floating_tensor_type(tensor_type):
+    return tensor_type in FLOAT_TENSOR_TYPES
 
 def get_tensor_type(name, graph):
     for info in graph.value_info:
         if info.name == name:
             return info.type.tensor_type.elem_type
     for info in graph.input:
+        if info.name == name:
+            return info.type.tensor_type.elem_type
+    for info in graph.output:
         if info.name == name:
             return info.type.tensor_type.elem_type
     for info in graph.initializer:
@@ -51,9 +63,17 @@ def get_constant_value(name, graph):
             return onnx.numpy_helper.to_array(init)
     return None
 
-def create_matmul_subgraph(node, graph, model):
+def build_consumer_map(graph):
+    consumers = {}
+    for node in graph.node:
+        for input_name in node.input:
+            consumers.setdefault(input_name, []).append(node)
+    return consumers
+
+def create_matmul_subgraph(node, graph, model, consumers):
     """
-    Replaces a CumSum node with a MatMul node.
+    Replaces a CumSum node with an equivalent MatMul subgraph and rewrites its
+    single direct Mul consumer into the same float domain.
     """
     # 1. Attributes
     axis = None
@@ -107,6 +127,20 @@ def create_matmul_subgraph(node, graph, model):
     # 2. Input Info
     input_name = node.input[0]
     output_name = node.output[0]
+    direct_consumers = consumers.get(output_name, [])
+    if len(direct_consumers) != 1:
+        consumer_types = [consumer.op_type for consumer in direct_consumers]
+        raise RuntimeError(
+            f"Unsupported CumSum consumer count for {node.name}: "
+            f"expected 1 direct consumer, got {len(direct_consumers)} ({consumer_types})"
+        )
+
+    mul_node = direct_consumers[0]
+    if mul_node.op_type != "Mul":
+        raise RuntimeError(
+            f"Unsupported CumSum consumer for {node.name}: "
+            f"expected direct consumer Mul, got {mul_node.op_type} ({mul_node.name})"
+        )
     
     # Get Shape
     def get_shape(name, visited=None):
@@ -232,6 +266,10 @@ def create_matmul_subgraph(node, graph, model):
         print(f"Warning: Could not determine type for {input_name}. Defaulting to FLOAT handling.")
         input_type = TensorProto.FLOAT # Fallback
 
+    mul_output_type = get_tensor_type(mul_node.output[0], graph)
+    if mul_output_type is None:
+        mul_output_type = input_type
+
     if axis < 0:
         axis += len(input_shape)
 
@@ -253,16 +291,6 @@ def create_matmul_subgraph(node, graph, model):
     if dim_size <= 0:
         print(f"Error: Dimension size for axis {axis} is dynamic or unknown ({dim_size}).")
         return None
-
-    if dim_size == 1:
-        print(f"Optimization: Dim size is 1. Replacing CumSum {node.name} with Identity.")
-        identity_node = onnx.helper.make_node(
-            "Identity",
-            inputs=[input_name],
-            outputs=[output_name],
-            name=f"{node.name}_identity"
-        )
-        return "simple", [identity_node]
 
     print(f"Replacing CumSum: {node.name}, Input: {input_name}, Shape: {input_shape}, Axis: {axis}, Dim: {dim_size}, Type: {input_type}")
 
@@ -336,27 +364,77 @@ def create_matmul_subgraph(node, graph, model):
     new_nodes.append(matmul_node)
     current_input = matmul_out_name
     
-    # Step 4: Cast back if needed
-    if input_type not in [TensorProto.FLOAT, TensorProto.FLOAT16, TensorProto.DOUBLE]:
-        cast_out_name = f"{current_input}_casted"
-        cast_out = onnx.helper.make_node("Cast", inputs=[current_input], outputs=[cast_out_name], to=input_type, name=f"{node.name}_cast_out")
-        new_nodes.append(cast_out)
-        current_input = cast_out_name
-        
-    # Step 5: Transpose back if needed
+    # Step 4: Transpose back if needed so the rewritten Mul sees the original layout.
+    cumsum_float_output = f"{output_name}__float"
     if perm != list(range(rank)):
-        trans_back_node = onnx.helper.make_node("Transpose", inputs=[current_input], outputs=[output_name], name=f"{node.name}_post_trans", perm=inv_perm)
+        trans_back_node = onnx.helper.make_node(
+            "Transpose",
+            inputs=[current_input],
+            outputs=[cumsum_float_output],
+            name=f"{node.name}_post_trans",
+            perm=inv_perm,
+        )
         new_nodes.append(trans_back_node)
     else:
-        # If no transpose, we need to link the last output to the node's output name
-        # We can't rename the last node's output easily if it's already created, so add an Identity or just rename in the definition.
-        # But here, we created nodes sequentially. The last node created is `cast_out` or `matmul_node`.
-        # Simplest: Add Identity if names don't match, or Modify last node output.
-        # Let's Modify last node output to be `output_name`
         last_node = new_nodes[-1]
-        last_node.output[0] = output_name
-        
-    return "simple", new_nodes
+        last_node.output[0] = cumsum_float_output
+
+    # Step 5: Rewrite the direct Mul consumer in float and cast back once.
+    mul_float_inputs = []
+    cast_cache = {}
+    for idx, mul_input_name in enumerate(mul_node.input):
+        if mul_input_name == output_name:
+            mul_float_inputs.append(cumsum_float_output)
+            continue
+
+        if mul_input_name in cast_cache:
+            mul_float_inputs.append(cast_cache[mul_input_name])
+            continue
+
+        mul_input_type = get_tensor_type(mul_input_name, graph)
+        if mul_input_type is None:
+            raise RuntimeError(
+                f"Could not determine dtype for Mul input {mul_input_name} "
+                f"(consumer of CumSum node {node.name})"
+            )
+
+        if is_floating_tensor_type(mul_input_type):
+            mul_float_inputs.append(mul_input_name)
+            continue
+
+        cast_output = f"{mul_input_name}__float_for_{mul_node.name}_{idx}"
+        cast_cache[mul_input_name] = cast_output
+        new_nodes.append(
+            helper.make_node(
+                "Cast",
+                inputs=[mul_input_name],
+                outputs=[cast_output],
+                to=TensorProto.FLOAT,
+                name=f"{mul_node.name}_pre_cast_{idx}",
+            )
+        )
+        mul_float_inputs.append(cast_output)
+
+    mul_float_output = f"{mul_node.output[0]}__float"
+    new_nodes.append(
+        helper.make_node(
+            "Mul",
+            inputs=mul_float_inputs,
+            outputs=[mul_float_output],
+            name=f"{mul_node.name}_float",
+        )
+    )
+    new_nodes.append(
+        helper.make_node(
+            "Cast",
+            inputs=[mul_float_output],
+            outputs=[mul_node.output[0]],
+            to=mul_output_type,
+            name=f"{mul_node.name}_post_cast",
+        )
+    )
+
+    return "simple", new_nodes, {id(mul_node)}
 
 def process_model(model_path, output_path):
     print(f"\nProcessing {model_path}...")
@@ -396,17 +474,20 @@ def process_model(model_path, output_path):
     print(f"DEBUG: Total nodes in graph: {len(graph.node)}")
     
     replaced_count = 0
-    affected_tensors = set()
+    skip_node_ids = set()
+    consumers = build_consumer_map(graph)
     for node in graph.node:
+        if id(node) in skip_node_ids:
+            continue
         if node.op_type == 'CumSum':
             print(f"DEBUG: Found CumSum node: {node.name}")
-            result = create_matmul_subgraph(node, graph, model)
+            result = create_matmul_subgraph(node, graph, model, consumers)
             if result:
-                rtype, data = result
+                rtype, data, skipped = result
                 # data is a list of new nodes
                 new_graph_nodes.extend(data)
                 replaced_count += 1
-                affected_tensors.add(node.output[0])
+                skip_node_ids.update(skipped)
             else:
                 new_graph_nodes.append(node)
         else:
@@ -420,7 +501,6 @@ def process_model(model_path, output_path):
     # Clear old nodes and refilling
     del graph.node[:]
     graph.node.extend(new_graph_nodes)
-    normalize_integer_arithmetic(model, affected_tensors)
         
     print(f"Replaced {replaced_count} CumSum nodes.")
     save_safe(model, output_path)
@@ -458,70 +538,6 @@ def save_safe(model, output_path):
             onnx.save(model, output_basename, save_as_external_data=True, all_tensors_to_one_file=True, location=data_path)
     finally:
         os.chdir(original_dir)
-
-
-def normalize_integer_arithmetic(model, affected_tensors):
-    graph = model.graph
-    rewritten_nodes = []
-    rewritten_count = 0
-    affected_tensors = set(affected_tensors)
-
-    for node in graph.node:
-        if node.op_type not in {"Mul", "Add", "Sub"}:
-            rewritten_nodes.append(node)
-            continue
-        if not any(name in affected_tensors for name in node.input):
-            rewritten_nodes.append(node)
-            continue
-
-        input_types = [get_tensor_type(name, graph) for name in node.input]
-        if not input_types or any(t is None for t in input_types):
-            rewritten_nodes.append(node)
-            continue
-        if not all(is_integer_tensor_type(t) for t in input_types):
-            rewritten_nodes.append(node)
-            continue
-        if len(set(input_types)) != 1:
-            rewritten_nodes.append(node)
-            continue
-
-        output_type = input_types[0]
-        original_output = node.output[0]
-        float_output = f"{original_output}__float"
-        cast_inputs = []
-        for idx, input_name in enumerate(node.input):
-            cast_output = f"{input_name}__float_for_{node.name}_{idx}"
-            rewritten_nodes.append(
-                helper.make_node(
-                    "Cast",
-                    inputs=[input_name],
-                    outputs=[cast_output],
-                    to=TensorProto.FLOAT,
-                    name=f"{node.name}_pre_cast_{idx}",
-                )
-            )
-            cast_inputs.append(cast_output)
-
-        node.input[:] = cast_inputs
-        node.output[0] = float_output
-        rewritten_nodes.append(node)
-        rewritten_nodes.append(
-            helper.make_node(
-                "Cast",
-                inputs=[float_output],
-                outputs=[original_output],
-                to=output_type,
-                name=f"{node.name}_post_cast",
-            )
-        )
-        rewritten_count += 1
-
-    if rewritten_count:
-        del graph.node[:]
-        graph.node.extend(rewritten_nodes)
-        print(f"Rewrote {rewritten_count} integer arithmetic nodes to float-cast wrappers.")
-    else:
-        print("No integer arithmetic nodes required rewriting.")
 
 
 import argparse
