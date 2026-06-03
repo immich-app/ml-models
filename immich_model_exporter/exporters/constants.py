@@ -35,6 +35,7 @@ SOURCE_TO_TASK = {
 }
 
 RKNN_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
+RKNN_BLOCKED_OPS = ["CumSum"]
 
 
 # glob to delete old UUID blobs when reuploading models
