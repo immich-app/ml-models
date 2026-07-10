@@ -4,7 +4,7 @@ from typing import Any
 
 from .openclip import OpenCLIPModelConfig
 from .openclip import to_onnx as openclip_to_onnx
-from .util import get_model_path
+from .util import get_model_path, infer_shapes
 
 _MCLIP_TO_OPENCLIP = {
     "M-CLIP/XLM-Roberta-Large-Vit-B-32": OpenCLIPModelConfig("ViT-B-32", "openai"),
@@ -70,8 +70,9 @@ def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int
             input_names=["input_ids", "attention_mask"],
             output_names=["embedding"],
             opset_version=opset_version,
-            # dynamic_axes={
-            #     "input_ids": {0: "batch_size", 1: "sequence_length"},
-            #     "attention_mask": {0: "batch_size", 1: "sequence_length"},
-            # },
+            dynamic_axes={
+                "input_ids": {0: "batch_size", 1: "sequence_length"},
+                "attention_mask": {0: "batch_size", 1: "sequence_length"},
+            },
         )
+        infer_shapes(output_path)

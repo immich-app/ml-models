@@ -4,7 +4,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any
 
-from .util import get_model_path, save_config
+from .util import get_model_path, infer_shapes, save_config
 
 
 @dataclass
@@ -54,10 +54,7 @@ def to_onnx(
         return visual_path, textual_path
 
     import open_clip
-    import torch
     from transformers import AutoTokenizer
-
-    torch.backends.mha.set_fastpath_enabled(False)
 
     model = open_clip.create_model(
         model_cfg.name,
@@ -107,7 +104,9 @@ def _export_image_encoder(
 
     model.forward = encode_image
 
-    args = (torch.randn(1, 3, model_cfg.image_size, model_cfg.image_size),)
+    # example batch of 2: tracing with batch 1 lets the exporter 0/1-specialize the batch
+    # dim into shape constants (e.g. the attention-pool reshape), breaking batched inference
+    args = (torch.randn(2, 3, model_cfg.image_size, model_cfg.image_size),)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
@@ -118,8 +117,9 @@ def _export_image_encoder(
             input_names=["image"],
             output_names=["embedding"],
             opset_version=opset_version,
-            # dynamic_axes={"image": {0: "batch_size"}},
+            dynamic_axes={"image": {0: "batch_size"}, "embedding": {0: "batch_size"}},
         )
+    infer_shapes(output_path)
 
 
 def _export_text_encoder(
@@ -136,7 +136,7 @@ def _export_text_encoder(
 
     model.forward = encode_text
 
-    args = (torch.ones(1, model_cfg.sequence_length, dtype=torch.int32),)
+    args = (torch.ones(2, model_cfg.sequence_length, dtype=torch.int32),)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
@@ -147,5 +147,6 @@ def _export_text_encoder(
             input_names=["text"],
             output_names=["embedding"],
             opset_version=opset_version,
-            # dynamic_axes={"text": {0: "batch_size"}},
+            dynamic_axes={"text": {0: "batch_size"}, "embedding": {0: "batch_size"}},
         )
+    infer_shapes(output_path)

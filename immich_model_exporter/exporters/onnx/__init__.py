@@ -5,7 +5,7 @@ from .models import mclip, openclip
 
 
 def export(
-    model_name: str, model_source: ModelSource, output_dir: Path, opset_version: int = 19, cache: bool = True
+    model_name: str, model_source: ModelSource, output_dir: Path, opset_version: int = 25, cache: bool = True
 ) -> None:
     visual_dir = output_dir / "visual"
     textual_dir = output_dir / "textual"
