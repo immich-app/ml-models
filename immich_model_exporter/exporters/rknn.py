@@ -1,18 +1,20 @@
+import subprocess
 from pathlib import Path
 
 from .constants import RKNN_SOCS
+
+# rknn-toolkit2 needs protobuf <= 4.25, numpy <= 1.26 and onnx < 1.17, all incompatible with
+# this project's environment, so conversion runs as a uv script with its own pinned deps.
+_CONVERT_SCRIPT = Path(__file__).parent / "rknn_convert.py"
 
 
 def _export_platform(
     model_dir: Path,
     target_platform: str,
-    inputs: list[str] | None = None,
-    input_size_list: list[list[int]] | None = None,
+    static_batch: bool = False,
     fuse_matmul_softmax_matmul_to_sdpa: bool = True,
     cache: bool = True,
 ) -> None:
-    from rknn.api import RKNN
-
     input_path = model_dir / "model.onnx"
     output_path = model_dir / "rknpu" / target_platform / "model.rknn"
     if cache and output_path.exists():
@@ -21,44 +23,26 @@ def _export_platform(
 
     print(f"Exporting model {input_path} to {output_path}")
 
-    rknn = RKNN(verbose=False)
+    command = ["uv", "run", "--no-project", _CONVERT_SCRIPT.as_posix()]
+    command += [input_path.as_posix(), output_path.as_posix(), target_platform]
+    if static_batch:
+        command.append("--static-batch")
+    if not fuse_matmul_softmax_matmul_to_sdpa:
+        command.append("--disable-sdpa-fuse")
 
-    rknn.config(
-        target_platform=target_platform,
-        disable_rules=["fuse_matmul_softmax_matmul_to_sdpa"] if not fuse_matmul_softmax_matmul_to_sdpa else [],
-        enable_flash_attention=False,
-        model_pruning=True,
-    )
-    ret = rknn.load_onnx(model=input_path.as_posix(), inputs=inputs, input_size_list=input_size_list)
-
-    if ret != 0:
-        raise RuntimeError("Load failed!")
-
-    ret = rknn.build(do_quantization=False)
-
-    if ret != 0:
-        raise RuntimeError("Build failed!")
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    ret = rknn.export_rknn(output_path.as_posix())
-    if ret != 0:
-        raise RuntimeError("Export rknn model failed!")
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"RKNN conversion failed:\n{result.stdout[-2000:]}\n{result.stderr[-2000:]}")
 
 
-def _export_platforms(
-    model_dir: Path,
-    inputs: list[str] | None = None,
-    input_size_list: list[list[int]] | None = None,
-    cache: bool = True,
-) -> None:
+def _export_platforms(model_dir: Path, static_batch: bool = False, cache: bool = True) -> None:
     fuse_matmul_softmax_matmul_to_sdpa = True
     for soc in RKNN_SOCS:
         try:
             _export_platform(
                 model_dir,
                 soc,
-                inputs=inputs,
-                input_size_list=input_size_list,
+                static_batch=static_batch,
                 fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
                 cache=cache,
             )
@@ -70,8 +54,7 @@ def _export_platforms(
                 _export_platform(
                     model_dir,
                     soc,
-                    inputs=inputs,
-                    input_size_list=input_size_list,
+                    static_batch=static_batch,
                     fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
                     cache=cache,
                 )
@@ -90,7 +73,7 @@ def export(model_dir: Path, cache: bool = True) -> None:
         _export_platforms(visual, cache=cache)
 
     if detection.is_dir():
-        _export_platforms(detection, inputs=["input.1"], input_size_list=[[1, 3, 640, 640]], cache=cache)
+        _export_platforms(detection, static_batch=True, cache=cache)
 
     if recognition.is_dir():
-        _export_platforms(recognition, inputs=["input.1"], input_size_list=[[1, 3, 112, 112]], cache=cache)
+        _export_platforms(recognition, static_batch=True, cache=cache)

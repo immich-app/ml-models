@@ -9,3 +9,5 @@ models:
     source: 'openclip'
   - name: 'antelopev2'
     source: 'insightface'
+  - name: 'buffalo_l'
+    source: 'insightface'

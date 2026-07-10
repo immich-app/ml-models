@@ -56,10 +56,9 @@ def export(
             output_dir.mkdir(parents=True, exist_ok=True)
             onnx_export(hf_model_name, model_source, output_dir, cache=cache)
         case ModelSource.INSIGHTFACE:
-            from huggingface_hub import snapshot_download
+            from .exporters.insightface import export as insightface_export
 
-            # TODO: start from insightface dump instead of downloading from HF
-            snapshot_download(f"immich-app/{hf_model_name}", local_dir=output_dir)
+            insightface_export(model_name, output_dir, cache=cache)
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
@@ -112,13 +111,24 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
                 visual.run(None, image)
 
         case ModelTask.FACIAL_RECOGNITION:
+
+            def random_feed(session: ort.InferenceSession) -> dict[str, np.ndarray]:
+                feed = {}
+                for node in session.get_inputs():
+                    shape = [1 if isinstance(dim, str) or dim is None else dim for dim in node.shape]
+                    if node.type == "tensor(uint8)":
+                        feed[node.name] = np.random.randint(0, 255, shape, dtype=np.uint8)
+                    else:
+                        feed[node.name] = np.random.rand(*shape).astype(np.float32)
+                return feed
+
             detection = ort.InferenceSession(
                 model_dir / "detection" / "model.onnx",
                 sess_options=sess_options,
                 providers=providers,
                 provider_options=provider_options,
             )
-            image = {node.name: np.random.rand(1, 3, 640, 640).astype(np.float32) for node in detection.get_inputs()}
+            image = random_feed(detection)
 
             recognition = ort.InferenceSession(
                 model_dir / "recognition" / "model.onnx",
@@ -126,7 +136,7 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
                 providers=providers,
                 provider_options=provider_options,
             )
-            face = {node.name: np.random.rand(1, 3, 112, 112).astype(np.float32) for node in recognition.get_inputs()}
+            face = random_feed(recognition)
 
             def predict() -> None:
                 detection.run(None, image)
