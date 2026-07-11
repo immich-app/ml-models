@@ -54,10 +54,8 @@ def to_onnx(
         return visual_path, textual_path
 
     import open_clip
-    import torch
     from transformers import AutoTokenizer
 
-    torch.backends.mha.set_fastpath_enabled(False)
 
     model = open_clip.create_model(
         model_cfg.name,

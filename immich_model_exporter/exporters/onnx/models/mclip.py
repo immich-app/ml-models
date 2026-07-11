@@ -23,11 +23,8 @@ def to_onnx(
 ) -> tuple[Path, Path]:
     textual_path = get_model_path(output_dir_textual)
     if not cache or not textual_path.exists():
-        import torch
         from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
         from transformers import AutoTokenizer
-
-        torch.backends.mha.set_fastpath_enabled(False)
 
         model = MultilingualCLIP.from_pretrained(model_name)
         AutoTokenizer.from_pretrained(model_name).save_pretrained(output_dir_textual)
