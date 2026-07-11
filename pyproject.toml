@@ -30,7 +30,7 @@ onnx = [
   "numpy>=2.1.0",
 ]
 
-rknn = ["rknn-toolkit2>=2.3.0"]
+rknn = ["rknn-toolkit2>=2.3.0", "setuptools<81"]
 
 [tool.uv]
 # `onnx` and `rknn` have mutually incompatible pins (numpy/protobuf/onnx/torch)
