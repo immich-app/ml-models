@@ -3,12 +3,8 @@ import resource
 from pathlib import Path
 
 import typer
-from tenacity import retry, stop_after_attempt, wait_fixed
-from typing_extensions import Annotated
 
 from .exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource, ModelTask
-from .exporters.onnx import export as onnx_export
-from .exporters.rknn import export as rknn_export
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -48,6 +44,8 @@ def export(
     output_dir: Path = Path("models"),
     cache: bool = True,
 ) -> None:
+    from .exporters.onnx import export as onnx_export
+
     if not hf_model_name:
         hf_model_name = model_name
     output_dir = output_dir / model_name
@@ -63,16 +61,22 @@ def export(
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
-    try:
-        rknn_export(output_dir, cache=cache)
-    except Exception as e:
-        print(f"Failed to export model {model_name} to rknn: {e}")
-        (output_dir / "rknpu").unlink(missing_ok=True)
-
     readme_path = output_dir / "README.md"
     if not (cache or readme_path.exists()):
         with open(readme_path, "w") as f:
             f.write(generate_readme(model_name, model_source))
+
+
+@app.command()
+def compile(model_name: str, output_dir: Path = Path("models"), cache: bool = True) -> None:
+    from .exporters.rknn import export as rknn_export
+
+    model_dir = output_dir / model_name
+    try:
+        rknn_export(model_dir, cache=cache)
+    except Exception as e:
+        print(f"Failed to compile model {model_name} to rknn: {e}")
+        (model_dir / "rknpu").unlink(missing_ok=True)
 
 
 # TODO: Args shape parity with the other commands? (eg taking model_name, default base dir)
@@ -149,6 +153,7 @@ def upload(
     hf_organization: str = "immich-app",
 ) -> None:
     from huggingface_hub import create_repo, upload_folder
+    from tenacity import retry, stop_after_attempt, wait_fixed
 
     if not hf_model_name:
         hf_model_name = model_name
