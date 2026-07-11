@@ -15,6 +15,7 @@ Everything targets opset 19 deliberately; higher opsets break real backends:
 
 import numpy as np
 import onnx.numpy_helper as nh
+from onnx import TensorProto
 from onnxscript import FLOAT, UINT8, script
 from onnxscript import opset19 as op
 
@@ -31,8 +32,6 @@ ARCFACE_DST = np.array(
     [[38.2946, 51.6963], [73.5318, 51.5014], [56.0252, 71.7366], [41.5493, 92.3655], [70.7299, 92.2041]],
     dtype=np.float32,
 )
-
-BGR2RGB = nh.from_array(np.array([2, 1, 0], np.int64), "bgr2rgb")
 
 # detection anchor constants, concatenated across strides so the whole decode is one
 # Mul + Add per output ([16800, C] tensors for 640x640 SCRFD with 2 anchors per cell)
@@ -71,7 +70,7 @@ TMPL_GRID = nh.from_array(
 
 @script(default_opset=op)
 def det_preprocess(image: UINT8["batch", 640, 640, 3]) -> FLOAT["batch", 3, 640, 640]:
-    rgb = op.Gather(op.Cast(image, to=1), op.Constant(value=BGR2RGB), axis=3)
+    rgb = op.Gather(op.Cast(image, to=TensorProto.FLOAT), [2, 1, 0], axis=3)
     blob = op.Transpose((rgb - 127.5) * (1.0 / 128.0), perm=[0, 3, 1, 2])
     return blob
 
@@ -89,7 +88,7 @@ def det_postprocess(
     kps32: FLOAT["batch", 800, 10],
 ) -> tuple[FLOAT["batch", 16800], FLOAT["batch", 16800, 4], FLOAT["batch", 16800, 10]]:
     """SCRFD anchor decode (distance2bbox/distance2kps against constant anchor centers)."""
-    scores = op.Reshape(op.Concat(scores8, scores16, scores32, axis=1), op.Constant(value_ints=[0, -1]))
+    scores = op.Reshape(op.Concat(scores8, scores16, scores32, axis=1), [0, -1])
     boxes = op.Concat(boxes8, boxes16, boxes32, axis=1) * op.Constant(value=BOX_MUL) + op.Constant(value=BOX_ADD)
     kps = op.Concat(kps8, kps16, kps32, axis=1) * op.Constant(value=KPS_MUL) + op.Constant(value=KPS_ADD)
     return scores, boxes, kps
@@ -112,14 +111,14 @@ def rec_preprocess(
     Solved in centered unit frames so every intermediate stays within fp16 range.
     """
     kps_n = (kps - 128.0) * (1.0 / 256.0)
-    kps_flat = op.Reshape(kps_n, op.Constant(value_ints=[0, -1]))
+    kps_flat = op.Reshape(kps_n, [0, -1])
 
     # scalar sums of the least-squares normal equations, all [batch, 1]
     sxu = op.MatMul(kps_flat, op.Constant(value=TMPL_XY))
     sxv = op.MatMul(kps_flat, op.Constant(value=TMPL_YX))
-    sxy = op.ReduceSum(kps_n, op.Constant(value_ints=[1]), keepdims=0)
+    sxy = op.ReduceSum(kps_n, [1], keepdims=0)
     sx, sy = sxy[:, 0:1], sxy[:, 1:2]
-    sxx = op.ReduceSum(kps_flat * kps_flat, op.Constant(value_ints=[1]), keepdims=1)
+    sxx = op.ReduceSum(kps_flat * kps_flat, [1], keepdims=1)
 
     # similarity kps -> template: x' = a*x - b*y + tx, y' = b*x + a*y + ty
     d = sxx - (sx * sx + sy * sy) * 0.2
@@ -133,26 +132,26 @@ def rec_preprocess(
     ia, ib = a * inv_scale, b * inv_scale
     itx = 0.0 - (ia * tx + ib * ty)
     ity = ib * tx - ia * ty
-    matrix = op.Reshape(op.Concat(ia, ib, itx, op.Neg(ib), ia, ity, axis=1), op.Constant(value_ints=[0, 2, 3]))
+    matrix = op.Reshape(op.Concat(ia, ib, itx, op.Neg(ib), ia, ity, axis=1), [0, 2, 3])
 
     # push the constant template pixel grid through it; to [-1, 1] with align_corners=0
     src = op.MatMul(op.Constant(value=TMPL_GRID), op.Transpose(matrix, perm=[0, 2, 1]))
-    grid = op.Reshape(src * 2.0 + (1.0 / 256.0), op.Constant(value_ints=[0, 112, 112, 2]))
+    grid = op.Reshape(src * 2.0 + (1.0 / 256.0), [0, 112, 112, 2])
 
     warped = op.GridSample(
-        op.Transpose(op.Cast(image, to=1), perm=[0, 3, 1, 2]),
+        op.Transpose(op.Cast(image, to=TensorProto.FLOAT), perm=[0, 3, 1, 2]),
         grid,
         mode="bilinear",
         padding_mode="zeros",
         align_corners=0,
     )
-    rgb = op.Gather(warped, op.Constant(value=BGR2RGB), axis=1)
+    rgb = op.Gather(warped, [2, 1, 0], axis=1)
     aligned = (rgb - 127.5) * (1.0 / 127.5)
     return aligned
 
 
 @script(default_opset=op)
 def l2_normalize(embedding_raw: FLOAT["batch", 512]) -> FLOAT["batch", 512]:
-    norm = op.ReduceL2(embedding_raw, op.Constant(value_ints=[1]), keepdims=1)
+    norm = op.ReduceL2(embedding_raw, [1], keepdims=1)
     embedding = embedding_raw / op.Max(norm, op.Constant(value_float=1e-12))
     return embedding

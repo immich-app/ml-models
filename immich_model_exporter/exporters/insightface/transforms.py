@@ -22,6 +22,7 @@ import onnxscript.optimizer
 from onnx import ModelProto, compose, version_converter
 from onnxscript import ir
 from onnxscript.rewriter import pattern
+from onnxscript.rewriter.pattern import MatchResult
 from onnxscript.values import OnnxFunction
 
 from . import _dsl
@@ -90,29 +91,35 @@ def upgrade_recognition(model_path: Path) -> None:
     onnx.save(transform_recognition(onnx.load(model_path)), model_path)
 
 
-def _head_target(op: Any, x: Any, shape: Any) -> Any:
-    return op.Reshape(op.Transpose(x, perm=[2, 3, 0, 1]), shape)
+class BatchSCRFDHead(pattern.RewriteRuleClassBase):
+    """Batch the 2020-era SCRFD head, which flattens batch into the anchor dim:
+    Transpose(2,3,0,1) [H,W,N,C] followed by Reshape([-1, C]) becomes the modern batched
+    layout (N first, batch dim preserved with Reshape's 0-means-copy). Both halves are
+    load-bearing: at batch 1 the two layouts flatten identically, so any mistake only
+    breaks batch > 1.
+    """
+
+    def pattern(self, op: Any, x: Any, shape: Any) -> Any:
+        return op.Reshape(op.Transpose(x, perm=[2, 3, 0, 1]), shape)
+
+    def check(self, context: Any, shape: ir.Value, **_: Any) -> MatchResult:  # type: ignore[override]
+        result = MatchResult()
+        value = shape.const_value
+        if value is None:
+            return result.fail("Reshape shape is not constant.", shape)
+        array = value.numpy()
+        if not (array.ndim == 1 and array.size == 2 and int(array[0]) == -1):
+            return result.fail("Not the legacy [-1, C] flatten.", shape)
+        return result
+
+    def rewrite(self, op: Any, x: ir.Value, shape: ir.Value) -> Any:
+        assert shape.const_value is not None  # established by check
+        channels = int(shape.const_value.numpy()[1])
+        batched_shape = ir.tensor([0, -1, channels], dtype=ir.DataType.INT64)
+        return op.Reshape(op.Transpose(x, perm=[0, 2, 3, 1]), op.initializer(batched_shape, name=f"{x.name}_shape"))
 
 
-def _head_is_legacy_flatten(context: Any, x: Any, shape: Any, **_: Any) -> bool:
-    value = shape.const_value
-    if value is None:
-        return False
-    array = value.numpy()
-    return array.ndim == 1 and array.size == 2 and int(array[0]) == -1
-
-
-def _head_replacement(op: Any, x: Any, shape: Any) -> Any:
-    channels = int(shape.const_value.numpy()[1])
-    batched_shape = op.Constant(value=ir.tensor(np.array([0, -1, channels], np.int64)))
-    return op.Reshape(op.Transpose(x, perm=[0, 2, 3, 1]), batched_shape)
-
-
-# The 2020-era SCRFD head flattens batch into the anchor dim: Transpose(2,3,0,1) [H,W,N,C]
-# followed by Reshape([-1, C]). Rewrite to the modern batched layout (N first, batch dim
-# preserved with Reshape's 0-means-copy). Both halves are load-bearing: at batch 1 the two
-# layouts flatten identically, so any mistake only breaks batch > 1.
-_HEAD_RULES = pattern.RewriteRuleSet([pattern.RewriteRule(_head_target, _head_replacement, _head_is_legacy_flatten)])
+_HEAD_RULES = pattern.RewriteRuleSet([BatchSCRFDHead.rule()])
 
 
 def _fix_head_layout(model: ModelProto) -> ModelProto:
