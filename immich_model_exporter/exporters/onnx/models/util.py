@@ -14,6 +14,7 @@ def save_config(config: Any, output_path: Path | str) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     json.dump(config, output_path.open("w"))
 
+
 def _fix_io_name_collisions(model: Any) -> int:
     """Restore SSA form when a tensor name is assigned by multiple nodes.
 

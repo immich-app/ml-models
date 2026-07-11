@@ -1,3 +1,3 @@
-from immich_model_exporter import app
+from immich_model_exporter.cli import app
 
 app()
