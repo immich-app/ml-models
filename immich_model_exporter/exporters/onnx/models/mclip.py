@@ -68,7 +68,7 @@ def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int
             args,
             output_path.as_posix(),
             input_names=["input_ids", "attention_mask"],
-            output_names=["embedding"],
+            output_names=["text_embedding"],
             opset_version=opset_version,
             # dynamic_axes={
             #     "input_ids": {0: "batch_size", 1: "sequence_length"},

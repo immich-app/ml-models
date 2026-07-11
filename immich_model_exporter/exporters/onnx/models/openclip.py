@@ -116,7 +116,7 @@ def _export_image_encoder(
             args,
             output_path.as_posix(),
             input_names=["image"],
-            output_names=["embedding"],
+            output_names=["image_embedding"],
             opset_version=opset_version,
             # dynamic_axes={"image": {0: "batch_size"}},
         )
@@ -145,7 +145,7 @@ def _export_text_encoder(
             args,
             output_path.as_posix(),
             input_names=["text"],
-            output_names=["embedding"],
+            output_names=["text_embedding"],
             opset_version=opset_version,
             # dynamic_axes={"text": {0: "batch_size"}},
         )

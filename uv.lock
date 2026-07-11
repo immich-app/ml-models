@@ -25,6 +25,7 @@ resolution-markers = [
 [manifest]
 overrides = [
     { name = "onnx", specifier = ">=1.16.0,<2" },
+    { name = "onnxoptimizer", specifier = ">=0.4.2" },
     { name = "onnxruntime", specifier = ">=1.18.2,<2" },
     { name = "torch", specifier = ">=2.4" },
     { name = "torchvision", specifier = ">=0.21" },
@@ -306,7 +307,7 @@ name = "cuda-bindings"
 version = "13.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-pathfinder", marker = "python_full_version < '3.15'" },
+    { name = "cuda-pathfinder", marker = "python_full_version < '3.15' and sys_platform != 'darwin'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/21/8464d133752951c154feafb3b65c297e7d80f301183d220bec4c830f1441/cuda_bindings-13.3.1-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:120fcc53d57903df529c3486962c56528cba5b7d6c57c99537320ed9922c8b86", size = 6073403, upload-time = "2026-05-29T23:11:36.22Z" },
@@ -571,6 +572,7 @@ dependencies = [
     { name = "open-clip-torch" },
     { name = "polars" },
     { name = "rknn-toolkit2" },
+    { name = "setuptools" },
     { name = "tenacity" },
     { name = "transformers" },
     { name = "typer" },
@@ -594,6 +596,7 @@ requires-dist = [
     { name = "open-clip-torch", specifier = ">=2.31.0" },
     { name = "polars", specifier = ">=1.25.2" },
     { name = "rknn-toolkit2", specifier = ">=2.3.0" },
+    { name = "setuptools", specifier = "<81" },
     { name = "tenacity", specifier = ">=9.0.0" },
     { name = "transformers", specifier = ">=4.49.0" },
     { name = "typer", specifier = ">=0.15.2" },
@@ -1161,7 +1164,7 @@ name = "nvidia-cublas"
 version = "13.1.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cuda-nvrtc" },
+    { name = "nvidia-cuda-nvrtc", marker = "sys_platform != 'darwin'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/a1/0bd24ee8c8d03adac032fd2909426a00c88f8c57961b1277ded97f91119f/nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:b7a210458267ac818974c53038fbec2e969d5c99f305ab15c72522fa9f001dd5", size = 542848918, upload-time = "2026-04-08T18:46:22.985Z" },
@@ -1200,7 +1203,7 @@ name = "nvidia-cudnn-cu13"
 version = "9.20.0.48"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas" },
+    { name = "nvidia-cublas", marker = "sys_platform != 'darwin'" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/56/c5/83384d846b2fd17c44bd499b36c75a45ed4f095fbbb2252294e89cea5c5c/nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:e31454ae00094b0c55319d9d15b6fa2fc50a9e1c0f5c8c80fb75258234e731e1", size = 444574296, upload-time = "2026-03-09T19:28:27.751Z" },
@@ -1212,7 +1215,7 @@ name = "nvidia-cufft"
 version = "12.0.0.61"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "python_full_version < '3.11' or platform_machine != 's390x'" },
+    { name = "nvidia-nvjitlink", marker = "(python_full_version < '3.11' and sys_platform != 'darwin') or (platform_machine != 's390x' and sys_platform != 'darwin')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8b/ae/f417a75c0259e85c1d2f83ca4e960289a5f814ed0cea74d18c353d3e989d/nvidia_cufft-12.0.0.61-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2708c852ef8cd89d1d2068bdbece0aa188813a0c934db3779b9b1faa8442e5f5", size = 214053554, upload-time = "2025-09-04T08:31:38.196Z" },
@@ -1242,9 +1245,9 @@ name = "nvidia-cusolver"
 version = "12.0.4.66"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "python_full_version < '3.11' or platform_machine != 's390x'" },
-    { name = "nvidia-cusparse", marker = "python_full_version < '3.11' or platform_machine != 's390x'" },
-    { name = "nvidia-nvjitlink", marker = "python_full_version < '3.11' or platform_machine != 's390x'" },
+    { name = "nvidia-cublas", marker = "(python_full_version < '3.11' and sys_platform != 'darwin') or (platform_machine != 's390x' and sys_platform != 'darwin')" },
+    { name = "nvidia-cusparse", marker = "(python_full_version < '3.11' and sys_platform != 'darwin') or (platform_machine != 's390x' and sys_platform != 'darwin')" },
+    { name = "nvidia-nvjitlink", marker = "(python_full_version < '3.11' and sys_platform != 'darwin') or (platform_machine != 's390x' and sys_platform != 'darwin')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/c3/b30c9e935fc01e3da443ec0116ed1b2a009bb867f5324d3f2d7e533e776b/nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:02c2457eaa9e39de20f880f4bd8820e6a1cfb9f9a34f820eb12a155aa5bc92d2", size = 223467760, upload-time = "2025-09-04T08:33:04.222Z" },
@@ -1256,7 +1259,7 @@ name = "nvidia-cusparse"
 version = "12.6.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "python_full_version < '3.11' or platform_machine != 's390x'" },
+    { name = "nvidia-nvjitlink", marker = "(python_full_version < '3.11' and sys_platform != 'darwin') or (platform_machine != 's390x' and sys_platform != 'darwin')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f8/94/5c26f33738ae35276672f12615a64bd008ed5be6d1ebcb23579285d960a9/nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:80bcc4662f23f1054ee334a15c72b8940402975e0eab63178fc7e670aa59472c", size = 162155568, upload-time = "2025-09-04T08:33:42.864Z" },
@@ -1337,19 +1340,22 @@ wheels = [
 
 [[package]]
 name = "onnxoptimizer"
-version = "0.3.8"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "onnx" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/c2/8fcbecf89c52ca3beaccbed4aedb05eb9aa2bf232e18987942b3e1d3f227/onnxoptimizer-0.3.8.tar.gz", hash = "sha256:158bf9fda2e33bfe8ba1484f295cf25447921822f840de90831f7007af1295d3", size = 18462997, upload-time = "2023-02-17T02:57:29.827Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5b/a7/e4f0e67a7e077d7cc65b968febfc53f8f52d3a22257624aa7977f14fff8c/onnxoptimizer-0.4.2.tar.gz", hash = "sha256:dac4a972b5dc80a870b930e85e4b043d090d4546d7878106ef8448e07f94622e", size = 12062394, upload-time = "2026-01-07T14:24:39.048Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/31/f5e680b1236716979d30a03599b6b95b0d18cf8fa9eab32f4d0f7f998839/onnxoptimizer-0.3.8-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:6e40530dcc08b5d504c150da90be68f7e438aeb7008dd0d79cd20058944d4087", size = 551097, upload-time = "2023-02-17T02:57:10.599Z" },
-    { url = "https://files.pythonhosted.org/packages/43/7b/bf49c6a7d5daea9173e2f5fef27cea7929adbc3fd12fd855b7fd453f3553/onnxoptimizer-0.3.8-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ecee31591b9e11075bfa9b46778fb7ae6ae9861f8b2187b7455cbe1529638132", size = 647156, upload-time = "2023-02-17T02:57:12.039Z" },
-    { url = "https://files.pythonhosted.org/packages/be/5b/76595fa404600b599cf33d147593c8a318d5ba027d0c41cae265b6e8b2b4/onnxoptimizer-0.3.8-cp310-cp310-win_amd64.whl", hash = "sha256:e8469416d81973aea588fe0b85365a413e79cb7b155e3ca5be538b6492669944", size = 358290, upload-time = "2023-02-17T02:57:13.482Z" },
-    { url = "https://files.pythonhosted.org/packages/0d/15/4dc6e5e146c78e56ded278082bdad3b31b5f84dd4872641059db81636872/onnxoptimizer-0.3.8-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:12ab4825d809e96c3978230d6d7696ddef87bb91837f5ec11f4cb96b3fe72a09", size = 551149, upload-time = "2023-02-17T02:57:14.618Z" },
-    { url = "https://files.pythonhosted.org/packages/27/9c/13a04a34985592edeb0e8ef579abd04f97cde6edab08223610b4f71320b1/onnxoptimizer-0.3.8-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:da7241b9f1069e02621ce0762f6a013d1af84eb12542b2c4159817965c8b09b9", size = 647183, upload-time = "2023-02-17T02:57:16.469Z" },
-    { url = "https://files.pythonhosted.org/packages/df/f9/417224261eb122fa8279adb99151b880ac4e99416b21d474206ce1d2d31e/onnxoptimizer-0.3.8-cp311-cp311-win_amd64.whl", hash = "sha256:62029b1e83df4706079a135f23626b460cdfb47b33df0236e6bda5148702b007", size = 358294, upload-time = "2023-02-17T02:57:17.542Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/60/1e08c455e8262b7a8ecc2c10e586a7aaa517c0b9e3771b3c7b5ec80b6f29/onnxoptimizer-0.4.2-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:73b0859397ea1ffca6e896c6799c48933f09b16226def686264e68ef386f1239", size = 1219547, upload-time = "2026-01-07T14:24:24.753Z" },
+    { url = "https://files.pythonhosted.org/packages/38/9c/09f01912085cd8f2c1a1bcd6d74106d85e839f0b06fc705b843086553a8e/onnxoptimizer-0.4.2-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ee2ed3cc6cc08543fc542c65d49bf2a8933e185b454d576ae3cd1bc877ee858c", size = 1019278, upload-time = "2026-01-07T14:24:26.405Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/28/15ed9afb400f964cd4f1ab0bb790623d2d2a6acf755221cc717c34492b3e/onnxoptimizer-0.4.2-cp310-cp310-win_amd64.whl", hash = "sha256:65185aa0a3629db7d6618762dfb6ec1afa19401048773318191eef7b55eb142c", size = 488107, upload-time = "2026-01-07T14:24:28.12Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/f4/c0eae052169bb058c847f9ed3a4c217e2a3b2f63177e370b1ee2afd2e614/onnxoptimizer-0.4.2-cp311-cp311-macosx_10_15_universal2.whl", hash = "sha256:b6aeaf03ecfa626b2e716ce910b1547d450d4b79673ab1c446fd761c05c8dcf8", size = 1219493, upload-time = "2026-01-07T14:24:29.825Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/7c/99b072778f66e0f95e43874f6a2fd2b96968979e1fb644d186abbed2f2e6/onnxoptimizer-0.4.2-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f278dc846b7144b7bdd063d0838848bdf45ce2e35d205379f169ec77deb76d9e", size = 1019369, upload-time = "2026-01-07T14:24:31.489Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/5a/43b60c74ea2f3024340452962b0fbbf2300907d4e88e31847f4e67faa631/onnxoptimizer-0.4.2-cp311-cp311-win_amd64.whl", hash = "sha256:74f5400833dbdd9439d17c0fd78b962fd2ae7a369169e41e19dd09ae532350b6", size = 488155, upload-time = "2026-01-07T14:24:32.879Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/e9/bedd490a39b5201d33aea1f2812ca74bba9b30defa66fc94e3d46878b8b8/onnxoptimizer-0.4.2-cp312-abi3-macosx_10_15_universal2.whl", hash = "sha256:7229ffe7d54c692e4ba0a2516f94805a4f462e7fce7634e080a381fb82ec2378", size = 1217661, upload-time = "2026-01-07T14:24:34.475Z" },
+    { url = "https://files.pythonhosted.org/packages/85/3e/d512bf70a66f85d3d7bfc79380da24c026d6409b28c5cd48f2d91e450046/onnxoptimizer-0.4.2-cp312-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:af19ee4dd7a852a18511aeabdbe1e3c8b4dd8e02b187356965b269d480ac7147", size = 1016175, upload-time = "2026-01-07T14:24:36.265Z" },
+    { url = "https://files.pythonhosted.org/packages/67/c1/173031e8e5f9185a168209ead6f8b5e985f951a817d7b7b9c62a335a1a33/onnxoptimizer-0.4.2-cp312-abi3-win_amd64.whl", hash = "sha256:cc85d031f35689d36d91e79770611015014c41278fd39b664c6ccc27dc045aa0", size = 486848, upload-time = "2026-01-07T14:24:37.57Z" },
 ]
 
 [[package]]
@@ -2513,11 +2519,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "83.0.0"
+version = "80.10.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/95/faf61eb8363f26aa7e1d762267a8d602a1b26d4f3a1e758e92cb3cb8b054/setuptools-80.10.2.tar.gz", hash = "sha256:8b0e9d10c784bf7d262c4e5ec5d4ec94127ce206e8738f29a437945fbc219b70", size = 1200343, upload-time = "2026-01-25T22:38:17.252Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
+    { url = "https://files.pythonhosted.org/packages/94/b8/f1f62a5e3c0ad2ff1d189590bfa4c46b4f3b6e49cef6f26c6ee4e575394d/setuptools-80.10.2-py3-none-any.whl", hash = "sha256:95b30ddfb717250edb492926c92b5221f7ef3fbcc2b07579bcd4a27da21d0173", size = 1064234, upload-time = "2026-01-25T22:38:15.216Z" },
 ]
 
 [[package]]

@@ -17,6 +17,7 @@ dependencies = [
   "polars>=1.25.2",
   "kaggle>=1.7.4.2",
   "clip-benchmark",
+  "setuptools<81",
 ]
 
 [dependency-groups]
@@ -28,6 +29,7 @@ override-dependencies = [
   "onnxruntime>=1.18.2,<2",
   "torch>=2.4",
   "torchvision>=0.21",
+  "onnxoptimizer>=0.4.2"
 ]
 
 [tool.uv.sources]
