@@ -1,12 +1,21 @@
 import json
 import resource
 from pathlib import Path
+from typing import Annotated
 
-import typer
+from typer import Argument, Exit, Option, Typer, echo
 
 from .exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource, ModelTask
 
-app = typer.Typer(pretty_exceptions_show_locals=False)
+app = Typer(
+    no_args_is_help=True,
+    pretty_exceptions_show_locals=False,
+    help="Export models used by Immich to ONNX and compile them for on-device runtimes.",
+)
+
+ModelName = Annotated[str, Argument(help="Model name; also the per-model output subdirectory name.")]
+OutputDir = Annotated[Path, Option(help="Base directory holding per-model output directories.")]
+Cache = Annotated[bool, Option(help="Reuse existing outputs instead of regenerating them.")]
 
 
 def generate_readme(model_name: str, model_source: ModelSource) -> str:
@@ -38,12 +47,15 @@ This repo is specifically intended for use with [Immich](https://immich.app/), a
 
 @app.command()
 def export(
-    model_name: str,
-    model_source: ModelSource,
-    hf_model_name: str | None = None,
-    output_dir: Path = Path("models"),
-    cache: bool = True,
+    model_name: ModelName,
+    model_source: Annotated[ModelSource, Argument(help="Upstream source the model comes from.")],
+    hf_model_name: Annotated[
+        str | None, Option(help="Hugging Face repo/model to fetch; defaults to model_name.")
+    ] = None,
+    output_dir: OutputDir = Path("models"),
+    cache: Cache = True,
 ) -> None:
+    """Export a model to ONNX (plus tokenizer/config) under <output-dir>/<model-name>."""
     from .exporters.onnx import export as onnx_export
 
     if not hf_model_name:
@@ -68,25 +80,38 @@ def export(
 
 
 @app.command()
-def compile(model_name: str, output_dir: Path = Path("models"), cache: bool = True) -> None:
+def compile(model_name: ModelName, output_dir: OutputDir = Path("models"), cache: Cache = True) -> None:
+    """Compile an exported ONNX model into a device binary, reading <output-dir>/<model-name>."""
     from .exporters.rknn import export as rknn_export
 
     model_dir = output_dir / model_name
     try:
         rknn_export(model_dir, cache=cache)
     except Exception as e:
-        print(f"Failed to compile model {model_name} to rknn: {e}")
+        echo(f"Failed to compile {model_name} to RKNN: {e}", err=True)
         (model_dir / "rknpu").unlink(missing_ok=True)
+        raise Exit(code=1)
 
 
-# TODO: Args shape parity with the other commands? (eg taking model_name, default base dir)
 @app.command()
-def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
+def profile(
+    model_name: ModelName,
+    model_task: Annotated[ModelTask, Argument(help="Task the model performs.")],
+    base_dir: OutputDir = Path("models"),
+    output_path: Annotated[
+        Path | None, Option(help="Profile JSON path; defaults to profiling/<model-name>.json.")
+    ] = None,
+) -> None:
+    """Benchmark an exported model's ONNX Runtime latency and peak memory on CPU."""
     from timeit import timeit
 
     import numpy as np
     import onnxruntime as ort
 
+    model_dir = base_dir / model_name
+    if output_path is None:
+        output_path = Path("profiling") / f"{model_name}.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     np.random.seed(0)
 
     sess_options = ort.SessionOptions()
@@ -147,17 +172,18 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
 
 @app.command()
 def upload(
-    model_name: str,
-    input_dir: Path = Path("models"),
-    hf_model_name: str | None = None,
-    hf_organization: str = "immich-app",
+    model_name: ModelName,
+    input_dir: Annotated[Path, Option(help="Base directory holding the exported model directory.")] = Path("models"),
+    hf_model_name: Annotated[str | None, Option(help="Target Hugging Face repo name; defaults to model_name.")] = None,
+    hf_organization: Annotated[str, Option(help="Hugging Face organization to upload under.")] = "immich-app",
 ) -> None:
+    """Upload an exported model directory (<input-dir>/<model-name>) to a Hugging Face repo."""
     from huggingface_hub import create_repo, upload_folder
     from tenacity import retry, stop_after_attempt, wait_fixed
 
     if not hf_model_name:
         hf_model_name = model_name
-    model_dir = input_dir / hf_model_name
+    model_dir = input_dir / model_name
     repo_id = f"{hf_organization}/{hf_model_name}"
 
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))

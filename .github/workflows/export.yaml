@@ -30,12 +30,12 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
 
       - run: uv sync --group onnx
-      - run: uv run immich_model export "${{ inputs.model-name }}" "${{ inputs.model-source }}" --hf-model-name "${{ inputs.hf-name }}"
+      - run: uv run immich-model export "${{ inputs.model-name }}" "${{ inputs.model-source }}" --hf-model-name "${{ inputs.hf-name || inputs.model-name }}"
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - run: uv sync --group rknn
-      - run: uv run immich_model compile "${{ inputs.model-name }}"
+      - run: uv run immich-model compile "${{ inputs.model-name }}"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -62,6 +62,6 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
-      - run: uv run immich_model upload "${{ inputs.model-name }}" --hf-model-name "${{ inputs.hf-name }}" --hf-organization immich-testing
+      - run: uv run immich-model upload "${{ inputs.model-name }}" --hf-model-name "${{ inputs.hf-name || inputs.model-name }}" --hf-organization immich-testing
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
