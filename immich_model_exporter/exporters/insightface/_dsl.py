@@ -1,8 +1,10 @@
 # mypy: ignore-errors
 """onnxscript definitions of the fused pre/postprocessing subgraphs.
 
-This module is an onnxscript eDSL, not regular Python — `FLOAT["batch", 512]`-style
-annotations and operator overloads don't type-check, hence the file-level mypy exemption.
+This module is an onnxscript eDSL, not regular Python. Pyright/Pylance check it against
+the checker-only façade in _dsl_typing.pyi (see the TYPE_CHECKING import), which types
+script mode's tracing semantics. mypy stays exempted file-wide: its type-expression
+grammar rejects shaped annotations like `FLOAT[Batch, 512]` outright.
 
 Everything targets opset 19 deliberately; higher opsets break real backends:
 - ORT CUDA EP kernel registrations for MaxPool stop at opset 21 (the spec changed at 22),
@@ -13,13 +15,22 @@ Everything targets opset 19 deliberately; higher opsets break real backends:
 - rknn-toolkit2 rejects models above opset 19 outright.
 """
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import onnx.numpy_helper as nh
 from onnx import TensorProto
-from onnxscript import FLOAT, UINT8, script
-from onnxscript import opset19 as op
+
+if TYPE_CHECKING:
+    # stub-only module; nothing to import at runtime
+    from ._dsl_typing import FLOAT, UINT8, op, script  # pyright: ignore[reportMissingModuleSource]
+else:
+    from onnxscript import FLOAT, UINT8, script
+    from onnxscript import opset19 as op
 
 OPSET = 19
+
+Batch = "batch"
 
 DET_SIZE = 640
 DET_STRIDES = (8, 16, 32)
@@ -37,7 +48,8 @@ ARCFACE_DST = np.array(
 # Mul + Add per output ([16800, C] tensors for 640x640 SCRFD with 2 anchors per cell)
 _centers, _strides = [], []
 for _s in DET_STRIDES:
-    _grid = np.stack(np.mgrid[: DET_SIZE // _s, : DET_SIZE // _s][::-1], axis=-1).astype(np.float32) * _s
+    _gy, _gx = np.mgrid[: DET_SIZE // _s, : DET_SIZE // _s]
+    _grid = np.stack([_gx, _gy], axis=-1).astype(np.float32) * _s
     _centers.append(np.stack([_grid.reshape(-1, 2)] * 2, axis=1).reshape(-1, 2))
     _strides.append(np.full((len(_centers[-1]), 1), _s, np.float32))
 _centers_cat, _strides_cat = np.concatenate(_centers), np.concatenate(_strides)
@@ -69,7 +81,7 @@ TMPL_GRID = nh.from_array(
 
 
 @script(default_opset=op)
-def det_preprocess(image: UINT8["batch", 640, 640, 3]) -> FLOAT["batch", 3, 640, 640]:
+def det_preprocess(image: UINT8[Batch, 640, 640, 3]) -> FLOAT[Batch, 3, 640, 640]:
     rgb = op.Gather(op.Cast(image, to=TensorProto.FLOAT), [2, 1, 0], axis=3)
     blob = op.Transpose((rgb - 127.5) * (1.0 / 128.0), perm=[0, 3, 1, 2])
     return blob
@@ -77,16 +89,16 @@ def det_preprocess(image: UINT8["batch", 640, 640, 3]) -> FLOAT["batch", 3, 640,
 
 @script(default_opset=op)
 def det_postprocess(
-    scores8: FLOAT["batch", 12800, 1],
-    scores16: FLOAT["batch", 3200, 1],
-    scores32: FLOAT["batch", 800, 1],
-    boxes8: FLOAT["batch", 12800, 4],
-    boxes16: FLOAT["batch", 3200, 4],
-    boxes32: FLOAT["batch", 800, 4],
-    kps8: FLOAT["batch", 12800, 10],
-    kps16: FLOAT["batch", 3200, 10],
-    kps32: FLOAT["batch", 800, 10],
-) -> tuple[FLOAT["batch", 16800], FLOAT["batch", 16800, 4], FLOAT["batch", 16800, 10]]:
+    scores8: FLOAT[Batch, 12800, 1],
+    scores16: FLOAT[Batch, 3200, 1],
+    scores32: FLOAT[Batch, 800, 1],
+    boxes8: FLOAT[Batch, 12800, 4],
+    boxes16: FLOAT[Batch, 3200, 4],
+    boxes32: FLOAT[Batch, 800, 4],
+    kps8: FLOAT[Batch, 12800, 10],
+    kps16: FLOAT[Batch, 3200, 10],
+    kps32: FLOAT[Batch, 800, 10],
+) -> tuple[FLOAT[Batch, 16800], FLOAT[Batch, 16800, 4], FLOAT[Batch, 16800, 10]]:
     """SCRFD anchor decode (distance2bbox/distance2kps against constant anchor centers)."""
     scores = op.Reshape(op.Concat(scores8, scores16, scores32, axis=1), [0, -1])
     boxes = op.Concat(boxes8, boxes16, boxes32, axis=1) * op.Constant(value=BOX_MUL) + op.Constant(value=BOX_ADD)
@@ -96,9 +108,9 @@ def det_postprocess(
 
 @script(default_opset=op)
 def rec_preprocess(
-    image: UINT8["batch", 256, 256, 3],
-    kps: FLOAT["batch", 5, 2],
-) -> FLOAT["batch", 3, 112, 112]:
+    image: UINT8[Batch, 256, 256, 3],
+    kps: FLOAT[Batch, 5, 2],
+) -> FLOAT[Batch, 3, 112, 112]:
     """Estimate the kps -> ArcFace-template similarity transform (closed-form least
     squares) and warp the crop to the aligned 112x112 the backbone expects.
 
@@ -151,7 +163,7 @@ def rec_preprocess(
 
 
 @script(default_opset=op)
-def l2_normalize(embedding_raw: FLOAT["batch", 512]) -> FLOAT["batch", 512]:
+def l2_normalize(embedding_raw: FLOAT[Batch, 512]) -> FLOAT[Batch, 512]:
     norm = op.ReduceL2(embedding_raw, [1], keepdims=1)
     embedding = embedding_raw / op.Max(norm, op.Constant(value_float=1e-12))
     return embedding

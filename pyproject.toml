@@ -73,10 +73,6 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
-[tool.ruff.lint.per-file-ignores]
-# onnxscript eDSL: FLOAT["batch", ...] annotations use string dims, not Python names
-"immich_model_exporter/exporters/insightface/_dsl.py" = ["F821"]
-
 [tool.black]
 line-length = 120
 target-version = ['py312']
