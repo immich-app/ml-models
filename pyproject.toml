@@ -18,6 +18,7 @@ dependencies = [
   "kaggle>=1.7.4.2",
   "clip-benchmark",
   "setuptools<81",
+  "onnxscript>=0.5.0",
 ]
 
 [dependency-groups]
