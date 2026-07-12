@@ -1,11 +1,10 @@
 import json
-import resource
 from pathlib import Path
 from typing import Annotated
 
 from typer import Argument, Exit, Option, Typer, echo
 
-from .exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource, ModelTask
+from .constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelFormat, ModelSource
 
 app = Typer(
     no_args_is_help=True,
@@ -49,14 +48,12 @@ This repo is specifically intended for use with [Immich](https://immich.app/), a
 def export(
     model_name: ModelName,
     model_source: Annotated[ModelSource, Argument(help="Upstream source the model comes from.")],
-    hf_model_name: Annotated[
-        str | None, Option(help="Hugging Face repo/model to fetch; defaults to model_name.")
-    ] = None,
+    hf_model_name: Annotated[str | None, Option(help="Hugging Face repo to fetch; defaults to model_name.")] = None,
     output_dir: OutputDir = Path("models"),
     cache: Cache = True,
 ) -> None:
     """Export a model to ONNX (plus tokenizer/config) under <output-dir>/<model-name>."""
-    from .exporters.onnx import export as onnx_export
+    from . import onnx
 
     if not hf_model_name:
         hf_model_name = model_name
@@ -64,7 +61,7 @@ def export(
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
             output_dir.mkdir(parents=True, exist_ok=True)
-            onnx_export(hf_model_name, model_source, output_dir, cache=cache)
+            onnx.export(hf_model_name, model_source, output_dir, cache=cache)
         case ModelSource.INSIGHTFACE:
             from huggingface_hub import snapshot_download
 
@@ -82,11 +79,11 @@ def export(
 @app.command()
 def compile(model_name: ModelName, output_dir: OutputDir = Path("models"), cache: Cache = True) -> None:
     """Compile an exported ONNX model into a device binary, reading <output-dir>/<model-name>."""
-    from .exporters.rknn import export as rknn_export
+    from . import rknn
 
     model_dir = output_dir / model_name
     try:
-        rknn_export(model_dir, cache=cache)
+        rknn.compile(model_dir, cache=cache)
     except Exception as e:
         echo(f"Failed to compile {model_name} to RKNN: {e}", err=True)
         (model_dir / "rknpu").unlink(missing_ok=True)
@@ -96,78 +93,35 @@ def compile(model_name: ModelName, output_dir: OutputDir = Path("models"), cache
 @app.command()
 def profile(
     model_name: ModelName,
-    model_task: Annotated[ModelTask, Argument(help="Task the model performs.")],
+    model_format: Annotated[ModelFormat, Option("--format", help="Artifact format to profile.")] = ModelFormat.ONNX,
     base_dir: OutputDir = Path("models"),
+    soc: Annotated[str, Option(help="RKNN target SoC (only for --format rknn; needs an attached NPU).")] = "rk3588",
     output_path: Annotated[
-        Path | None, Option(help="Profile JSON path; defaults to profiling/<model-name>.json.")
+        Path | None, Option(help="Profile JSON path; defaults to profiling/<model-name>.<format>.json.")
     ] = None,
 ) -> None:
-    """Benchmark an exported model's ONNX Runtime latency and peak memory on CPU."""
-    from timeit import timeit
-
-    import numpy as np
-    import onnxruntime as ort
-
+    """Benchmark an exported model per-node/per-layer, writing a JSON report."""
     model_dir = base_dir / model_name
-    if output_path is None:
-        output_path = Path("profiling") / f"{model_name}.json"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    np.random.seed(0)
+    match model_format:
+        case ModelFormat.ONNX:
+            from . import onnx
 
-    sess_options = ort.SessionOptions()
-    sess_options.enable_cpu_mem_arena = False
-    providers = ["CPUExecutionProvider"]
-    provider_options = [{"arena_extend_strategy": "kSameAsRequested"}]
-    match model_task:
-        case ModelTask.SEARCH:
-            textual = ort.InferenceSession(
-                model_dir / "textual" / "model.onnx",
-                sess_options=sess_options,
-                providers=providers,
-                provider_options=provider_options,
-            )
-            tokens = {node.name: np.random.rand(*node.shape).astype(np.int32) for node in textual.get_inputs()}
+            result = onnx.profile(model_dir)
+        case ModelFormat.RKNN:
+            from . import rknn
 
-            visual = ort.InferenceSession(
-                model_dir / "visual" / "model.onnx",
-                sess_options=sess_options,
-                providers=providers,
-                provider_options=provider_options,
-            )
-            image = {node.name: np.random.rand(*node.shape).astype(np.float32) for node in visual.get_inputs()}
-
-            def predict() -> None:
-                textual.run(None, tokens)
-                visual.run(None, image)
-
-        case ModelTask.FACIAL_RECOGNITION:
-            detection = ort.InferenceSession(
-                model_dir / "detection" / "model.onnx",
-                sess_options=sess_options,
-                providers=providers,
-                provider_options=provider_options,
-            )
-            image = {node.name: np.random.rand(1, 3, 640, 640).astype(np.float32) for node in detection.get_inputs()}
-
-            recognition = ort.InferenceSession(
-                model_dir / "recognition" / "model.onnx",
-                sess_options=sess_options,
-                providers=providers,
-                provider_options=provider_options,
-            )
-            face = {node.name: np.random.rand(1, 3, 112, 112).astype(np.float32) for node in recognition.get_inputs()}
-
-            def predict() -> None:
-                detection.run(None, image)
-                recognition.run(None, face)
-
+            result = rknn.profile(model_dir, soc)
         case _:
-            raise ValueError(f"Unsupported model task {model_task}")
-    predict()
-    ms = timeit(predict, number=100)
-    rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    json.dump({"pretrained_model": model_dir.name, "peak_rss": rss, "exec_time_ms": ms}, output_path.open("w"))
-    print(f"Model {model_dir.name} took {ms:.2f}ms per iteration using {rss / 1024:.2f}MiB of memory")
+            raise ValueError(f"Profiling not supported for format {model_format}")
+
+    if output_path is None:
+        output_path = Path("profiling") / f"{model_name}.{model_format}.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(result, indent=2))
+
+    for sub, data in result["submodels"].items():
+        echo(f"  {sub}: {data['summary']}")
+    echo(f"wrote {output_path}")
 
 
 @app.command()

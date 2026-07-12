@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .constants import RKNN_SOCS
+from ..constants import RKNN_SOCS
 
 
 def _export_platform(
@@ -76,7 +76,7 @@ def _export_platforms(
         raise RuntimeError(f"RKNN export failed for {model_dir.name} on: {', '.join(failed)}")
 
 
-def export(model_dir: Path, cache: bool = True) -> None:
+def compile(model_dir: Path, cache: bool = True) -> None:
     # (subdirectory, inputs, input_size_list) — inputs/sizes are only needed for the face models
     sub_models: list[tuple[Path, list[str] | None, list[list[int]] | None]] = [
         (model_dir / "textual", None, None),

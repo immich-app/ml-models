@@ -13,6 +13,11 @@ class ModelTask(StrEnum):
     SEARCH = "clip"
 
 
+class ModelFormat(StrEnum):
+    ONNX = "onnx"
+    RKNN = "rknn"
+
+
 class SourceMetadata(NamedTuple):
     name: str
     link: str
