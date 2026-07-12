@@ -12,7 +12,9 @@ on:
         required: false
         description: 'Force export all models'
 
-# TODO: concurrency block?
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   configure:
