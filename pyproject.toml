@@ -28,9 +28,11 @@ onnx = [
   "transformers>=4.49.0",
   "clip-benchmark",
   "numpy>=2.1.0",
+  "torch",
+  "torchvision",
 ]
 
-rknn = ["rknn-toolkit2>=2.3.0", "setuptools<81"]
+rknn = ["rknn-toolkit2>=2.3.0", "setuptools<81", "torch"]
 
 [tool.uv]
 # `onnx` and `rknn` have mutually incompatible pins (numpy/protobuf/onnx/torch)
@@ -39,6 +41,13 @@ override-dependencies = ["onnxoptimizer>=0.4.2"]
 
 [tool.uv.sources]
 clip-benchmark = { git = "https://github.com/mertalev/CLIP_benchmark.git", rev = "77e733ee241399611296d3c4aca583ec89cf5190" }
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_model"]
