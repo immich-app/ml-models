@@ -82,7 +82,9 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
-      - run: uv run immich-model upload "$MODEL_NAME" --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing
+      - run: |
+          uv run immich-model upload "$MODEL_NAME" \
+            --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing --revision v2
         env:
           MODEL_NAME: ${{ inputs.model-name }}
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
