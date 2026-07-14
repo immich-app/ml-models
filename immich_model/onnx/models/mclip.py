@@ -23,10 +23,9 @@ def to_onnx(
 ) -> tuple[Path, Path]:
     textual_path = get_model_path(output_dir_textual)
     if not cache or not textual_path.exists():
-        from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
         from transformers import AutoTokenizer
 
-        model = MultilingualCLIP.from_pretrained(model_name)
+        model = _load_model(model_name)
         AutoTokenizer.from_pretrained(model_name).save_pretrained(output_dir_textual)
 
         model.eval()
@@ -39,6 +38,23 @@ def to_onnx(
     visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], opset_version, output_dir_visual, cache=cache)
     assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
+
+
+def _load_model(model_name: str) -> Any:
+    # transformers 5 breaks multilingual_clip, so we instantiate the model manually.
+    import torch
+    from huggingface_hub import hf_hub_download
+    from multilingual_clip import Config_MCLIP
+    from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
+
+    config = Config_MCLIP.MCLIPConfig.from_pretrained(model_name)
+    model = MultilingualCLIP(config)
+
+    weights_path = hf_hub_download(model_name, "pytorch_model.bin")
+    state_dict = torch.load(weights_path, map_location="cpu", weights_only=True)
+    missing, _ = model.load_state_dict(state_dict, strict=False)
+    assert not missing, f"Missing weights when loading {model_name}: {missing}"
+    return model
 
 
 def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int) -> None:
