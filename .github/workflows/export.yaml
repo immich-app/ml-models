@@ -39,9 +39,20 @@ jobs:
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      - run: uv run --group rknn immich-model compile "$MODEL_NAME"
+      # CLIP models publish at an opset RKNN can't ingest, so build the RKNN binaries from a lower-opset copy
+      - run: |
+          if [ "$MODEL_SOURCE" = insightface ]; then
+            uv run --group rknn immich-model compile "$MODEL_NAME"
+          else
+            uv run --group onnx immich-model export "$MODEL_NAME" "$MODEL_SOURCE" \
+              --hf-model-name "$HF_MODEL_NAME" --opset 20 --output-dir rknn-build
+            uv run --group rknn immich-model compile "$MODEL_NAME" --input-dir rknn-build
+          fi
         env:
           MODEL_NAME: ${{ inputs.model-name }}
+          MODEL_SOURCE: ${{ inputs.model-source }}
+          HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

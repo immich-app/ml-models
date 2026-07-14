@@ -38,6 +38,7 @@ def to_onnx(
     output_dir_visual: Path | str | None = None,
     output_dir_textual: Path | str | None = None,
     cache: bool = True,
+    force_quick_gelu: bool | None = None,
 ) -> tuple[Path | None, Path | None]:
     visual_path = None
     textual_path = None
@@ -56,10 +57,10 @@ def to_onnx(
     import open_clip
     from transformers import AutoTokenizer
 
-
     model = open_clip.create_model(
         model_cfg.name,
         pretrained=model_cfg.pretrained,
+        force_quick_gelu=force_quick_gelu or model_cfg.pretrained == "openai",
         jit=False,
         require_pretrained=True,
     )

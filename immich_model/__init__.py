@@ -18,7 +18,7 @@ Cache = Annotated[bool, Option(help="Reuse existing outputs instead of regenerat
 
 
 def generate_readme(model_name: str, model_source: ModelSource) -> str:
-    (name, link, type) = SOURCE_TO_METADATA[model_source]
+    name, link, type = SOURCE_TO_METADATA[model_source]
     match model_source:
         case ModelSource.MCLIP:
             tags = ["immich", "clip", "multilingual"]
@@ -50,6 +50,7 @@ def export(
     model_source: Annotated[ModelSource, Argument(help="Upstream source the model comes from.")],
     hf_model_name: Annotated[str | None, Option(help="Hugging Face repo to fetch; defaults to model_name.")] = None,
     output_dir: OutputDir = Path("models"),
+    opset: Annotated[int, Option(help="ONNX opset for the exported model.")] = 23,
     cache: Cache = True,
 ) -> None:
     """Export a model to ONNX (plus tokenizer/config) under <output-dir>/<model-name>."""
@@ -61,7 +62,7 @@ def export(
     match model_source:
         case ModelSource.MCLIP | ModelSource.OPENCLIP:
             output_dir.mkdir(parents=True, exist_ok=True)
-            onnx.export(hf_model_name, model_source, output_dir, cache=cache)
+            onnx.export(hf_model_name, model_source, output_dir, opset=opset, cache=cache)
         case ModelSource.INSIGHTFACE:
             from huggingface_hub import snapshot_download
 
@@ -77,16 +78,21 @@ def export(
 
 
 @app.command()
-def compile(model_name: ModelName, output_dir: OutputDir = Path("models"), cache: Cache = True) -> None:
-    """Compile an exported ONNX model into a device binary, reading <output-dir>/<model-name>."""
+def compile(
+    model_name: ModelName,
+    input_dir: Annotated[
+        Path, Option(help="Base directory holding the ONNX to compile; defaults to --output-dir.")
+    ] = Path("models"),
+    output_dir: OutputDir = Path("models"),
+    cache: Cache = True,
+) -> None:
+    """Compile an exported ONNX model into a device binary, writing <output-dir>/<model-name>/**/rknpu."""
     from . import rknn
 
-    model_dir = output_dir / model_name
     try:
-        rknn.compile(model_dir, cache=cache)
+        rknn.compile(input_dir / model_name, output_dir / model_name, cache=cache)
     except Exception as e:
         echo(f"Failed to compile {model_name} to RKNN: {e}", err=True)
-        (model_dir / "rknpu").unlink(missing_ok=True)
         raise Exit(code=1)
 
 
