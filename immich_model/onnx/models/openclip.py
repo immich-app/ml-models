@@ -92,12 +92,59 @@ def to_onnx(
     return visual_path, textual_path
 
 
-def _export_image_encoder(
-    model: Any, model_cfg: OpenCLIPModelConfig, output_path: Path | str, opset_version: int
+def _export_encoder(
+    model: Any,
+    args: tuple[Any, ...],
+    output_path: Path | str,
+    opset_version: int,
+    input_names: list[str],
+    output_names: list[str],
+    *,
+    fuse_norm: tuple[list[float], list[float]] | None = None,
+    rewrite_eot: bool = False,
+    tag: str,
 ) -> None:
+    """Export to a raw dynamo graph, then run the ir transform pipeline. Raw is deleted only after the
+    pipeline completes, so a crashed export can't satisfy the cache check."""
     import torch
 
     output_path = Path(output_path)
+    raw_path = output_path.with_name("raw.onnx")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        torch.onnx.export(
+            model,
+            args,
+            raw_path.as_posix(),
+            input_names=input_names,
+            output_names=output_names,
+            opset_version=opset_version,
+            dynamic_shapes={name: {0: "batch"} for name in input_names},  # named dim: no post-hoc rename
+            dynamic_axes=None,
+        )
+
+    import onnx_ir as ir
+
+    from ..transforms import canonicalize_constants, devitalize_shape_domain, fuse_visual_input
+
+    # ir throughout: one ir.load, transforms mutate the same lazy model, one ir.save —
+    # large weights stay mmap'd, never inlined into protobuf
+    fixed = ir.load(raw_path.as_posix())
+    canonicalize_constants(fixed)
+    if fuse_norm is not None:
+        fixed = fuse_visual_input(fixed, fuse_norm[0], fuse_norm[1])
+    fixed, counts = devitalize_shape_domain(fixed, rewrite_eot=rewrite_eot)
+    print(f"{tag}: {counts}")
+    ir.save(fixed, output_path.as_posix(), external_data=output_path.with_suffix(".onnx.data").name)
+    for path in raw_path.parent.glob(f"{raw_path.name}*"):  # raw + any >2GB external sidecar
+        path.unlink()
+
+
+def _export_image_encoder(
+    model: Any, model_cfg: OpenCLIPModelConfig, output_path: Path | str, opset_version: int
+) -> None:
+    import open_clip
+    import torch
 
     def encode_image(image: torch.Tensor) -> torch.Tensor:
         output = model.encode_image(image, normalize=True)
@@ -105,28 +152,27 @@ def _export_image_encoder(
         return output
 
     model.forward = encode_image
+    preprocess = open_clip.get_model_preprocess_cfg(model)
 
-    args = (torch.randn(1, 3, model_cfg.image_size, model_cfg.image_size),)
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        torch.onnx.export(
-            model,
-            args,
-            output_path.as_posix(),
-            input_names=["image"],
-            output_names=["image_embedding"],
-            opset_version=opset_version,
-            # dynamic_axes={"image": {0: "batch_size"}},
-        )
+    # batch of 2: torch.export specializes size-1 dims, baking batch=1 into reshape
+    # targets (silently breaks batch>1 despite the dynamic dim)
+    args = (torch.randn(2, 3, model_cfg.image_size, model_cfg.image_size),)
+    _export_encoder(
+        model,
+        args,
+        output_path,
+        opset_version,
+        ["image"],
+        ["image_embedding"],
+        fuse_norm=(list(preprocess["mean"]), list(preprocess["std"])),
+        tag="visual",
+    )
 
 
 def _export_text_encoder(
     model: Any, model_cfg: OpenCLIPModelConfig, output_path: Path | str, opset_version: int
 ) -> None:
     import torch
-
-    output_path = Path(output_path)
 
     def encode_text(text: torch.Tensor) -> torch.Tensor:
         output = model.encode_text(text, normalize=True)
@@ -135,16 +181,7 @@ def _export_text_encoder(
 
     model.forward = encode_text
 
-    args = (torch.ones(1, model_cfg.sequence_length, dtype=torch.int32),)
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        torch.onnx.export(
-            model,
-            args,
-            output_path.as_posix(),
-            input_names=["text"],
-            output_names=["text_embedding"],
-            opset_version=opset_version,
-            # dynamic_axes={"text": {0: "batch_size"}},
-        )
+    args = (torch.ones(2, model_cfg.sequence_length, dtype=torch.int32),)
+    _export_encoder(
+        model, args, output_path, opset_version, ["text"], ["text_embedding"], rewrite_eot=True, tag="textual"
+    )
