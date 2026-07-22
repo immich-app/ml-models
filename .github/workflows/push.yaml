@@ -12,7 +12,9 @@ on:
         required: false
         description: 'Force export all models'
 
-# TODO: concurrency block?
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   configure:
@@ -59,13 +61,14 @@ jobs:
           force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
-          oldHash: ${{ hashFiles('./before/immich_model_exporter/exporters/**') }}
-          newHash: ${{ hashFiles('./immich_model_exporter/exporters/**') }}
+          oldHash: ${{ hashFiles('./before/immich_model/exporters/**') }}
+          newHash: ${{ hashFiles('./immich_model/exporters/**') }}
           script: |
             const script = require('./.github/scripts/scope.js')
             script({core})
 
 
+  # TODO: Explicitly skip this if nothing to do
   export:
     uses: ./.github/workflows/export.yaml
     needs: configure
@@ -80,4 +83,5 @@ jobs:
       model-name: ${{ matrix.name }}
       model-source: ${{ matrix.source }}
       hf-name: ${{ matrix.hf-name }}
+      runner: ${{ matrix.runner || 'ubuntu-latest'}}
       upload: ${{ inputs.force || github.event_name == 'release'}}

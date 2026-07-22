@@ -38,6 +38,7 @@ def to_onnx(
     output_dir_visual: Path | str | None = None,
     output_dir_textual: Path | str | None = None,
     cache: bool = True,
+    force_quick_gelu: bool | None = None,
 ) -> tuple[Path | None, Path | None]:
     visual_path = None
     textual_path = None
@@ -54,14 +55,12 @@ def to_onnx(
         return visual_path, textual_path
 
     import open_clip
-    import torch
     from transformers import AutoTokenizer
-
-    torch.backends.mha.set_fastpath_enabled(False)
 
     model = open_clip.create_model(
         model_cfg.name,
         pretrained=model_cfg.pretrained,
+        force_quick_gelu=force_quick_gelu or model_cfg.pretrained == "openai",
         jit=False,
         require_pretrained=True,
     )
@@ -116,7 +115,7 @@ def _export_image_encoder(
             args,
             output_path.as_posix(),
             input_names=["image"],
-            output_names=["embedding"],
+            output_names=["image_embedding"],
             opset_version=opset_version,
             # dynamic_axes={"image": {0: "batch_size"}},
         )
@@ -145,7 +144,7 @@ def _export_text_encoder(
             args,
             output_path.as_posix(),
             input_names=["text"],
-            output_names=["embedding"],
+            output_names=["text_embedding"],
             opset_version=opset_version,
             # dynamic_axes={"text": {0: "batch_size"}},
         )
