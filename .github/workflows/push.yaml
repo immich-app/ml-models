@@ -61,8 +61,8 @@ jobs:
           force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
-          oldHash: ${{ hashFiles('./before/immich_model/exporters/**') }}
-          newHash: ${{ hashFiles('./immich_model/exporters/**') }}
+          oldHash: ${{ hashFiles('./before/immich_model/**', './before/.github/workflows/push.yaml', './before/.github/workflows/export.yaml') }}
+          newHash: ${{ hashFiles('./immich_model/**', './.github/workflows/push.yaml', './.github/workflows/export.yaml') }}
           script: |
             const script = require('./.github/scripts/scope.js')
             script({core})
