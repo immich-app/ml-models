@@ -1,27 +1,27 @@
 [project]
 name = "immich_model"
-version = "0.1.0"
+version = "0.2.0"
 description = "Export Immich's CLIP and face models to ONNX and compile them for on-device runtimes."
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+# <3.13 held back by the rknn extra's toolkit wheels; the torch-free core (immich_model.runtime
+# and the onnx transforms) is what immich_ml consumes and must cover its 3.13 runtime.
+requires-python = ">=3.10,<3.14"
+# The torch-free core: `immich_model.runtime` plus the onnx graph transforms/lowerings.
+# The exporter CLI and the model sources live behind the extras below.
 dependencies = [
+  "numpy>=1.26",
+  "onnx>=1.16.1",
+  "onnx-ir>=0.2.1",
+  "onnxruntime>=1.18.2",
+  "onnxscript>=0.7.0",
+]
+
+[project.optional-dependencies]
+export = [
   "huggingface-hub>=0.29.3",
   "typer>=0.15.2",
   "tenacity>=9.0.0",
-  "polars>=1.25.2",
   "kaggle>=1.7.4.2",
-]
-
-[project.scripts]
-immich-model = "immich_model:app"
-
-[dependency-groups]
-dev = ["black>=23.3.0", "mypy>=1.3.0", "ruff>=0.0.272"]
-
-onnx = [
-  "onnx>=1.18.0",
-  "onnxruntime>=1.18.2",
-  "onnxscript>=0.7.0",
   "ml-dtypes>=0.5.0",
   "open-clip-torch>=2.31.0",
   "multilingual-clip>=1.0.10",
@@ -31,13 +31,25 @@ onnx = [
   "torch",
   "torchvision",
 ]
-
 rknn = ["rknn-toolkit2>=2.3.0", "setuptools<81", "torch"]
 
+[project.scripts]
+immich-model = "immich_model.cli:app"
+
+[dependency-groups]
+dev = ["black>=23.3.0", "mypy>=1.3.0", "ruff>=0.0.272"]
+
 [tool.uv]
-# `onnx` and `rknn` have mutually incompatible pins (numpy/protobuf/onnx/torch)
-conflicts = [[{ group = "onnx" }, { group = "rknn" }]]
-override-dependencies = ["onnxoptimizer>=0.4.2"]
+# this repo's own dev/export/rknn environments stay on <=3.12 (the rknn toolkit pins
+# numpy<=1.26.4, unresolvable against the 3.13 onnx stack); the widened requires-python
+# above is for consumers of the torch-free core (immich_ml runs it on 3.13)
+environments = ["python_full_version < '3.13'"]
+# `export` and `rknn` have mutually incompatible pins (numpy/protobuf/onnx/torch)
+conflicts = [[{ extra = "export" }, { extra = "rknn" }]]
+# onnx: rknn-toolkit2 wheels pin onnx==1.16.1, but the core's onnxscript (which
+# prepare_for_rknn itself imports) needs onnx>=1.17 — the toolkit ingests the
+# prepared opset-19 graphs fine with newer onnx.
+override-dependencies = ["onnxoptimizer>=0.4.2", "onnx>=1.17"]
 
 [tool.uv.sources]
 clip-benchmark = { git = "https://github.com/mertalev/CLIP_benchmark.git", rev = "77e733ee241399611296d3c4aca583ec89cf5190" }

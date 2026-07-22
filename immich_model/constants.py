@@ -1,5 +1,11 @@
-from enum import StrEnum
+from enum import Enum
 from typing import NamedTuple
+
+
+class StrEnum(str, Enum):
+    """enum.StrEnum without the 3.11 floor (requires-python starts at 3.10)."""
+
+    __str__ = str.__str__
 
 
 class ModelSource(StrEnum):
@@ -39,7 +45,18 @@ SOURCE_TO_TASK = {
     ModelSource.INSIGHTFACE: ModelTask.FACIAL_RECOGNITION,
 }
 
-RKNN_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
+
+class Soc(StrEnum):
+    RK3566 = "rk3566"
+    RK3568 = "rk3568"
+    RK3576 = "rk3576"
+    RK3588 = "rk3588"
+
+
+RKNN_SOCS = list(Soc)
+
+# per-model output subdirectories that may hold a model.onnx
+SUBMODELS = ["textual", "visual", "detection", "recognition"]
 
 
 # glob to delete old UUID blobs when reuploading models
