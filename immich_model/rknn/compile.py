@@ -1,7 +1,9 @@
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
+from typing import cast
 
-from ..constants import RKNN_SOCS
+from ..constants import RKNN_SOCS, SUBMODELS
 from ._onnx import prepare_for_rknn
 
 
@@ -41,9 +43,10 @@ def _export_platforms(
     inputs: list[str] | None = None,
     input_size_list: list[list[int]] | None = None,
     cache: bool = True,
+    target_socs: Sequence[str] | None = None,
 ) -> None:
     socs = []
-    for soc in RKNN_SOCS:
+    for soc in target_socs or RKNN_SOCS:
         if cache and (model_path := output_dir / "rknpu" / soc / "model.rknn").exists():
             print(f"{model_path} already exists, skipping")
         else:
@@ -52,7 +55,7 @@ def _export_platforms(
         return
 
     with tempfile.TemporaryDirectory() as work_dir:
-        # rknn.build can't take opset > 19 or exact GELU, so normalise the ONNX once for all SoCs.
+        # normalise once for all SoCs (rknn.build rejects opset>19 / exact GELU)
         onnx_path = prepare_for_rknn(input_dir / "model.onnx", Path(work_dir))
 
         def attempt(soc: str, fuse: bool) -> None:
@@ -71,7 +74,7 @@ def _export_platforms(
             try:
                 attempt(soc, fuse)
             except Exception as e:
-                # This fusion isn't valid for every model; drop it (for this and later SoCs) and retry.
+                # fusion isn't valid for every model; drop for this and later SoCs, then retry
                 if fuse and "inputs or 'outputs' must be set" in str(e):
                     print(f"Retrying {soc} without fuse_matmul_softmax_matmul_to_sdpa")
                     fuse = False
@@ -87,24 +90,41 @@ def _export_platforms(
             raise RuntimeError(f"RKNN export failed for {input_dir.name} on: {', '.join(failed)}")
 
 
-def compile(input_dir: Path, output_dir: Path, cache: bool = True) -> None:
-    """Compile each ONNX submodel under input_dir into RKNN binaries under output_dir/<sub>/rknpu."""
-    # (subdirectory, inputs, input_size_list) — inputs/sizes are only needed for the face models
-    sub_models: list[tuple[str, list[str] | None, list[list[int]] | None]] = [
-        ("textual", None, None),
-        ("visual", None, None),
-        ("detection", ["input.1"], [[1, 3, 640, 640]]),
-        ("recognition", ["input.1"], [[1, 3, 112, 112]]),
-    ]
-    present = [(sub, inputs, sizes) for sub, inputs, sizes in sub_models if (input_dir / sub).is_dir()]
+def _input_spec(onnx_path: Path) -> tuple[list[str], list[list[int]]]:
+    """Names and batch-1-pinned shapes of a model's inputs, for rknn.load_onnx.
+
+    RKNN needs a concrete shape and runs batch 1, so every symbolic dim is pinned to 1; dtype comes
+    from the ONNX, so only shapes are pinned.
+    """
+    import onnx_ir as ir
+
+    inputs = ir.load(onnx_path).graph.inputs
+    names = cast(list[str], [inp.name for inp in inputs])  # graph inputs are always named
+    sizes = [[d if isinstance(d, int) and d > 0 else 1 for d in (inp.shape or [])] for inp in inputs]
+    return names, sizes
+
+
+def compile(input_dir: Path, output_dir: Path, cache: bool = True, socs: Sequence[str] | None = None) -> None:
+    """Compile each ONNX submodel under input_dir into RKNN binaries under output_dir/<sub>/rknpu.
+
+    Input shape/dtype is read per-submodel from its ONNX (ViT visual is float, CNNs stay uint8);
+    socs restricts targets (default all RKNN_SOCS).
+    """
+    present = [sub for sub in SUBMODELS if (input_dir / sub).is_dir()]
     if not present:
         raise RuntimeError(f"No exportable model found under {input_dir}")
 
     errors: list[str] = []
-    for sub, inputs, input_size_list in present:
+    for sub in present:
         try:
+            inputs, input_size_list = _input_spec(input_dir / sub / "model.onnx")
             _export_platforms(
-                input_dir / sub, output_dir / sub, inputs=inputs, input_size_list=input_size_list, cache=cache
+                input_dir / sub,
+                output_dir / sub,
+                inputs=inputs,
+                input_size_list=input_size_list,
+                cache=cache,
+                target_socs=socs,
             )
         except Exception as e:
             errors.append(str(e))
