@@ -61,8 +61,8 @@ jobs:
           force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
-          oldHash: ${{ hashFiles('./before/immich_model/exporters/**') }}
-          newHash: ${{ hashFiles('./immich_model/exporters/**') }}
+          oldHash: ${{ hashFiles('./before/immich_model/**') }}
+          newHash: ${{ hashFiles('./immich_model/**') }}
           script: |
             const script = require('./.github/scripts/scope.js')
             script({core})

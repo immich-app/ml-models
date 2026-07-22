@@ -32,27 +32,27 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
 
-      - run: uv run --group onnx immich-model export "$MODEL_NAME" "$MODEL_SOURCE" --hf-model-name "$HF_MODEL_NAME"
+      - run: uv run --extra export immich-model onnx export "$MODEL_NAME" "$MODEL_SOURCE" --hf-model-name "$HF_MODEL_NAME"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
           MODEL_SOURCE: ${{ inputs.model-source }}
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      # CLIP models publish at an opset RKNN can't ingest, so build the RKNN binaries from a lower-opset copy
+      # RKNN binaries are built from the same fused ONNX every other backend uses: `compile` runs
+      # prepare_for_rknn, which decomposes the opset-23 Attention/Gelu into the toolkit's
+      # exSDPAttention/exGelu fusion patterns (order-sensitive, so we emit them explicitly rather
+      # than letting a lower-opset export decompose them) and pins opset 19. OCR models are
+      # ONNX-only in immich_ml (no RKNN path), so they skip compilation entirely.
       - run: |
-          if [ "$MODEL_SOURCE" = insightface ]; then
-            uv run --group rknn immich-model compile "$MODEL_NAME"
+          if [ "$MODEL_SOURCE" = paddle ]; then
+            echo "Skipping RKNN compile for OCR model $MODEL_NAME"
           else
-            uv run --group onnx immich-model export "$MODEL_NAME" "$MODEL_SOURCE" \
-              --hf-model-name "$HF_MODEL_NAME" --opset 20 --output-dir rknn-build
-            uv run --group rknn immich-model compile "$MODEL_NAME" --input-dir rknn-build
+            uv run --extra rknn immich-model rknn compile "$MODEL_NAME"
           fi
         env:
           MODEL_NAME: ${{ inputs.model-name }}
           MODEL_SOURCE: ${{ inputs.model-source }}
-          HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -74,7 +74,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync
+      - run: uv sync --extra export
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -82,10 +82,14 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
+      # Fused face exports go to the v2 revision branch (immich_ml pins revisions; old
+      # releases keep reading main). New-format repos (OCR) publish straight to main.
       - run: |
-          uv run immich-model upload "$MODEL_NAME" \
-            --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing --revision v2
+          if [ "$MODEL_SOURCE" = insightface ]; then HF_BRANCH=v2; else HF_BRANCH=main; fi
+          uv run --extra export immich-model upload "$MODEL_NAME" \
+            --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing --hf-branch "$HF_BRANCH"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
+          MODEL_SOURCE: ${{ inputs.model-source }}
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

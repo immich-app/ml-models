@@ -1,3 +1,3 @@
-from immich_model import app
+from immich_model.cli import app
 
 app()
