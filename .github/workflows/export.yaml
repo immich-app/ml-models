@@ -55,9 +55,12 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        env:
+          ACTIONS_ARTIFACT_UPLOAD_CONCURRENCY: 32
         with:
           name: ${{ inputs.model-name }}
           path: models/
+          compression-level: 0
 
   # When doing benchmarking, that goes here
   # Download the exported artifact, and upload an artifact with the benchmark result to be used below
