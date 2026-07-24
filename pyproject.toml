@@ -4,9 +4,9 @@ version = "0.2.0"
 description = "Export Immich's CLIP and face models to ONNX and compile them for on-device runtimes."
 readme = "README.md"
 # <3.13 held back by the rknn extra's toolkit wheels; the torch-free core (immich_model.runtime
-# and the onnx transforms) is what immich_ml consumes and must cover its 3.13 runtime.
+# and the per-EP lowerings it plans) is what immich_ml consumes and must cover its 3.13 runtime.
 requires-python = ">=3.10,<3.14"
-# The torch-free core: `immich_model.runtime` plus the onnx graph transforms/lowerings.
+# The torch-free core: `immich_model.runtime` plus the onnx lowerings.
 # The exporter CLI and the model sources live behind the extras below.
 dependencies = [
   "numpy>=1.26",
@@ -25,13 +25,21 @@ export = [
   "ml-dtypes>=0.5.0",
   "open-clip-torch>=2.31.0",
   "multilingual-clip>=1.0.10",
+  "safetensors>=0.7,<0.8", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
   "transformers>=4.49.0",
   "clip-benchmark",
   "numpy>=2.1.0",
   "torch",
   "torchvision",
 ]
-rknn = ["rknn-toolkit2>=2.3.0", "setuptools<81", "torch"]
+rknn = [
+  "rknn-toolkit2>=2.3.0",
+  "pyyaml>=6",
+  "safetensors>=0.7,<0.8",
+  "setuptools<81",
+  "torch",
+  "typer>=0.15.2",
+]
 
 [project.scripts]
 immich-model = "immich_model.cli:app"
@@ -62,10 +70,10 @@ url = "https://download.pytorch.org/whl/cpu"
 explicit = true
 
 [tool.hatch.build.targets.sdist]
-include = ["immich_model"]
+include = ["immich_model", "models.yaml"]
 
 [tool.hatch.build.targets.wheel]
-include = ["immich_model"]
+include = ["immich_model", "models.yaml"]
 
 [build-system]
 requires = ["hatchling"]

@@ -1,3 +1,4 @@
+import logging
 import warnings
 from dataclasses import dataclass
 from functools import cached_property
@@ -5,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from .util import get_model_path, save_config
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -104,8 +107,8 @@ def _export_encoder(
     rewrite_eot: bool = False,
     tag: str,
 ) -> None:
-    """Export to a raw dynamo graph, then run the ir transform pipeline. Raw is deleted only after the
-    pipeline completes, so a crashed export can't satisfy the cache check."""
+    """Export to a raw dynamo graph, then run the ir pipeline over it; the raw is deleted only on success,
+    so a crashed export cannot satisfy the cache check."""
     import torch
 
     output_path = Path(output_path)
@@ -125,18 +128,31 @@ def _export_encoder(
 
     import onnx_ir as ir
 
-    from ..transforms import canonicalize_constants, devitalize_shape_domain, fuse_visual_input
+    from .._ir import FlushDenormalsPass, save_with_external_data
+    from ..transforms import (
+        CanonicalizeConstantsPass,
+        DevitalizeShapeDomainPass,
+        FoldEmbeddingScalePass,
+        Fp16TokenEmbeddingPass,
+        FuseVisualInputPass,
+        StripTorchMetadataPass,
+    )
 
-    # ir throughout: one ir.load, transforms mutate the same lazy model, one ir.save —
-    # large weights stay mmap'd, never inlined into protobuf
-    fixed = ir.load(raw_path.as_posix())
-    canonicalize_constants(fixed)
-    if fuse_norm is not None:
-        fixed = fuse_visual_input(fixed, fuse_norm[0], fuse_norm[1])
-    fixed, counts = devitalize_shape_domain(fixed, rewrite_eot=rewrite_eot)
-    print(f"{tag}: {counts}")
-    ir.save(fixed, output_path.as_posix(), external_data=output_path.with_suffix(".onnx.data").name)
-    for path in raw_path.parent.glob(f"{raw_path.name}*"):  # raw + any >2GB external sidecar
+    log.info("exporting %s", tag)
+    pipeline = ir.passes.Sequential(
+        CanonicalizeConstantsPass(),
+        *([FuseVisualInputPass(*fuse_norm)] if fuse_norm is not None else []),
+        DevitalizeShapeDomainPass(rewrite_eot=rewrite_eot),
+        # last: the fp16 table's Cast must survive verbatim
+        Fp16TokenEmbeddingPass(),
+        FoldEmbeddingScalePass(),  # after: the scale folds into the table that ships
+        StripTorchMetadataPass(),  # dynamo is the only source of it, so this covers every export path
+        FlushDenormalsPass(),
+    )
+    # one ir.load, in-place passes, one ir.save: large weights stay mmap'd, never inlined into protobuf
+    fixed = pipeline(ir.load(raw_path.as_posix())).model
+    save_with_external_data(fixed, output_path)
+    for path in raw_path.parent.glob(f"{raw_path.name}*"):  # raw + any external sidecar
         path.unlink()
 
 
@@ -154,8 +170,7 @@ def _export_image_encoder(
     model.forward = encode_image
     preprocess = open_clip.get_model_preprocess_cfg(model)
 
-    # batch of 2: torch.export specializes size-1 dims, baking batch=1 into reshape
-    # targets (silently breaks batch>1 despite the dynamic dim)
+    # batch of 2: torch.export specializes size-1 dims, baking batch=1 into reshape targets
     args = (torch.randn(2, 3, model_cfg.image_size, model_cfg.image_size),)
     _export_encoder(
         model,

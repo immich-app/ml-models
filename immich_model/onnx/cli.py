@@ -1,12 +1,14 @@
 from pathlib import Path
 from typing import Annotated
 
-from typer import Argument, Option, Typer
+from typer import Argument, Option, Typer, echo
 
 from .._cli import Cache, ModelName, OutputDir
-from ..constants import SOURCE_TO_METADATA, ModelSource
+from ..constants import SOURCE_TO_METADATA, SUBMODELS, ModelSource
 
-app = Typer(no_args_is_help=True, help="Export models to ONNX.")
+app = Typer(
+    no_args_is_help=True, help="Export models to ONNX and benchmark them across ONNX Runtime execution providers."
+)
 
 
 def generate_readme(model_name: str, model_source: ModelSource) -> str:
@@ -24,9 +26,11 @@ def generate_readme(model_name: str, model_source: ModelSource) -> str:
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
+    # built outside the f-string: a backslash inside an f-string expression is a syntax error before 3.12
+    listed = "\n".join(f" - {tag}" for tag in tags)
     return f"""---
 tags:
-{" - " + "\n - ".join(tags)}
+{listed}
 ---
 # Model Description
 
@@ -66,3 +70,25 @@ def export(
     if not (cache or readme_path.exists()):
         with open(readme_path, "w") as f:
             f.write(generate_readme(model_name, model_source))
+
+
+@app.command()
+def derive_f16(
+    model_name: ModelName,
+    output_dir: OutputDir = Path("models"),
+    outputs_fp16: Annotated[
+        list[str] | None,
+        Option(help="Submodel(s) whose graph outputs stay fp16 instead of being cast back; repeatable."),
+    ] = None,
+) -> None:
+    """Write model_fp16.onnx beside each exported submodel's model.onnx."""
+    from .f16 import derive
+
+    model_dir = output_dir / model_name
+    present = [sub for sub in SUBMODELS if (model_dir / sub / "model.onnx").is_file()]
+    if not present:
+        raise RuntimeError(f"No ONNX submodel found under {model_dir}")
+    for sub in present:
+        src = model_dir / sub / "model.onnx"
+        derive(src, src.with_name("model_fp16.onnx"), sub in (outputs_fp16 or []))
+        echo(f"{sub}: fp16 derived")

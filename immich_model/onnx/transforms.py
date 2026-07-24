@@ -1,11 +1,8 @@
-"""Post-export graph surgery for the CLIP encoders: kill the batch-dependent shape domain so runtime
-EP compilers (CoreML/RKNN/TensorRT) can constant-fold it, fuse the visual uint8 NHWC input contract,
-and collapse per-head attention into 3D `Attention`.
-
-ir throughout: one `ir.load`, every transform mutates the same lazy `ir.Model`, one `ir.save` — the
-large token/embedding tables stay memory-mapped, never inlined into a protobuf.
+"""Post-export graph surgery for the CLIP encoders. Every transform mutates one lazy `ir.Model` between a
+single load and save, so the large token/embedding tables stay mmapped and never inline into a protobuf.
 """
 
+import logging
 import tempfile
 from pathlib import Path
 from typing import Any, NamedTuple
@@ -15,11 +12,12 @@ import onnx
 import onnx_ir as ir
 import onnx_ir.passes.common as common_passes
 from onnx import TensorProto, helper
-from onnxscript.rewriter import RewriteRuleSet
-from onnxscript.rewriter.pattern import MatchResult, RewriteRuleClassBase
+from onnxscript.rewriter import RewritePass, RewriteRuleSet
+from onnxscript.rewriter.pattern import MatchResult, OrValue, RewriteRuleClassBase
 
 from ._ir import (
-    clear_cached_annotations,
+    CanonicalizeConstantsPass,
+    ReinferShapesPass,
     const_array,
     const_ints,
     make_init,
@@ -28,29 +26,38 @@ from ._ir import (
     single_use,
     sole_consumer,
 )
-from .lowering import FoldConstantGatherElements
+from .graph import UnifyDimSymbolsPass
+from .lowering import FoldConstantGatherElements, FoldZeroIndexGather
+
+log = logging.getLogger(__name__)
 
 
 class Probe(NamedTuple):
-    """One tensor's observed runtime state at a given batch size."""
-
     shape: tuple[int, ...]
     value: np.ndarray | None  # captured only for small integer tensors (the shape domain)
     dtype: int  # onnx TensorProto elem_type
 
 
-# per-tensor observations across the probed batch sizes, keyed by tensor name
 Probes = dict[str, list[Probe]]
 
 _BROADCAST_OPS = {"Add", "Sub", "Mul", "Div", "Pow"}
 
 
+class StripTorchMetadataPass(ir.passes.InPlacePass):
+    """Drop torch provenance: its absolute paths make one commit export different bytes per checkout."""
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        stripped = 0
+        for holder in (model.graph, *model.graph):
+            for key in [k for k in holder.metadata_props if k.startswith("pkg.torch.")]:
+                del holder.metadata_props[key]
+                stripped += 1
+        return ir.passes.PassResult(model, bool(stripped))
+
+
 def probe_runtime(model: ir.Model) -> Probes:
-    """Run on CPU at batches 2,3 and record every tensor's shape (and value, for small int tensors —
-    the shape domain). Ground truth past static shape inference. Routes through disk (save external ->
-    infer_shapes_path -> run from path): the larger text encoders exceed the 2GB in-memory protobuf cap.
-    `ir.save(external_data=...)` writes a fresh sidecar without mutating the in-memory model, so no
-    restore is needed."""
+    """Every tensor's shape (and small int values) at two batches: ground truth past static shape inference.
+    Routed through disk because the larger text encoders exceed the 2GB in-memory protobuf cap."""
     import onnxruntime as ort
 
     options = ort.SessionOptions()
@@ -102,99 +109,88 @@ def probe_runtime(model: ir.Model) -> Probes:
     return results
 
 
-def canonicalize_constants(model: ir.Model) -> None:
-    """Convert every Constant node to a graph initializer, in place. CoreML's EP builder only
-    recognizes initializers as constants, so Constant-fed Reshape/Gather/Slice get rejected without this."""
-    common_passes.LiftConstantsToInitializersPass(lift_all_constants=True, size_limit=0)(model)
+class FuseVisualInputPass(ir.passes.InPlacePass):
+    """Retype the visual input to uint8 NHWC and fold the normalization into the stem. A padded stem takes the
+    scale only: subtracting a mean does not commute with a zero pad, so its shift stays an in-graph Sub."""
 
+    def __init__(self, mean: list[float], std: list[float]) -> None:
+        self.mean, self.std = mean, std
 
-def fuse_visual_input(model: ir.Model, mean: list[float], std: list[float]) -> ir.Model:
-    graph = model.graph
-    input_value = graph.inputs[0]
-    input_name = input_value.name
-    dims = [d if isinstance(d, int) else d.value for d in input_value.shape]
-    assert dims[1] == 3, f"expected NCHW visual input, got {dims}"
-    size = int(dims[2])
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        input_value = graph.inputs[0]
+        input_name = input_value.name
+        dims = [d if isinstance(d, int) else d.value for d in input_value.shape]
+        assert dims[1] == 3, f"expected NCHW visual input, got {dims}"
+        size = int(dims[2])
 
-    # (node, input-index) pairs to repoint later — captured before we add the pre nodes
-    input_uses = [(use.node, use.idx) for use in input_value.uses()]
-    all_consumers = input_value.consumers()
-    # Shape consumers only read dims; repointing them to the NCHW tensor preserves the declared shape
-    consumers = [n for n in all_consumers if n.op_type == "Conv"]
-    unexpected = [n.op_type for n in all_consumers if n.op_type not in ("Conv", "Shape")]
-    if not consumers or unexpected:
-        raise ValueError(f"Cannot fuse visual input: consumed by {unexpected or 'nothing'}")
+        # captured before the pre nodes are added, which would add uses of their own
+        input_uses = [(use.node, use.idx) for use in input_value.uses()]
+        all_consumers = input_value.consumers()
+        # Shape consumers only read dims, and the NCHW tensor they get repointed to declares the same ones
+        consumers = [n for n in all_consumers if n.op_type == "Conv"]
+        unexpected = [n.op_type for n in all_consumers if n.op_type not in ("Conv", "Shape")]
+        if not consumers or unexpected:
+            raise ValueError(f"Cannot fuse visual input: consumed by {unexpected or 'nothing'}")
 
-    scale = 1.0 / (255.0 * np.asarray(std, dtype=np.float64))
-    shift = np.asarray(mean, dtype=np.float64) / np.asarray(std, dtype=np.float64)
+        scale = 1.0 / (255.0 * np.asarray(self.std, dtype=np.float64))
+        shift = np.asarray(self.mean, dtype=np.float64) / np.asarray(self.std, dtype=np.float64)
 
-    def _padded(conv: ir.Node) -> bool:
-        if any(conv.attributes.get_ints("pads", [])):
-            return True
-        return conv.attributes.get_string("auto_pad", "NOTSET") not in ("NOTSET", "VALID")
+        def _padded(conv: ir.Node) -> bool:
+            if any(conv.attributes.get_ints("pads", [])):
+                return True
+            return conv.attributes.get_string("auto_pad", "NOTSET") not in ("NOTSET", "VALID")
 
-    # ViT patch convs unpadded -> whole normalization folds into weights+bias. ResNet stems pad: the
-    # shift doesn't commute with a zero pad, the scale does (0*s=0) -> fold scale only, subtract
-    # 255*mean in-graph (pad zeros in that shifted domain match the model's normalized-zero pad values).
-    fold_shift = not any(_padded(conv) for conv in consumers)
+        fold_shift = not any(_padded(conv) for conv in consumers)
 
-    for conv in consumers:
-        w_value = conv.inputs[1]
-        weight = w_value.const_value.numpy().astype(np.float64)  # [O, C, kH, kW]
-        folded = (weight * scale[None, :, None, None]).astype(np.float32)
-        w_value.const_value = ir.tensor(folded, name=w_value.name)
+        for conv in consumers:
+            w_value = conv.inputs[1]
+            weight = w_value.const_value.numpy().astype(np.float64)  # [O, C, kH, kW]
+            folded = (weight * scale[None, :, None, None]).astype(np.float32)
+            w_value.const_value = ir.tensor(folded, name=w_value.name)
+            if not fold_shift:
+                continue
+
+            bias_delta = -(weight.sum(axis=(2, 3)) @ shift)
+            if len(conv.inputs) > 2 and conv.inputs[2] is not None:
+                b_value = conv.inputs[2]
+                bias = b_value.const_value.numpy().astype(np.float64) + bias_delta
+                b_value.const_value = ir.tensor(bias.astype(np.float32), name=b_value.name)
+            else:
+                b_value = make_init(graph, f"{conv.name}_fused_bias", bias_delta.astype(np.float32))
+                conv.resize_inputs(3)
+                conv.replace_input_with(2, b_value)
+
+        cast = make_node("Cast", [input_value], name="pre_cast", out=f"{input_name}_f32", to=int(TensorProto.FLOAT))
+        pre = [cast]
+        transpose_in = cast.outputs[0]
         if not fold_shift:
-            continue
-
-        bias_delta = -(weight.sum(axis=(2, 3)) @ shift)  # conv of the constant shift, per out channel
-        if len(conv.inputs) > 2 and conv.inputs[2] is not None:
-            b_value = conv.inputs[2]
-            bias = b_value.const_value.numpy().astype(np.float64) + bias_delta
-            b_value.const_value = ir.tensor(bias.astype(np.float32), name=b_value.name)
-        else:
-            b_value = make_init(graph, f"{conv.name}_fused_bias", bias_delta.astype(np.float32))
-            conv.resize_inputs(3)
-            conv.replace_input_with(2, b_value)
-
-    # prepend uint8 NHWC -> float NCHW: Cast (+ Sub when the shift stayed in-graph) + Transpose
-    cast_node = make_node("Cast", [input_value], name="pre_cast", out=f"{input_name}_f32", to=int(TensorProto.FLOAT))
-    pre = [cast_node]
-    transpose_in = cast_node.outputs[0]
-    if not fold_shift:
-        # [3] broadcasts over NHWC's trailing channel axis
-        shift_value = make_init(
-            graph, f"{input_name}_shift", (255.0 * np.asarray(mean, dtype=np.float64)).astype(np.float32)
+            shift_value = make_init(
+                graph, f"{input_name}_shift", (255.0 * np.asarray(self.mean, dtype=np.float64)).astype(np.float32)
+            )
+            sub_node = make_node("Sub", [transpose_in, shift_value], name="pre_shift", out=f"{input_name}_shifted")
+            pre.append(sub_node)
+            transpose_in = sub_node.outputs[0]
+        transpose_node = make_node(
+            "Transpose", [transpose_in], name="pre_nhwc_to_nchw", out=f"{input_name}_chw", perm=[0, 3, 1, 2]
         )
-        sub_node = make_node("Sub", [transpose_in, shift_value], name="pre_shift", out=f"{input_name}_shifted")
-        pre.append(sub_node)
-        transpose_in = sub_node.outputs[0]
-    transpose_node = make_node(
-        "Transpose", [transpose_in], name="pre_nhwc_to_nchw", out=f"{input_name}_chw", perm=[0, 3, 1, 2]
-    )
-    pre.append(transpose_node)
-    chw_value = transpose_node.outputs[0]
+        pre.append(transpose_node)
+        chw_value = transpose_node.outputs[0]
 
-    for node, idx in input_uses:  # repoint the original Conv/Shape consumers onto the NCHW tensor
-        node.replace_input_with(idx, chw_value)
-    graph.extend(pre)
-    graph.sort()
+        for node, idx in input_uses:
+            node.replace_input_with(idx, chw_value)
+        graph.extend(pre)
+        common_passes.TopologicalSortPass()(model)
 
-    # switch to uint8 NHWC, keeping the source's leading dim (batch for dynamo exports, literal 1 for
-    # legacy caches upgraded through this same transform)
-    input_value.dtype = ir.DataType.UINT8
-    input_value.shape = ir.Shape([dims[0], size, size, 3])
+        input_value.dtype = ir.DataType.UINT8
+        input_value.shape = ir.Shape([dims[0], size, size, 3])
 
-    for out in graph.outputs:  # reinfer: drop stale output shapes, re-derive
-        out.shape = None
-    return common_passes.ShapeInferencePass()(model).model
+        return ReinferShapesPass()(model)
 
 
 class _EotOneHotSelect(RewriteRuleClassBase):
-    """Rewrite `x[arange(batch), idx]` EOT pooling (GatherND) as a one-hot matmul
-    `(eye[S][idx])[b,1,S] @ x[b,S,D]` — exact selection with ops every EP claims under dynamic batch;
-    the Range/GatherND machinery dies in DCE (remove_nodes=False). Overhead noise-level (RK3588
-    48us=0.12%). Leaner GatherND(batch_dims=1) stays out: CoreML builder (#28598) needs constant
-    indices + batch_dims=0, splitting the partition right before the final LN."""
+    """`x[arange(batch), idx]` EOT pooling (GatherND) as a one-hot matmul: exact, with ops every EP claims under
+    dynamic batch. GatherND(batch_dims=1) is leaner but the CoreML builder (#28598) needs constant indices."""
 
     def __init__(self, probes: Probes) -> None:
         super().__init__(remove_nodes=False)
@@ -219,7 +215,7 @@ class _EotOneHotSelect(RewriteRuleClassBase):
     def rewrite(self, op: Any, data: Any, index: Any, out: Any, **_: Any) -> Any:
         base = out.name
         seq = self._probes[data.name][0].shape[1]
-        # share data's dtype (mixed-type MatMul is illegal on fp16/bf16); one-hot is exact at any precision
+        # mixed-dtype MatMul is illegal, so the eye takes data's dtype; a one-hot is exact at any precision
         eye_np_dtype = helper.tensor_dtype_to_np_dtype(self._probes[data.name][0].dtype)
         eye = op.initializer(ir.tensor(np.eye(seq, dtype=eye_np_dtype), name=f"{base}_eye"))
         axes = op.initializer(ir.tensor(np.array([1], dtype=np.int64), name=f"{base}_axes1"))
@@ -227,81 +223,290 @@ class _EotOneHotSelect(RewriteRuleClassBase):
         return op.Squeeze(op.MatMul(onehot, data), axes)
 
 
-def rewrite_eot_gathernd(model: ir.Model, probes: Probes) -> int:
-    return RewriteRuleSet([_EotOneHotSelect.rule(probes)]).apply_to_model(model)
+class RewriteEotGatherndPass(RewritePass):
+    def __init__(self, probes: Probes) -> None:
+        super().__init__([_EotOneHotSelect.rule(probes)])
 
 
-def constantify_position_ids(model: ir.Model) -> int:
-    """Replace XLM-R's data-dependent ``position_ids`` with the equivalent constant arange, in place.
-    Pad positions are masked out everywhere downstream, so only the non-pad ids matter and those are a
-    fixed ``arange(pad+1, pad+1+seq)``; evaluating the weight-free subgraph on an all-non-pad input
-    yields it, bit-exact. Kills the Equal/Not/CumSum chain (RKNPU has no int32 ``Equal`` kernel; CoreML
-    fragments it). No-op without the pattern (openclip text, LaBSE). Returns count replaced."""
-    import onnxruntime as ort
+class ConstantifyPositionIdsPass(ir.passes.InPlacePass):
+    """Replace XLM-R's data-dependent ``position_ids`` with the constant arange an all-non-pad input yields: pad
+    positions are masked downstream, so only the non-pad ids matter. RKNPU has no int32 ``Equal`` kernel."""
 
-    graph = model.graph
-    init_names = graph.initializers  # name -> Value
-    graph_inputs = set(graph.inputs)
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        import onnxruntime as ort
 
-    def is_terminal(value: ir.Value) -> bool:
-        return value.is_initializer() or value.name in init_names or value in graph_inputs
+        graph = model.graph
+        init_names = graph.initializers  # name -> Value
+        graph_inputs = set(graph.inputs)
 
-    def reaches_cumsum(value: ir.Value | None, seen: set) -> bool:
-        if value is None or value.name in seen or is_terminal(value):
-            return False
-        seen.add(value.name)
-        node = value.producer()
-        return node is not None and (node.op_type == "CumSum" or any(reaches_cumsum(i, seen) for i in node.inputs))
+        def is_terminal(value: ir.Value) -> bool:
+            return value.is_initializer() or value.name in init_names or value in graph_inputs
 
-    # position-embedding lookup: 2D float table indexed by a CumSum-derived tensor whose producer is
-    # arithmetic, not a re-gather (that's the token-type path downstream; replacing the root kills the chain)
-    position_ids: ir.Value | None = None
-    for node in graph:
-        if node.op_type != "Gather" or node.inputs[0] is None or not is_terminal(node.inputs[0]):
+        def reaches_cumsum(value: ir.Value | None, seen: set) -> bool:
+            if value is None or value.name in seen or is_terminal(value):
+                return False
+            seen.add(value.name)
+            node = value.producer()
+            return node is not None and (node.op_type == "CumSum" or any(reaches_cumsum(i, seen) for i in node.inputs))
+
+        # not a re-gather: that is the token-type path downstream, and replacing the root kills the chain
+        position_ids: ir.Value | None = None
+        for node in graph:
+            if node.op_type != "Gather" or node.inputs[0] is None or not is_terminal(node.inputs[0]):
+                continue
+            table = node.inputs[0].const_value  # metadata only; never materializes the table
+            if table is None:
+                continue
+            idx = node.inputs[1]
+            idx_producer = idx.producer() if idx is not None else None
+            if (
+                len(table.shape) == 2
+                and np.issubdtype(table.dtype.numpy(), np.floating)
+                and reaches_cumsum(idx, set())
+                and (idx_producer is None or idx_producer.op_type not in ("Gather", "GatherElements", "GatherND"))
+            ):
+                position_ids = idx
+                break
+        if position_ids is None:
+            return ir.passes.PassResult(model, False)
+
+        sub_graph = ir.convenience.extract(graph, list(graph.inputs), [position_ids])
+        sub_model = helper.make_model(
+            ir.to_proto(sub_graph), opset_imports=[helper.make_opsetid(d, v) for d, v in graph.opset_imports.items()]
+        )
+        session = ort.InferenceSession(sub_model.SerializeToString(), providers=["CPUExecutionProvider"])
+        feed = {}
+        for i in graph.inputs:
+            shape = [d if isinstance(d, int) and d > 0 else 1 for d in i.shape]
+            np_dtype = {ir.DataType.INT32: np.int32, ir.DataType.INT64: np.int64}.get(i.dtype, np.int64)
+            feed[i.name] = np.ones(shape, np_dtype) if "mask" in i.name.lower() else np.full(shape, 100, np_dtype)
+        pid_dtype = position_ids.dtype if position_ids.dtype is not None else ir.DataType.INT64
+        const = session.run([position_ids.name], feed)[0].astype(pid_dtype.numpy())
+
+        replacement = make_init(graph, position_ids.name, const)
+        position_ids.replace_all_uses_with(replacement)
+        # sweep the retired derivation now: `FoldPadMaskPass` reads the shared `ne` and fails closed on danglers
+        common_passes.RemoveUnusedNodesPass()(model)
+        return ir.passes.PassResult(model, True)
+
+
+class _FoldConstantGather(RewriteRuleClassBase):
+    """``Gather(const_table, const_indices, axis=0)`` -> the gathered rows as one constant, retiring the position
+    rows a context can never reach. Gated on shrinking the table, so a long index cannot inline a copy instead."""
+
+    def pattern(self, op: Any, table: Any, indices: Any) -> Any:
+        return op.Gather(table, indices, _outputs=["gathered"])
+
+    def check(self, context: Any, table: Any, indices: Any, gathered: Any) -> MatchResult:
+        result = MatchResult()
+        if gathered.producer().attributes.get_int("axis", 0) != 0:
+            return result.fail("Gather axis is not 0")
+        rows = table.const_value  # metadata only: the token table must not materialize here
+        index = const_array(indices)
+        if rows is None or index is None or len(rows.shape) != 2 or index.dtype.kind not in "iu":
+            return result.fail("table or indices is not a constant lookup")
+        if index.size >= int(rows.shape[0]):
+            return result.fail("the gathered rows would not be smaller than the table")
+        return result
+
+    def rewrite(self, op: Any, table: Any, indices: Any, gathered: Any) -> Any:
+        return op.Constant(value=ir.tensor(table.const_value.numpy()[const_array(indices)]))
+
+
+_MASK_ISLAND_OPS = ("Cast", "Unsqueeze", "ReduceSum", "GatherND", "And")
+
+
+def _reaches(value: ir.Value | None, predicate: Any, budget: int = 32) -> bool:
+    """Backward walk to a value satisfying `predicate`, never entering a `Range`: its limit is batch-derived."""
+    stack, seen = [value], set()
+    while stack and len(seen) < budget:
+        current = stack.pop()
+        if current is None or id(current) in seen:
             continue
-        table = node.inputs[0].const_value  # metadata only; never materializes the big token table
-        if table is None:
-            continue
-        idx = node.inputs[1]
-        idx_producer = idx.producer() if idx is not None else None
-        if (
-            len(table.shape) == 2
-            and np.issubdtype(table.dtype.numpy(), np.floating)
-            and reaches_cumsum(idx, set())
-            and (idx_producer is None or idx_producer.op_type not in ("Gather", "GatherElements", "GatherND"))
-        ):
-            position_ids = idx
-            break
-    if position_ids is None:
-        return 0
+        seen.add(id(current))
+        if predicate(current):
+            return True
+        node = current.producer()
+        if node is not None and node.op_type != "Range":
+            stack.extend(node.inputs)
+    return False
 
-    # eval the weight-free position_ids subgraph at all-non-pad (extract walks backward; big table untouched)
-    sub_graph = ir.convenience.extract(graph, list(graph.inputs), [position_ids])
-    sub_model = helper.make_model(
-        ir.to_proto(sub_graph), opset_imports=[helper.make_opsetid(d, v) for d, v in graph.opset_imports.items()]
-    )
-    session = ort.InferenceSession(sub_model.SerializeToString(), providers=["CPUExecutionProvider"])
-    feed = {}
-    for i in graph.inputs:
-        shape = [d if isinstance(d, int) and d > 0 else 1 for d in i.shape]
-        np_dtype = {ir.DataType.INT32: np.int32, ir.DataType.INT64: np.int64}.get(i.dtype, np.int64)
-        # all-non-pad: every position valid (mask all-ones) and no token equal to the pad id
-        feed[i.name] = np.ones(shape, np_dtype) if "mask" in i.name.lower() else np.full(shape, 100, np_dtype)
-    pid_dtype = position_ids.dtype if position_ids.dtype is not None else ir.DataType.INT64
-    const = session.run([position_ids.name], feed)[0].astype(pid_dtype.numpy())
 
-    producer = position_ids.producer()
-    replacement = make_init(graph, position_ids.name, const)
-    position_ids.replace_all_uses_with(replacement)
-    graph.remove(producer, safe=True)
-    return 1
+def _is_batch_range(value: ir.Value) -> bool:
+    node = value.producer()
+    if node is None or node.op_type != "Range":
+        return False
+    start, _, delta = (i.const_value for i in node.inputs)
+    return start is not None and int(start.numpy()) == 0 and delta is not None and int(delta.numpy()) == 1
+
+
+def _row_broadcast_gathernd(node: ir.Node, data: ir.Value) -> bool:
+    """`GatherND(mask[b,S], idx)` whose index tuples are exactly `(i, j)`: a broadcast dressed up as a gather."""
+    if node.attributes.get_int("batch_dims", 0) != 0 or data.shape is None or len(data.shape) != 2:
+        return False
+    seq = data.shape[1]
+    out_dims = node.outputs[0].shape
+    if not isinstance(seq, int) or out_dims is None or list(out_dims[1:]) != [1, 1, seq]:
+        return False
+
+    def is_arange(value: ir.Value) -> bool:
+        const = value.const_value
+        arr = const.numpy() if const is not None else None
+        return arr is not None and arr.size == seq and np.array_equal(arr.reshape(-1), np.arange(seq, dtype=arr.dtype))
+
+    indices = node.inputs[1]
+    return _reaches(indices, _is_batch_range) and _reaches(indices, is_arange)
+
+
+def _all_true_operand(node: ir.Node, other: ir.Value) -> bool:
+    """The `And`'s constant operand carries no masking of its own and stretches the key row no further than
+    `[b,1,S,S]`, the shape the rewrite rebuilds by hand."""
+    const = next((v.const_value for v in node.inputs if v is not other), None)
+    dims = other.shape
+    if const is None or const.dtype != ir.DataType.BOOL or len(const.shape) > 4 or dims is None:
+        return False
+    if any(d not in (1, dims[-1]) for d in const.shape):
+        return False
+    return bool(const.numpy().all())
+
+
+class FoldPadMaskPass(ir.passes.InPlacePass):
+    """Rebuild the openclip XLM-R/NLLB towers' key-padding mask as one float lookup into a `[V]` keep table, indexed
+    by the same `text` the token embedding already gathers, retiring the integer island that fragments them. A lookup
+    rather than `Clip(Abs(Cast(text) - pad), 0, 1)` because token ids run past fp16's range. Must follow
+    `ConstantifyPositionIdsPass`: the position ids come off the same `ne`, so the root folds only once it is gone."""
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        ids = [v for v in graph.inputs if v.dtype is not None and v.dtype.is_integer()]
+
+        def fold(root: ir.Value, text: ir.Value, pad_id: int) -> bool:
+            if root.shape is None or len(root.shape) != 2 or not isinstance(root.shape[1], int):
+                return False
+            seq = root.shape[1]
+            if seq >= 1 << 24:  # the float token count must stay in fp32's exact-integer range
+                return False
+
+            # vocabulary from the token-embedding table this same input indexes; metadata only, never materialized
+            table = next(
+                (
+                    use.node.inputs[0]
+                    for use in text.uses()
+                    if use.node.op_type == "Gather"
+                    and use.idx == 1
+                    and use.node.attributes.get_int("axis", 0) == 0
+                    and use.node.inputs[0].const_value is not None
+                    and len(use.node.inputs[0].shape) == 2
+                ),
+                None,
+            )
+            if table is None or not 0 <= pad_id < int(table.shape[0]):
+                return False
+
+            island: dict[int, ir.Value] = {id(root): root}
+            parent: dict[int, ir.Value] = {}
+            float_exits: list[tuple[ir.Node, ir.Value]] = []
+            attention_mask: ir.Value | None = None
+            # read the compute precision off the exits: any other float dtype is an illegal Attention input
+            precisions: set[ir.DataType] = set()
+            stack = [root]
+            while stack:
+                value = stack.pop()
+                for use in value.uses():
+                    node = use.node
+                    if node.op_type == "Cast" and ir.DataType(node.attributes.get_int("to")).is_floating_point():
+                        float_exits.append((node, value))
+                        precisions.add(ir.DataType(node.attributes.get_int("to")))
+                        continue
+                    if node.op_type == "Attention" and use.idx == 3:
+                        attention_mask = value
+                        precisions.add(node.inputs[0].dtype)
+                        continue
+                    if node.op_type not in _MASK_ISLAND_OPS:
+                        return False
+                    if node.op_type == "GatherND" and not _row_broadcast_gathernd(node, value):
+                        return False
+                    if node.op_type == "And" and not _all_true_operand(node, value):
+                        return False
+                    out = node.outputs[0]
+                    if id(out) not in island:
+                        island[id(out)], parent[id(out)] = out, value
+                        stack.append(out)
+            if len(precisions) != 1:
+                return False
+
+            np_float = precisions.pop().numpy()
+            keep_array = np.ones(int(table.shape[0]), np_float)
+            keep_array[pad_id] = 0.0
+            keep_init = make_init(graph, f"{text.name}_pad_keep", keep_array)
+            keep_node = make_node("Gather", [keep_init, text], name="pad_keep", out=f"{text.name}_keep", axis=0)
+            new_nodes = [keep_node]
+            mirrored: dict[int, ir.Value] = {id(root): keep_node.outputs[0]}
+
+            def emit(op_type: str, inputs: list[ir.Value], ref: ir.Value, **attributes: Any) -> ir.Value:
+                node = make_node(op_type, inputs, name=f"{ref.name}_f", out=f"{ref.name}_f", **attributes)
+                new_nodes.append(node)
+                return node.outputs[0]
+
+            def const(array: np.ndarray, name: str) -> ir.Value:
+                return make_init(graph, f"{text.name}_{name}", array)
+
+            def mirror(value: ir.Value) -> ir.Value:
+                """The float equivalent of an island value, built on demand."""
+                if id(value) in mirrored:
+                    return mirrored[id(value)]
+                node = value.producer()
+                source = mirror(parent[id(value)])
+                if node.op_type in ("Cast", "And"):  # dtype plumbing / an all-true operand: value unchanged
+                    result = source
+                elif node.op_type == "Unsqueeze":
+                    result = emit("Unsqueeze", [source, node.inputs[1]], value)
+                elif node.op_type == "ReduceSum":  # <= seq ones: exact in float
+                    names = ("keepdims", "noop_with_empty_axes")  # keepdims=0 is meaningful: never drop it
+                    attrs = {k: v for k in names if (v := node.attributes.get_int(k)) is not None}
+                    result = emit("ReduceSum", [source, node.inputs[1]], value, **attrs)
+                else:  # GatherND: the broadcast its index tuples spell out
+                    result = emit("Unsqueeze", [source, const(np.array([1, 2], np.int64), "row_axes")], value)
+                mirrored[id(value)] = result
+                return result
+
+            for cast_node, source in float_exits:
+                cast_node.outputs[0].replace_all_uses_with(mirror(source), replace_graph_outputs=True)
+            if attention_mask is not None:
+                row = mirror(attention_mask)  # [b,1,1,S], 1.0 keep / 0.0 pad
+                shifted = emit("Sub", [row, const(np.array(1.0, np_float), "one")], attention_mask)
+                additive = make_node(
+                    "Mul", [shifted, const(np.array(1.0e4, np_float), "scale")], out=f"{row.name}_bias"
+                )
+                # ORT CPU refuses to broadcast the mask's query axis, so materialize it
+                biased = make_node(
+                    "Add", [additive.outputs[0], const(np.zeros((seq, 1), np_float), "q_axis")], out=f"{row.name}_mask"
+                )
+                new_nodes += [additive, biased]
+                for use in list(attention_mask.uses()):
+                    use.node.replace_input_with(use.idx, biased.outputs[0])
+
+            graph.extend(new_nodes)
+            common_passes.TopologicalSortPass()(model)
+            common_passes.RemoveUnusedNodesPass()(model)  # the island, incl. Expands a later pass would materialize
+            return True
+
+        for node in list(graph):
+            if node.op_type != "Equal":
+                continue
+            text = next((v for v in node.inputs if any(v is i for i in ids)), None)
+            pad = next((v for v in node.inputs if v is not text and const_array(v) is not None), None)
+            negate = sole_consumer(node.outputs[0], "Not")
+            if text is None or pad is None or const_array(pad).size != 1 or negate is None:
+                continue
+            if fold(negate.outputs[0], text, int(const_array(pad).reshape(-1)[0])):
+                return ir.passes.PassResult(model, True)
+        return ir.passes.PassResult(model, False)
 
 
 class _ConstantifyReshapeTarget(RewriteRuleClassBase):
-    """Replace a batch-derived Reshape target with a constant initializer, pinned from the OUTPUT's
-    probed shape at two batches (agreeing dims literal, the batch-varying dim -> -1). Termination hinges
-    on the replacement being an initializer: the is_initializer guard stops the rule re-firing on its
-    re-emitted Reshape (which inherits the output name, so the probe lookup still hits)."""
+    """Replace a batch-derived Reshape target with a constant pinned from the OUTPUT's probed shape at two batches
+    (agreeing dims literal, the varying one -> -1). The is_initializer guard is what terminates the rule."""
 
     def __init__(self, probes: Probes) -> None:
         super().__init__(remove_nodes=False)
@@ -330,249 +535,208 @@ class _ConstantifyReshapeTarget(RewriteRuleClassBase):
         return op.Reshape(data, init, **out.producer().attributes)
 
 
-def constantify_token_type_embeddings(model: ir.Model) -> int:
-    """Fold a uniform-index embedding lookup into its constant row, in place. BERT/LaBSE towers build
-    all-zero token-type ids from a batch-shaped ``Mul``-by-zero and ``Gather`` the token-type table;
-    the lookup is just ``table[0]`` broadcast, but its stray symbolic batch dim makes RKNPU's
-    fold_constant mis-probe it. Replacing the gather with that constant kills the whole batch-zeros
-    chain. No-op without the pattern (XLM-R and openclip text have no token types). Returns count."""
-    graph = model.graph
-    replaced = 0
-    for node in list(graph):
-        if node.op_type != "Gather" or not node.inputs or node.inputs[0] is None:
-            continue
-        table = node.inputs[0].const_value
-        idx = node.inputs[1] if len(node.inputs) > 1 else None
-        if table is None or len(table.shape) != 2 or not np.issubdtype(table.dtype.numpy(), np.floating):
-            continue
-        if idx is None or idx.const_value is not None or idx.producer() is None:
-            continue
-        row = _uniform_index(graph, idx)
-        if row is None:
-            continue
-        const = make_init(graph, f"{node.outputs[0].name}_const", table.numpy()[row].reshape(1, 1, -1))
-        node.outputs[0].replace_all_uses_with(const)
-        graph.remove(node, safe=True)
-        replaced += 1
-    return replaced
+class ConstantifyReshapeTargetsPass(RewritePass):
+    """`_ConstantifyReshapeTarget`, with every dynamic Reshape target required to have been pinned."""
+
+    def __init__(self, probes: Probes) -> None:
+        super().__init__([_ConstantifyReshapeTarget.rule(probes)])
+
+    def ensures(self, model: ir.Model) -> None:
+        unresolved = [
+            node.name for node in model.graph if node.op_type == "Reshape" and not node.inputs[1].is_initializer()
+        ]
+        if unresolved:
+            raise ir.passes.PostconditionError(f"Reshape targets not resolvable from probes: {unresolved}")
 
 
-def _uniform_index(graph: ir.Graph, idx: ir.Value) -> int | None:
-    """Return the scalar value if ``idx`` is provably input-independent and uniform, else None."""
-    import onnxruntime as ort
+class EliminateDynamicExpandsPass(ir.passes.InPlacePass):
+    """Remove Expand nodes with batch-derived target shapes: rewire to `data` where the consumer broadcasts it back
+    anyway, else `data + static_zeros + batch_col`, which leaves only batch symbolic so runtime compilers accept it."""
 
-    try:
-        sub = ir.convenience.extract(graph, list(graph.inputs), [idx])
-        for value in getattr(sub, "graph", sub).initializers.values():  # inline; ORT bans external refs in bytes
-            if value.const_value is not None:
-                value.const_value = ir.tensor(np.asarray(value.const_value.numpy()))
-        proto = helper.make_model(
-            ir.to_proto(sub), opset_imports=[helper.make_opsetid(d, v) for d, v in graph.opset_imports.items()]
+    def __init__(self, probes: Probes) -> None:
+        self.probes = probes
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        probes = self.probes
+        graph = model.graph
+        initializers = dict(graph.initializers)  # name -> ir.Value, snapshot (matches proto)
+
+        def shape_at(value: ir.Value | None, probe_idx: int) -> tuple[int, ...] | None:
+            if value is None:
+                return None
+            if value.name in initializers:
+                return tuple(int(d) for d in initializers[value.name].shape)
+            entries = probes.get(value.name)
+            return entries[probe_idx].shape if entries else None
+
+        def dtype_of(value: ir.Value) -> int:
+            if value.name in initializers:
+                return int(initializers[value.name].dtype)
+            if value.name in probes:
+                return probes[value.name][0].dtype
+            raise ValueError(f"Unknown dtype for Expand data {value.name!r}")
+
+        batch_input = next((i for i in graph.inputs if not isinstance(i.shape[0], int)), None)
+        probe_batches = (
+            tuple(int(p.shape[0]) for p in probes[batch_input.name])
+            if batch_input is not None and batch_input.name in probes
+            else None
         )
-        session = ort.InferenceSession(proto.SerializeToString(), providers=["CPUExecutionProvider"])
-    except Exception:
-        return None
-    runs = []
-    for seed in (1, 2):
-        rng = np.random.default_rng(seed)
-        feed = {}
-        for inp in graph.inputs:
-            shape = [d if isinstance(d, int) and d > 0 else 1 for d in inp.shape]
-            npt = {ir.DataType.INT32: np.int32, ir.DataType.INT64: np.int64}.get(inp.dtype, np.int64)
-            uniform = "mask" in inp.name.lower()
-            feed[inp.name] = np.ones(shape, npt) if uniform else rng.integers(2, 5000, shape).astype(npt)
-        runs.append(session.run([idx.name], feed)[0])
-    a, b = runs
-    if a.size and a.shape == b.shape and np.array_equal(a, b) and np.all(a == a.flat[0]):
-        return int(a.flat[0])
-    return None
 
+        batch_seed: list[ir.Value] = []  # shared across expands
 
-def constantify_reshape_targets(model: ir.Model, probes: Probes) -> int:
-    """Replace batch-derived Reshape targets with constant initializers, in place. Fail-closed: any
-    dynamic-target Reshape not pinnable from the probes is collected and raised."""
-    rewritten = RewriteRuleSet([_ConstantifyReshapeTarget.rule(probes)]).apply_to_model(model)
-    unresolved = [
-        node.name for node in model.graph if node.op_type == "Reshape" and not node.inputs[1].is_initializer()
-    ]
-    if unresolved:
-        raise ValueError(f"Reshape targets not resolvable from probes: {unresolved}")
-    return rewritten
-
-
-def eliminate_dynamic_expands(model: ir.Model, probes: Probes) -> int:
-    """Remove Expand nodes with batch-derived target shapes, in place. Two cases by consumer:
-    broadcast-native consumers with a provably unchanged result at both probed batches -> drop the
-    Expand, rewire to `data`; a consumer needing the materialized shape -> `data + static_zeros +
-    batch_col`, where static_zeros (target shape, batch axis pinned to 1) widens every non-batch axis
-    and batch_col (`[..,batch,..,1]`) widens the batch axis. Only batch is symbolic, so every EP
-    compiles it — same result as the Expand without a dynamic-dim op runtime compilers reject."""
-    graph = model.graph
-    initializers = dict(graph.initializers)  # name -> ir.Value, snapshot (matches proto)
-
-    def shape_at(value: ir.Value | None, probe_idx: int) -> tuple[int, ...] | None:
-        if value is None:
-            return None
-        if value.name in initializers:
-            return tuple(int(d) for d in initializers[value.name].shape)
-        entries = probes.get(value.name)
-        return entries[probe_idx].shape if entries else None
-
-    def dtype_of(value: ir.Value) -> int:
-        if value.name in initializers:
-            return int(initializers[value.name].dtype)
-        if value.name in probes:
-            return probes[value.name][0].dtype
-        raise ValueError(f"Unknown dtype for Expand data {value.name!r}")
-
-    # the batch sizes the probe actually ran at, read off a batch-carrying input's two shapes
-    batch_input = next((i for i in graph.inputs if not isinstance(i.shape[0], int)), None)
-    probe_batches = (
-        tuple(int(p.shape[0]) for p in probes[batch_input.name])
-        if batch_input is not None and batch_input.name in probes
-        else None
-    )
-
-    batch_seed: list[ir.Value] = []  # lazily built [batch] rank-1 zero column, shared across expands
-
-    def batch_zeros_1d() -> ir.Value:
-        """A `[batch]` rank-1 float zero column tied to the runtime batch dim. Slice one element off
-        each non-batch axis (reduction-free: a global reduction overflows fp16 — image sum ~2e7 ->
-        inf*0=NaN — and the ANE compiler can't lower it), flatten to `[batch]`, zero it. Built once, shared."""
-        if batch_seed:
+        def batch_zeros_1d() -> ir.Value:
+            """A `[batch]` rank-1 float zero column tied to the runtime batch dim. Built by slicing rather than
+            reducing: a global reduction overflows fp16 to inf*0=NaN and the ANE compiler cannot lower it."""
+            if batch_seed:
+                return batch_seed[0]
+            if batch_input is None:
+                raise ValueError("No batch-carrying graph input to seed Expand materialization")
+            src = batch_input.name
+            nonbatch = list(range(1, len(batch_input.shape)))
+            # TensorRT cannot Slice a uint8 tensor, so slice the fused visual input's existing float Cast instead
+            cast_of_input = next((use.node for use in batch_input.uses() if use.node.op_type == "Cast"), None)
+            reuse_float = batch_input.dtype == ir.DataType.UINT8 and cast_of_input is not None
+            slice_src = cast_of_input.outputs[0] if reuse_float else batch_input
+            starts = make_init(graph, f"{src}_ez_starts", np.zeros(len(nonbatch), dtype=np.int64))
+            ends = make_init(graph, f"{src}_ez_ends", np.ones(len(nonbatch), dtype=np.int64))
+            axes = make_init(graph, f"{src}_ez_axes", np.array(nonbatch, dtype=np.int64))
+            flat = make_init(graph, f"{src}_ez_flat", np.array([-1], dtype=np.int64))
+            zero = make_init(graph, f"{src}_ez_zero", np.zeros([], dtype=np.float32))
+            slice_node = make_node("Slice", [slice_src, starts, ends, axes], name="ez_slice", out=f"{src}_ez_s")
+            seed_nodes = [slice_node]
+            flat_src = slice_node.outputs[0]
+            if not reuse_float:
+                cast_node = make_node("Cast", [flat_src], name="ez_cast", out=f"{src}_ez_f", to=TensorProto.FLOAT)
+                seed_nodes.append(cast_node)
+                flat_src = cast_node.outputs[0]
+            reshape_node = make_node("Reshape", [flat_src, flat], name="ez_flatten", out=f"{src}_ez_r")
+            mul_node = make_node("Mul", [reshape_node.outputs[0], zero], name="ez_mul", out=f"{src}_ez")
+            seed_nodes += [reshape_node, mul_node]
+            graph.extend(seed_nodes)
+            batch_seed.append(mul_node.outputs[0])
             return batch_seed[0]
-        if batch_input is None:
-            raise ValueError("No batch-carrying graph input to seed Expand materialization")
-        src = batch_input.name
-        nonbatch = list(range(1, len(batch_input.shape)))
-        starts = make_init(graph, f"{src}_ez_starts", np.zeros(len(nonbatch), dtype=np.int64))
-        ends = make_init(graph, f"{src}_ez_ends", np.ones(len(nonbatch), dtype=np.int64))
-        axes = make_init(graph, f"{src}_ez_axes", np.array(nonbatch, dtype=np.int64))
-        flat = make_init(graph, f"{src}_ez_flat", np.array([-1], dtype=np.int64))
-        zero = make_init(graph, f"{src}_ez_zero", np.zeros([], dtype=np.float32))
-        # final order after sort is Slice -> Cast -> Reshape -> Mul
-        slice_node = make_node("Slice", [batch_input, starts, ends, axes], name="ez_slice", out=f"{src}_ez_s")
-        cast_node = make_node("Cast", [slice_node.outputs[0]], name="ez_cast", out=f"{src}_ez_f", to=TensorProto.FLOAT)
-        reshape_node = make_node("Reshape", [cast_node.outputs[0], flat], name="ez_flatten", out=f"{src}_ez_r")
-        mul_node = make_node("Mul", [reshape_node.outputs[0], zero], name="ez_mul", out=f"{src}_ez")
-        graph.extend([slice_node, cast_node, reshape_node, mul_node])
-        batch_seed.append(mul_node.outputs[0])
-        return batch_seed[0]
 
-    eliminated = 0
-    for node in list(graph):
-        if node.op_type != "Expand" or node.inputs[1].is_initializer():
-            continue
-        data, out = node.inputs[0], node.outputs[0]
-        consumers = out.consumers()
+        eliminated = 0
+        for node in list(graph):
+            if node.op_type != "Expand" or node.inputs[1].is_initializer():
+                continue
+            data, out = node.inputs[0], node.outputs[0]
+            consumers = out.consumers()
 
-        def broadcast_invariant() -> bool:
-            for consumer in consumers:
-                if consumer.op_type not in _BROADCAST_OPS:
-                    return False
-                others = [i for i in consumer.inputs if i is not out]
-                for p in range(len(probes[out.name])):
-                    shapes = [shape_at(o, p) for o in others]
-                    d_shape = shape_at(data, p)
-                    if d_shape is None or any(s is None for s in shapes):
+            def broadcast_invariant() -> bool:
+                for consumer in consumers:
+                    if consumer.op_type not in _BROADCAST_OPS:
                         return False
-                    try:
-                        with_data = np.broadcast_shapes(d_shape, *shapes)
-                        with_expand = np.broadcast_shapes(probes[out.name][p].shape, *shapes)
-                    except ValueError:
-                        return False
-                    if with_data != with_expand:
-                        return False
-            return True
+                    others = [i for i in consumer.inputs if i is not out]
+                    for p in range(len(probes[out.name])):
+                        shapes = [shape_at(o, p) for o in others]
+                        d_shape = shape_at(data, p)
+                        if d_shape is None or any(s is None for s in shapes):
+                            return False
+                        try:
+                            with_data = np.broadcast_shapes(d_shape, *shapes)
+                            with_expand = np.broadcast_shapes(probes[out.name][p].shape, *shapes)
+                        except ValueError:
+                            return False
+                        if with_data != with_expand:
+                            return False
+                return True
 
-        if broadcast_invariant():
-            out.replace_all_uses_with(data)
-            graph.remove(node, safe=True)
-            eliminated += 1
-            continue
+            if broadcast_invariant():
+                out.replace_all_uses_with(data)
+                graph.remove(node, safe=True)
+                eliminated += 1
+                continue
 
-        shapes = [np.asarray(entry.shape, dtype=np.int64) for entry in probes[out.name]]
-        varying = np.nonzero(shapes[0] != shapes[1])[0]
-        if len(varying) != 1:
-            raise ValueError(f"Expand {node.name} has {len(varying)} batch-varying axes, expected 1: {shapes}")
-        rank = len(shapes[0])
-        axis = int(varying[0])
-        # column seed is exactly [batch], so the widened axis must be batch itself, not a multiple
-        # (e.g. batch*heads) — else silently mis-sized. Fail loud.
-        if probe_batches is not None and (int(shapes[0][axis]), int(shapes[1][axis])) != probe_batches:
-            raise ValueError(
-                f"Expand {node.name}: dynamic axis {axis} varies as "
-                f"{(int(shapes[0][axis]), int(shapes[1][axis]))}, a multiple of batch {probe_batches}; "
-                "materialization from a [batch] seed would mis-size it"
+            shapes = [np.asarray(entry.shape, dtype=np.int64) for entry in probes[out.name]]
+            varying = np.nonzero(shapes[0] != shapes[1])[0]
+            if len(varying) != 1:
+                raise ValueError(f"Expand {node.name} has {len(varying)} batch-varying axes, expected 1: {shapes}")
+            rank = len(shapes[0])
+            axis = int(varying[0])
+            if probe_batches is not None and (int(shapes[0][axis]), int(shapes[1][axis])) != probe_batches:
+                raise ValueError(
+                    f"Expand {node.name}: dynamic axis {axis} varies as "
+                    f"{(int(shapes[0][axis]), int(shapes[1][axis]))}, a multiple of batch {probe_batches}; "
+                    "materialization from a [batch] seed would mis-size it"
+                )
+            data_dtype = dtype_of(data)
+            # ONNX Add has no bool kernel, so bool data round-trips through int32
+            compute_dtype = TensorProto.INT32 if data_dtype == TensorProto.BOOL else data_dtype
+            np_compute = helper.tensor_dtype_to_np_dtype(compute_dtype)
+
+            static_shape = shapes[0].copy()  # target shape with the batch axis pinned to 1
+            static_shape[axis] = 1
+            static_iv = make_init(graph, f"{out.name}_static0", np.zeros(static_shape, dtype=np_compute))
+
+            seed = batch_zeros_1d()  # [batch], float32
+            new_nodes: list[ir.Node] = []
+
+            data_in = data
+            if data_dtype == TensorProto.BOOL:
+                cast = make_node(
+                    "Cast", [data], name=f"{node.name}_data_cast", out=f"{out.name}_data_i", to=compute_dtype
+                )
+                data_in = cast.outputs[0]
+                new_nodes.append(cast)
+
+            col = seed
+            if rank > 1:
+                unsqueeze_axes = [a for a in range(rank) if a != axis]
+                ua_iv = make_init(graph, f"{out.name}_ua", np.array(unsqueeze_axes, dtype=np.int64))
+                unsq = make_node("Unsqueeze", [col, ua_iv], name=f"{node.name}_col", out=f"{out.name}_col")
+                col = unsq.outputs[0]
+                new_nodes.append(unsq)
+            if compute_dtype != TensorProto.FLOAT:
+                castc = make_node(
+                    "Cast", [col], name=f"{node.name}_col_cast", out=f"{out.name}_col_c", to=compute_dtype
+                )
+                col = castc.outputs[0]
+                new_nodes.append(castc)
+
+            add_static = make_node(
+                "Add", [data_in, static_iv], name=f"{node.name}_bcast_static", out=f"{out.name}_static"
             )
-        data_dtype = dtype_of(data)
-        # ONNX Add has no bool kernel -> round-trip bool data through int32 (0/1-exact); other dtypes add directly
-        compute_dtype = TensorProto.INT32 if data_dtype == TensorProto.BOOL else data_dtype
-        np_compute = helper.tensor_dtype_to_np_dtype(compute_dtype)
+            add_bcast = make_node("Add", [add_static.outputs[0], col], name=f"{node.name}_bcast")
+            new_nodes += [add_static, add_bcast]
 
-        static_shape = shapes[0].copy()  # target shape with the batch axis pinned to 1
-        static_shape[axis] = 1
-        static_iv = make_init(graph, f"{out.name}_static0", np.zeros(static_shape, dtype=np_compute))
+            if data_dtype == TensorProto.BOOL:
+                add_bcast.outputs[0].name = f"{out.name}_pre"
+                out_cast = make_node("Cast", [add_bcast.outputs[0]], name=f"{node.name}_out_cast", to=TensorProto.BOOL)
+                final = out_cast.outputs[0]
+                new_nodes.append(out_cast)
+            else:
+                final = add_bcast.outputs[0]
 
-        seed = batch_zeros_1d()  # [batch], float32
-        new_nodes: list[ir.Node] = []
+            out.replace_all_uses_with(final)
+            graph.remove(node, safe=True)
+            final.name = out.name  # inherit the Expand output name (safe: `out` is now orphaned)
+            for n in new_nodes:
+                graph.append(n)
+            eliminated += 1
 
-        data_in = data
-        if data_dtype == TensorProto.BOOL:
-            cast = make_node("Cast", [data], name=f"{node.name}_data_cast", out=f"{out.name}_data_i", to=compute_dtype)
-            data_in = cast.outputs[0]
-            new_nodes.append(cast)
-
-        col = seed
-        if rank > 1:  # reshape the [batch] seed to [..,batch,..,1] with batch at `axis`
-            unsqueeze_axes = [a for a in range(rank) if a != axis]
-            ua_iv = make_init(graph, f"{out.name}_ua", np.array(unsqueeze_axes, dtype=np.int64))
-            unsq = make_node("Unsqueeze", [col, ua_iv], name=f"{node.name}_col", out=f"{out.name}_col")
-            col = unsq.outputs[0]
-            new_nodes.append(unsq)
-        if compute_dtype != TensorProto.FLOAT:
-            castc = make_node("Cast", [col], name=f"{node.name}_col_cast", out=f"{out.name}_col_c", to=compute_dtype)
-            col = castc.outputs[0]
-            new_nodes.append(castc)
-
-        # data + static_zeros widens every non-batch axis; + batch_col widens the batch axis
-        add_static = make_node("Add", [data_in, static_iv], name=f"{node.name}_bcast_static", out=f"{out.name}_static")
-        add_bcast = make_node("Add", [add_static.outputs[0], col], name=f"{node.name}_bcast")
-        new_nodes += [add_static, add_bcast]
-
-        if data_dtype == TensorProto.BOOL:
-            add_bcast.outputs[0].name = f"{out.name}_pre"
-            out_cast = make_node("Cast", [add_bcast.outputs[0]], name=f"{node.name}_out_cast", to=TensorProto.BOOL)
-            final = out_cast.outputs[0]
-            new_nodes.append(out_cast)
-        else:
-            final = add_bcast.outputs[0]
-
-        out.replace_all_uses_with(final)
-        graph.remove(node, safe=True)
-        final.name = out.name  # inherit the Expand output name (safe: `out` is now orphaned)
-        for n in new_nodes:
-            graph.append(n)
-        eliminated += 1
-
-    graph.sort()  # nodes appended out of order above; restore topological order for serialization
-    return eliminated
+        common_passes.TopologicalSortPass()(model)
+        log.info("Eliminated %d dynamic Expand nodes", eliminated)
+        return ir.passes.PassResult(model, bool(eliminated))
 
 
 class _FuseClassTokenPrepend(RewriteRuleClassBase):
-    """Fuse the ViT class-token prepend + positional-embedding add into `Pad` + one constant. Left
-    alone the class-token Expand gets materialized into a zero column whose seed reduces the whole image
-    to `[batch]` — overflows fp16 (image sum ~2e7 -> inf*0=NaN) and the ANE can't lower it. Instead
-    prepend a zero row with static `Pad` and add `cp` with `cp[0]=class+pos[0]`, `cp[1:]=pos[1:]`
-    (associativity of the two constant adds), fully static. Runs before `eliminate_dynamic_expands` so
-    the Expand is consumed here. Class-token ViTs only (SigLIP attn-pool + text encoders untouched)."""
+    """Fuse the ViT class-token prepend and positional-embedding add into a static `Pad` plus one constant, retiring
+    the class-token Expand and the batch-tied zero column it needs. The second pattern arm is the shape
+    `EliminateDynamicExpandsPass` leaves, so either order fuses."""
 
-    def pattern(self, op: Any, class_embedding: Any, expand_shape: Any, patches: Any, positional: Any) -> Any:
-        expanded = op.Expand(class_embedding, expand_shape)
+    def pattern(
+        self, op: Any, class_embedding: Any, expand_shape: Any, patches: Any, positional: Any, zeros: Any, col: Any
+    ) -> Any:
+        expanded = OrValue(
+            [op.Expand(class_embedding, expand_shape), op.Add(op.Add(class_embedding, zeros), col)],
+            name="prepended",
+        )
         return op.Add(op.Concat(expanded, patches, axis=1), positional)
 
     def check(
-        self, context: Any, class_embedding: Any, expand_shape: Any, patches: Any, positional: Any
+        self, context: Any, class_embedding: Any, expand_shape: Any, positional: Any, zeros: Any = None, **_: Any
     ) -> MatchResult:
         result = MatchResult()
         cls, pos = class_embedding.const_value, positional.const_value
@@ -580,9 +744,11 @@ class _FuseClassTokenPrepend(RewriteRuleClassBase):
             return result.fail("class/positional not constant")
         if cls.numpy().reshape(-1).shape[0] != pos.numpy().shape[-1]:
             return result.fail("class width != positional width")
+        if expand_shape is None and (const_array(zeros) is None or np.any(const_array(zeros))):
+            return result.fail("the materialized prepend does not widen against a broadcast-neutral zero")
         return result
 
-    def rewrite(self, op: Any, class_embedding: Any, expand_shape: Any, patches: Any, positional: Any) -> Any:
+    def rewrite(self, op: Any, class_embedding: Any, patches: Any, positional: Any, **_: Any) -> Any:
         pos_arr = positional.const_value.numpy()
         cls_arr = class_embedding.const_value.numpy()
         w = pos_arr.shape[-1]
@@ -597,9 +763,8 @@ class _FuseClassTokenPrepend(RewriteRuleClassBase):
 
 
 class _ScalarGatherToSlice(RewriteRuleClassBase):
-    """``Gather(data, scalar_index)`` -> ``Slice`` + ``Squeeze``: CoreML EP rejects scalar-index Gather
-    unless data is fully static (a dynamic batch rules that out). Applied after DCE so only data-domain
-    gathers remain — a shape-domain scalar would become a rank-0 Squeeze that MIL refuses to compile."""
+    """``Gather(data, scalar_index)`` -> ``Slice`` + ``Squeeze``: the CoreML EP rejects a scalar-index Gather unless
+    data is fully static. After DCE only: a shape-domain scalar would leave a rank-0 Squeeze MIL refuses to build."""
 
     def pattern(self, op: Any, data: Any, index: Any) -> Any:
         return op.Gather(data, index, _outputs=["gathered"])
@@ -607,7 +772,7 @@ class _ScalarGatherToSlice(RewriteRuleClassBase):
     def check(self, context: Any, data: Any, index: Any, gathered: Any) -> MatchResult:
         result = MatchResult()
         value = index.const_value
-        if value is None or value.numpy().ndim != 0:  # only a rank-0 (scalar) constant index
+        if value is None or value.numpy().ndim != 0:
             return result.fail("Gather index is not a scalar constant")
         return result
 
@@ -628,10 +793,27 @@ class _ScalarGatherToSlice(RewriteRuleClassBase):
         return op.Squeeze(sliced, axis_const)
 
 
+class _ScalarGatherToSlicePass(RewritePass):
+    def __init__(self) -> None:
+        super().__init__([_ScalarGatherToSlice.rule()])
+
+    def requires(self, model: ir.Model) -> None:
+        # lowering first would strand `_SelectBeforeLayerNorm`, which roots on the same Gather: correct but slower
+        stuck = sum(
+            1
+            for node in model.graph
+            if node.op_type == "Gather"
+            and (index := const_array(node.inputs[1])) is not None
+            and index.ndim == 0
+            and producer_of(node.inputs[0], "LayerNormalization") is not None
+        )
+        if stuck:
+            raise ir.passes.PreconditionError(f"{stuck} select(s) still to hoist over their LayerNormalization")
+
+
 class _SelectBeforeLayerNorm(RewriteRuleClassBase):
-    """``Gather(LayerNormalization(x), scalar)`` -> ``LayerNormalization(Gather(x))``: last-axis LN
-    normalizes each token independently, so selecting one token commutes bit-exactly (the 76 discarded
-    positions are pure waste). Must run before ``_ScalarGatherToSlice``, which consumes the Gather."""
+    """``Gather(LayerNormalization(x), scalar)`` -> ``LayerNormalization(Gather(x))``: last-axis LN normalizes each
+    token independently, so the select commutes bit-exactly. Ordered ahead of ``_ScalarGatherToSlice``."""
 
     def pattern(self, op: Any, x: Any, scale: Any, bias: Any, index: Any) -> Any:
         ln = op.LayerNormalization(x, scale, bias, _outputs=["ln"])
@@ -665,10 +847,19 @@ class _SelectBeforeLayerNorm(RewriteRuleClassBase):
         )
 
 
+def _is_onehot_selector(value: ir.Value | None) -> bool:
+    """The ``Unsqueeze(Gather(eye, index))`` row picker ``_EotOneHotSelect`` emits; pinning the identity
+    table keeps ordinary ``MatMul(x, weight)`` from passing for a select."""
+    unsqueeze = producer_of(value, "Unsqueeze")
+    gather = producer_of(unsqueeze.inputs[0], "Gather") if unsqueeze is not None else None
+    table = const_array(gather.inputs[0]) if gather is not None else None
+    if table is None or table.ndim != 2 or table.shape[0] != table.shape[1]:
+        return False
+    return bool(np.array_equal(table, np.eye(table.shape[0], dtype=table.dtype)))
+
+
 class _EotSelectBeforeLayerNorm(RewriteRuleClassBase):
-    """``MatMul(one_hot, LayerNormalization(x))`` -> ``LayerNormalization(MatMul(one_hot, x))``: the EOT
-    one-hot select commutes bit-exactly with last-axis ``ln_final``. The check pins the selector to the
-    identity-table Gather so MLP ``MatMul(ln, weight)`` nodes can't match."""
+    """``MatMul(one_hot, LN(x))`` -> ``LN(MatMul(one_hot, x))``: the EOT select commutes with a last-axis norm."""
 
     def pattern(self, op: Any, selector: Any, x: Any, scale: Any, bias: Any) -> Any:
         ln = op.LayerNormalization(x, scale, bias, _outputs=["ln"])
@@ -676,17 +867,8 @@ class _EotSelectBeforeLayerNorm(RewriteRuleClassBase):
 
     def check(self, context: Any, selector: Any, x: Any, scale: Any, bias: Any, ln: Any, mm: Any) -> MatchResult:
         result = MatchResult()
-        unsqueeze = selector.producer()
-        if unsqueeze is None or unsqueeze.op_type != "Unsqueeze":
-            return result.fail("selector is not the EOT Unsqueeze(Gather(eye)) chain")
-        gather = unsqueeze.inputs[0].producer() if unsqueeze.inputs[0] is not None else None
-        if gather is None or gather.op_type != "Gather":
-            return result.fail("selector is not the EOT Unsqueeze(Gather(eye)) chain")
-        table = gather.inputs[0].const_value
-        if table is None or len(table.shape) != 2 or table.shape[0] != table.shape[1]:
-            return result.fail("selector table is not a square constant")
-        if not np.array_equal(table.numpy(), np.eye(table.shape[0], dtype=table.numpy().dtype)):
-            return result.fail("selector table is not the identity (not an exact one-hot select)")
+        if not _is_onehot_selector(selector):
+            return result.fail("selector is not the EOT Unsqueeze(Gather(eye)) one-hot chain")
         if x.shape is None:
             return result.fail("LayerNormalization input rank unknown")
         rank = len(x.shape)
@@ -707,9 +889,7 @@ class _EotSelectBeforeLayerNorm(RewriteRuleClassBase):
 
 
 class _IdentityAveragePool(RewriteRuleClassBase):
-    """``AveragePool`` with kernel 1 / stride 1 / no pad is an identity copy — ModifiedResNet's layer1
-    downsample stamps one, so RN50-class visuals ship a full-tensor no-op (~0.5% CPU; every EP pays it).
-    Rewritten to ``Identity``, folded by ``IdentityEliminationPass``."""
+    """``AveragePool`` with kernel 1, stride 1 and no pad is an identity copy; ModifiedResNet's layer1 stamps one."""
 
     def pattern(self, op: Any, x: Any) -> Any:
         return op.AveragePool(x, _outputs=["pooled"])
@@ -735,12 +915,8 @@ class _IdentityAveragePool(RewriteRuleClassBase):
 
 
 class _BroadcastMaskRebuild(RewriteRuleClassBase):
-    """XLM-R's ``attention_mask`` -> ``[batch,1,S,S]`` rebuild via a runtime GatherND index table is
-    just a broadcast of ``mask[b, j]`` (index tuples are exactly ``(i, j)``). Replaced with
-    ``And(tril, Unsqueeze(Cast(mask, bool), [1, 2]))``, killing the graph's only data-dependent-shape op
-    (``Range`` over batch) + ``GatherND`` — the island that fragments the mclip text encoder on CoreML.
-    Check pins the ``(i, j)`` index construction (``Range(0, ·, 1)`` batch coord + constant ``arange(S)``
-    token coord); else fails closed."""
+    """XLM-R's ``attention_mask`` -> ``[batch,1,S,S]`` rebuild via a runtime GatherND index table is just a broadcast
+    of ``mask[b, j]``. Replacing it kills the graph's only data-dependent shape, the island that fragments CoreML."""
 
     def pattern(self, op: Any, tril: Any, mask: Any, indices: Any) -> Any:
         gathered = op.GatherND(op.Cast(mask, to=int(ir.DataType.BOOL)), indices, _outputs=["gathered"])
@@ -759,7 +935,6 @@ class _BroadcastMaskRebuild(RewriteRuleClassBase):
         if gathered.producer().attributes.get_int("batch_dims", 0) != 0:
             return result.fail("GatherND has batch_dims != 0")
 
-        # walk the index construction: Range(0, ., 1) batch coord + constant arange(S) token coord
         range_ok = arange_ok = False
         seen: set[int] = set()
         stack = [indices]
@@ -798,15 +973,9 @@ class _BroadcastMaskRebuild(RewriteRuleClassBase):
 
 
 class _AdditivePadMask(RewriteRuleClassBase):
-    """XLM-R's boolean ``Attention`` mask -> the equivalent float additive key bias. After
-    ``_BroadcastMaskRebuild`` the mask is ``And(all_true, Unsqueeze(Cast(attention_mask, bool), [1,2]))``;
-    the const operand carries no masking (XLM-R is bidirectional), so it's just the key-padding row and
-    the bool plumbing strands an integer island on float-only accelerators (CoreML splits the tower
-    there). Additive form feeds a ``[b,1,S,S]`` float bias: 0 keeps, -1e4 removes (softmax underflows to
-    exactly 0; bit-exact for 0/1 masks on ORT CPU). The trailing zero-Add materializes the query axis —
-    ORT CPU ``Attention`` enforces ``mask.shape[-2] == q_len`` instead of broadcasting (attention_helper.h).
-    Fails closed unless the And operand is an all-True bool const, the mask a rank-2 input, and every
-    consumer an ``Attention`` mask input."""
+    """XLM-R's boolean ``Attention`` mask -> the equivalent float additive key bias (0 keeps, -1e4 removes, softmax
+    underflowing to exactly 0), because the bool plumbing strands an integer island on float-only accelerators. The
+    trailing zero-Add materializes the query axis: ORT CPU's ``Attention`` enforces ``mask.shape[-2] == q_len``."""
 
     def pattern(self, op: Any, tril: Any, mask: Any, axes: Any) -> Any:
         unsqueezed = op.Unsqueeze(op.Cast(mask, to=int(ir.DataType.BOOL)), axes)
@@ -841,17 +1010,19 @@ class _AdditivePadMask(RewriteRuleClassBase):
         )
         additive = op.Mul(shifted, op.Constant(value=ir.tensor(np.array(1.0e4, np.float32))))
         keys = op.Unsqueeze(additive, op.Constant(value=ir.tensor(np.array([1, 2], np.int64))))
-        # [b,1,1,S] + zeros[S,1] -> [b,1,S,S]: ORT CPU refuses to broadcast the mask's q axis
         return op.Add(keys, op.Constant(value=ir.tensor(np.zeros((seq, 1), np.float32))))
 
 
 class _FloatMaskCount(RewriteRuleClassBase):
-    """Mean-pool token count takes an int64 detour for a sum of 0/1 values fp32 counts exactly (int
-    exact to 2^24). Count in float, dropping the int64 ops, leaving the post-embedding graph float-only."""
+    """The mean-pool token count takes an int64 detour for a sum of 0/1 values fp32 counts exactly; count in float
+    instead, leaving the post-embedding graph float-only. The Unsqueeze arm is optional, the spelling being
+    family-dependent."""
 
     def pattern(self, op: Any, mask: Any, axes: Any, unsqueeze_axes: Any) -> Any:
         total = op.ReduceSum(op.Cast(mask, to=int(ir.DataType.INT64)), axes, _outputs=["total"])
-        return op.Cast(op.Unsqueeze(total, unsqueeze_axes), to=int(ir.DataType.FLOAT))
+        # exactly one arm binds; the other leaves `unsqueeze_axes` None
+        kept = OrValue([op.Unsqueeze(total, unsqueeze_axes), total])
+        return op.Cast(kept, to=int(ir.DataType.FLOAT))
 
     def check(self, context: Any, mask: Any, axes: Any, unsqueeze_axes: Any, total: Any) -> MatchResult:
         result = MatchResult()
@@ -868,16 +1039,13 @@ class _FloatMaskCount(RewriteRuleClassBase):
         attrs = total.producer().attributes
         kwargs = {k: attrs.get_int(k) for k in ("keepdims", "noop_with_empty_axes") if attrs.get(k) is not None}
         counted = op.ReduceSum(op.Cast(mask, to=int(ir.DataType.FLOAT)), axes, **kwargs)
-        return op.Unsqueeze(counted, unsqueeze_axes)
+        return counted if unsqueeze_axes is None else op.Unsqueeze(counted, unsqueeze_axes)
 
 
 class _FoldConstantAttnQuery(RewriteRuleClassBase):
-    """SigLIP's MAP-head query projection runs entirely on constants (batch-materialized latent,
-    ``MatMul``+bias, ``Reshape``+``Transpose`` — six ops recomputing the same ``[1,H,1,d]`` every
-    inference). Fold (fp64) into one initializer + a single Add against the zero column re-axed to the
-    packed rank, which alone carries batch. Fails closed unless every operand but the column is constant,
-    the Expand zeros exactly zero, the seed is ``batch_zeros_1d``'s ``Mul``-by-zero output, and the batch
-    axis leads the Reshape target (the ResNet attnpool's data-derived queries fail here)."""
+    """SigLIP's MAP-head query projection runs entirely on constants, recomputing the same ``[1,H,1,d]`` every
+    inference; fold it into one initializer plus an Add against the zero column that alone carries batch. Matches
+    only after `batch_zeros_1d` has materialized that seed, which the pattern pins."""
 
     def pattern(self, op: Any, latent: Any, zeros: Any, seed: Any, ua: Any, weight: Any, bias: Any, target: Any) -> Any:
         query = op.Add(op.Add(latent, zeros), op.Unsqueeze(seed, ua))
@@ -946,581 +1114,795 @@ class _FoldConstantAttnQuery(RewriteRuleClassBase):
         return op.Add(op.Constant(value=ir.tensor(qc)), col)
 
 
-def prune_attnpool_dead_queries(model: ir.Model) -> int:
-    """Restructure CLIP's ResNet attention-pool to compute only the query it keeps. The head runs full
-    50-query attention then ``Slice[0:1]`` discards 49 (~5% of RN50 FLOPs); slicing the pre-projection
-    tensor to row 0 first is mathematically identical (per-row projections). Numerically equivalent, not
-    bit-exact: the q/proj GEMMs run at different row counts. Matches only the ResNet attnpool cluster
-    (SigLIP2's MAP head has a constant query and cannot match). Returns clusters rewritten.
-    """
-    graph = model.graph
-    rewritten = 0
+class PruneAttnpoolDeadQueriesPass(ir.passes.InPlacePass):
+    """Restructure CLIP's ResNet attention-pool to compute only the query it keeps, the projections being per-row.
+    Equivalent but not bit-exact: the q and out-projection GEMMs run at different row counts."""
 
-    def producer_chain(value: ir.Value, ops: list[str]) -> list[ir.Node] | None:
-        nodes = []
-        for op_type in ops:
-            node = value.producer()
-            if node is None or node.op_type != op_type:
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        rewritten = 0
+
+        def producer_chain(value: ir.Value, ops: list[str]) -> list[ir.Node] | None:
+            nodes = []
+            for op_type in ops:
+                node = value.producer()
+                if node is None or node.op_type != op_type:
+                    return None
+                nodes.append(node)
+                value = node.inputs[0]
+            return nodes
+
+        def new_target(node: ir.Node, values: list[int], name: str) -> None:
+            """Point a Reshape at a FRESH target initializer -- the old one may be shared with k/v -- and update the
+            cached shape, which ``_ScalarGatherToSlice`` reads before the next re-inference."""
+            target = make_init(graph, name, np.array(values, np.int64))
+            node.replace_input_with(1, target)
+            old_dims = node.outputs[0].shape
+            if old_dims is not None and len(old_dims) == len(values):
+                node.outputs[0].shape = ir.Shape([v if v != -1 else old_dims[i] for i, v in enumerate(values)])
+
+        for attention in [n for n in graph if n.op_type == "Attention"]:
+            q_chain = producer_chain(attention.inputs[0], ["Reshape", "Transpose", "Reshape", "Add", "MatMul"])
+            if q_chain is None:
+                continue
+            q_pack, q_perm, q_unpack, _, q_matmul = q_chain
+            pack_target, unpack_target = const_ints(q_pack.inputs[1]), const_ints(q_unpack.inputs[1])
+            perm = q_perm.attributes.get_ints("perm")
+            if pack_target is None or unpack_target is None or perm is None or list(perm) != [1, 0, 2]:
+                continue
+            if len(unpack_target) != 3 or len(pack_target) != 4 or unpack_target[0] != pack_target[2]:
+                continue
+            seq = unpack_target[0]
+            if not isinstance(seq, int) or seq <= 1:
+                continue
+
+            # the trailing Gather is lowered later, by then to a bare Squeeze: its axis has one row
+            out_perm = sole_consumer(attention.outputs[0], "Transpose")
+            if out_perm is None or list(out_perm.attributes.get_ints("perm", [])) != [2, 0, 1, 3]:
+                continue
+            out_flat = sole_consumer(out_perm.outputs[0], "Reshape")
+            gemm = sole_consumer(out_flat.outputs[0], "Gemm") if out_flat is not None else None
+            out_unflat = sole_consumer(gemm.outputs[0], "Reshape") if gemm is not None else None
+            token_gather = sole_consumer(out_unflat.outputs[0], "Gather") if out_unflat is not None else None
+            if token_gather is None:
+                continue
+            unflat_target = const_ints(out_unflat.inputs[1])
+            if unflat_target is None or len(unflat_target) != 3 or unflat_target[0] != seq:
+                continue
+            index = token_gather.inputs[1].const_value
+            if token_gather.attributes.get_int("axis", 0) != 0:
+                continue
+            if index is None or index.numpy().ndim != 0 or int(index.numpy()) != 0:
+                continue
+
+            row = make_node(  # the pre-projection tensor is [S, batch, E]
+                "Slice",
+                [
+                    q_matmul.inputs[0],
+                    make_init(graph, f"{attention.name}_q_row_start", np.array([0], np.int64)),
+                    make_init(graph, f"{attention.name}_q_row_end", np.array([1], np.int64)),
+                    make_init(graph, f"{attention.name}_q_row_axis", np.array([0], np.int64)),
+                ],
+                out=f"{attention.name}_q_row",
+            )
+            graph.insert_before(q_matmul, [row])
+            q_matmul.replace_input_with(0, row.outputs[0])
+            new_target(q_unpack, [1, unpack_target[1], unpack_target[2]], f"{attention.name}_q_unpack_1")
+            new_target(q_pack, [pack_target[0], pack_target[1], 1, pack_target[3]], f"{attention.name}_q_pack_1")
+            new_target(out_unflat, [1, unflat_target[1], unflat_target[2]], f"{attention.name}_out_1")
+            rewritten += 1
+        log.info("Pruned %d attention-pool dead query set(s)", rewritten)
+        return ir.passes.PassResult(model, bool(rewritten))
+
+
+class RestructureAttention3dPass(ir.passes.InPlacePass):
+    """Collapse the exported per-head attention plumbing into batch-first 3D ``Attention``. ``q_num_heads`` and
+    ``kv_num_heads`` are always emitted because OpenVINO hard-fails without them. The V-projection bias folds into
+    the out-proj bias, exact because softmax rows sum to one, and its block is zeroed."""
+
+    def requires(self, model: ir.Model) -> None:
+        # `fold_v_bias` writes `const_value`, which a `Constant` node does not serialize: the fold would vanish
+        if stuck := [node.outputs[0].name for node in model.graph if node.op_type == "Constant"]:
+            raise ir.passes.PreconditionError(f"{len(stuck)} constant(s) are not initializers: {stuck[:3]}")
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+
+        def perm_of(node: ir.Node) -> list[int] | None:
+            perm = node.attributes.get_ints("perm")
+            return list(perm) if perm is not None else None
+
+        def axes_of(node: ir.Node) -> list[int] | None:
+            return const_ints(node.inputs[1]) if len(node.inputs) > 1 else None
+
+        def slice_start(node: ir.Node, length: int) -> int | None:
+            """The i of a unit-width ``Slice(i:i+1, axis 0)``, else None."""
+            params = [const_ints(node.inputs[i]) if len(node.inputs) > i else None for i in (1, 2, 3, 4)]
+            starts, ends, axes, steps = params
+            if starts is None or len(starts) != 1 or ends != [starts[0] + 1] or axes != [0]:
                 return None
-            nodes.append(node)
-            value = node.inputs[0]
-        return nodes
-
-    def new_target(node: ir.Node, values: list[int], name: str) -> None:
-        """Point a Reshape at a fresh target initializer (the old one may be shared with k/v) and update
-        the cached shape so the pre-reinference no-op-Slice path of ``_ScalarGatherToSlice`` sees the
-        single-row form."""
-        target = make_init(graph, name, np.array(values, np.int64))
-        node.replace_input_with(1, target)
-        old_dims = node.outputs[0].shape
-        if old_dims is not None and len(old_dims) == len(values):
-            node.outputs[0].shape = ir.Shape([v if v != -1 else old_dims[i] for i, v in enumerate(values)])
-
-    for attention in [n for n in graph if n.op_type == "Attention"]:
-        # q branch: Reshape[-1,H,S,d] <- Transpose[1,0,2] <- Reshape[S,-1,d] <- Add <- MatMul
-        q_chain = producer_chain(attention.inputs[0], ["Reshape", "Transpose", "Reshape", "Add", "MatMul"])
-        if q_chain is None:
-            continue
-        q_pack, q_perm, q_unpack, _, q_matmul = q_chain
-        pack_target, unpack_target = const_ints(q_pack.inputs[1]), const_ints(q_unpack.inputs[1])
-        perm = q_perm.attributes.get_ints("perm")
-        if pack_target is None or unpack_target is None or perm is None or list(perm) != [1, 0, 2]:
-            continue
-        if len(unpack_target) != 3 or len(pack_target) != 4 or unpack_target[0] != pack_target[2]:
-            continue
-        seq = unpack_target[0]
-        if not isinstance(seq, int) or seq <= 1:
-            continue
-
-        # downstream: Transpose[2,0,1,3] -> Reshape[-1,E] -> Gemm -> Reshape[S,-1,D] -> Gather(0 @ axis 0),
-        # lowered to Slice+Squeeze later (by then the axis has one row -> bare Squeeze via no-op-Slice path)
-        out_perm = sole_consumer(attention.outputs[0], "Transpose")
-        if out_perm is None or list(out_perm.attributes.get_ints("perm", [])) != [2, 0, 1, 3]:
-            continue
-        out_flat = sole_consumer(out_perm.outputs[0], "Reshape")
-        gemm = sole_consumer(out_flat.outputs[0], "Gemm") if out_flat is not None else None
-        out_unflat = sole_consumer(gemm.outputs[0], "Reshape") if gemm is not None else None
-        token_gather = sole_consumer(out_unflat.outputs[0], "Gather") if out_unflat is not None else None
-        if token_gather is None:
-            continue
-        unflat_target = const_ints(out_unflat.inputs[1])
-        if unflat_target is None or len(unflat_target) != 3 or unflat_target[0] != seq:
-            continue
-        index = token_gather.inputs[1].const_value
-        if token_gather.attributes.get_int("axis", 0) != 0:
-            continue
-        if index is None or index.numpy().ndim != 0 or int(index.numpy()) != 0:
-            continue
-
-        # slice the [S, batch, E] pre-projection tensor to row 0 for the q path only
-        row = make_node(
-            "Slice",
-            [
-                q_matmul.inputs[0],
-                make_init(graph, f"{attention.name}_q_row_start", np.array([0], np.int64)),
-                make_init(graph, f"{attention.name}_q_row_end", np.array([1], np.int64)),
-                make_init(graph, f"{attention.name}_q_row_axis", np.array([0], np.int64)),
-            ],
-            out=f"{attention.name}_q_row",
-        )
-        graph.insert_before(q_matmul, [row])
-        q_matmul.replace_input_with(0, row.outputs[0])
-        new_target(q_unpack, [1, unpack_target[1], unpack_target[2]], f"{attention.name}_q_unpack_1")
-        new_target(q_pack, [pack_target[0], pack_target[1], 1, pack_target[3]], f"{attention.name}_q_pack_1")
-        new_target(out_unflat, [1, unflat_target[1], unflat_target[2]], f"{attention.name}_out_1")
-        rewritten += 1
-    return rewritten
-
-
-def restructure_attention_3d(model: ir.Model) -> int:
-    """Collapse the exported per-head attention plumbing into batch-first 3D ``Attention`` (opset-23
-    q/k/v ``[B,S,D]`` + ``q_num_heads``/``kv_num_heads``, both always emitted — OpenVINO hard-fails
-    without them). Three motifs: open_clip seq-first packed QKV (out-proj ``Gemm`` -> ``MatMul``, weight
-    pre-transposed at export, fp-exact), timm batch-first packed QKV (incl. SigLIP2 MAP-head kv, whose
-    folded constant query is re-laid-out ``[1,H,1,dh]`` -> ``[1,1,D]``), and separate q/k/v projections
-    (XLM-R). For the packed motifs the V-projection bias folds through into the out-proj bias
-    (``bo' = bo + b_v @ Wo^T``, fp64; softmax rows sum to one so a constant added to V passes verbatim)
-    and the V bias block is zeroed. Masks untouched; ``scale``/``is_causal``/``softcap`` carry over.
-    Non-matching sites (ResNet attnpool's data-derived queries) left as-is. Returns sites restructured."""
-    graph = model.graph
-
-    def perm_of(node: ir.Node) -> list[int] | None:
-        perm = node.attributes.get_ints("perm")
-        return list(perm) if perm is not None else None
-
-    def axes_of(node: ir.Node) -> list[int] | None:
-        return const_ints(node.inputs[1]) if len(node.inputs) > 1 else None
-
-    def slice_start(node: ir.Node, length: int) -> int | None:
-        """The i of a unit-width ``Slice(i:i+1, axis 0)``, else None."""
-        params = [const_ints(node.inputs[i]) if len(node.inputs) > i else None for i in (1, 2, 3, 4)]
-        starts, ends, axes, steps = params
-        if starts is None or len(starts) != 1 or ends != [starts[0] + 1] or axes != [0]:
-            return None
-        if steps not in (None, [1]) or not 0 <= starts[0] < length:
-            return None
-        return starts[0]
-
-    def bias_add(node: ir.Node | None, width: int) -> tuple[ir.Value, ir.Value] | None:
-        """Split an ``Add(x, bias)`` into (data input, single-use constant [width] bias)."""
-        if node is None:
-            return None
-        bias = next((v for v in node.inputs if const_array(v) is not None), None)
-        data = next((v for v in node.inputs if v is not bias), None)
-        if bias is None or data is None or bias.const_value.size != width or not single_use(bias):
-            return None
-        return data, bias
-
-    def set_heads(att: ir.Node, heads: int) -> None:
-        att.attributes["q_num_heads"] = ir.AttrInt64("q_num_heads", heads)
-        att.attributes["kv_num_heads"] = ir.AttrInt64("kv_num_heads", heads)
-
-    def fold_v_bias(packed_bias: ir.Value, out_weight: np.ndarray, out_bias: ir.Value) -> None:
-        """``bo' = bo + b_v @ Wo`` in fp64 (``out_weight`` in y = x @ W orientation), then zero
-        the trailing (V) block of the packed bias. Exact through softmax: rows sum to one."""
-        packed = packed_bias.const_value.numpy()
-        width = out_weight.shape[0]
-        folded = packed.copy()
-        folded[-width:] = 0
-        bo = out_bias.const_value.numpy()
-        bo_new = bo.astype(np.float64) + packed[-width:].astype(np.float64) @ out_weight.astype(np.float64)
-        packed_bias.const_value = ir.tensor(folded, name=packed_bias.name)
-        out_bias.const_value = ir.tensor(bo_new.astype(bo.dtype), name=out_bias.name)
-
-    class Packed(NamedTuple):
-        """A packed-projection unbind: MatMul+Add -> (motif-specific shuffle) -> n branches."""
-
-        x: ir.Value  # batch-first [B,S,D] projection input
-        weight: ir.Value  # [D, n*D]
-        bias: ir.Value  # [n*D]
-        add_out: ir.Value  # the packed projection output
-        heads: int
-        width: int  # D
-        seq: int
-
-    def match_seqfirst_packed(att: ir.Node) -> dict[str, Any] | None:
-        """open_clip resblock: seq-first packed QKV in, flattened Gemm out."""
-        shared: ir.Node | None = None
-        pack_target = unpack_target = None
-        for i in range(3):
-            pack = producer_of(att.inputs[i], "Reshape")  # [-1,H,S,dh]
-            if pack is None or not single_use(pack.outputs[0]):
+            if steps not in (None, [1]) or not 0 <= starts[0] < length:
                 return None
-            head_tr = producer_of(pack.inputs[0], "Transpose")
-            if head_tr is None or perm_of(head_tr) != [1, 0, 2] or not single_use(head_tr.outputs[0]):
+            return starts[0]
+
+        def bias_add(node: ir.Node | None, width: int) -> tuple[ir.Value, ir.Value] | None:
+            """Split an ``Add(x, bias)`` into (data input, single-use constant [width] bias)."""
+            if node is None:
                 return None
-            unpack = producer_of(head_tr.inputs[0], "Reshape")  # [S,-1,dh]
-            if unpack is None or not single_use(unpack.outputs[0]):
+            bias = next((v for v in node.inputs if const_array(v) is not None), None)
+            data = next((v for v in node.inputs if v is not bias), None)
+            if bias is None or data is None or bias.const_value.size != width or not single_use(bias):
                 return None
-            if pack_target is None:
-                pack_target, unpack_target = const_ints(pack.inputs[1]), const_ints(unpack.inputs[1])
-            elif const_ints(pack.inputs[1]) != pack_target or const_ints(unpack.inputs[1]) != unpack_target:
+            return data, bias
+
+        def set_heads(att: ir.Node, heads: int) -> None:
+            att.attributes["q_num_heads"] = ir.AttrInt64("q_num_heads", heads)
+            att.attributes["kv_num_heads"] = ir.AttrInt64("kv_num_heads", heads)
+
+        def fold_v_bias(packed_bias: ir.Value, out_weight: np.ndarray, out_bias: ir.Value) -> None:
+            """``bo' = bo + b_v @ Wo`` in fp64, then zero the trailing (V) block of the packed bias."""
+            packed = packed_bias.const_value.numpy()
+            width = out_weight.shape[0]
+            folded = packed.copy()
+            folded[-width:] = 0
+            bo = out_bias.const_value.numpy()
+            bo_new = bo.astype(np.float64) + packed[-width:].astype(np.float64) @ out_weight.astype(np.float64)
+            packed_bias.const_value = ir.tensor(folded, name=packed_bias.name)
+            out_bias.const_value = ir.tensor(bo_new.astype(bo.dtype), name=out_bias.name)
+
+        class Packed(NamedTuple):
+            """A packed-projection unbind: MatMul+Add -> (motif-specific shuffle) -> n branches."""
+
+            x: ir.Value  # [B,S,D], batch-first
+            weight: ir.Value  # [D, n*D]
+            bias: ir.Value  # [n*D]
+            add_out: ir.Value
+            heads: int
+            width: int
+            seq: int
+
+        def match_seqfirst_packed(att: ir.Node) -> dict[str, Any] | None:
+            """open_clip resblock: seq-first packed QKV in, flattened Gemm out."""
+            shared: ir.Node | None = None
+            pack_target = unpack_target = None
+            for i in range(3):
+                pack = producer_of(att.inputs[i], "Reshape")  # [-1,H,S,dh]
+                if pack is None or not single_use(pack.outputs[0]):
+                    return None
+                head_tr = producer_of(pack.inputs[0], "Transpose")
+                if head_tr is None or perm_of(head_tr) != [1, 0, 2] or not single_use(head_tr.outputs[0]):
+                    return None
+                unpack = producer_of(head_tr.inputs[0], "Reshape")  # [S,-1,dh]
+                if unpack is None or not single_use(unpack.outputs[0]):
+                    return None
+                if pack_target is None:
+                    pack_target, unpack_target = const_ints(pack.inputs[1]), const_ints(unpack.inputs[1])
+                elif const_ints(pack.inputs[1]) != pack_target or const_ints(unpack.inputs[1]) != unpack_target:
+                    return None
+                branch = unbind_branch(unpack.inputs[0])
+                if branch is None or branch[0] != i:
+                    return None
+                if i == 0:
+                    shared = branch[1]
+                elif branch[1] is not shared:
+                    return None
+            if (
+                shared is None
+                or shared.op_type != "Squeeze"
+                or axes_of(shared) not in ([-2], [3])
+                or len(shared.outputs[0].uses()) != 3
+            ):
                 return None
-            branch = unbind_branch(unpack.inputs[0])
-            if branch is None or branch[0] != i:
+            tr5 = producer_of(shared.inputs[0], "Transpose")
+            if tr5 is None or perm_of(tr5) != [3, 1, 2, 0, 4] or not single_use(tr5.outputs[0]):
                 return None
-            if i == 0:
-                shared = branch[1]
-            elif branch[1] is not shared:
+            unsqueeze = producer_of(tr5.inputs[0], "Unsqueeze")
+            if unsqueeze is None or axes_of(unsqueeze) != [0] or not single_use(unsqueeze.outputs[0]):
                 return None
-        if (
-            shared is None
-            or shared.op_type != "Squeeze"
-            or axes_of(shared) not in ([-2], [3])
-            or len(shared.outputs[0].uses()) != 3
-        ):
-            return None
-        tr5 = producer_of(shared.inputs[0], "Transpose")
-        if tr5 is None or perm_of(tr5) != [3, 1, 2, 0, 4] or not single_use(tr5.outputs[0]):
-            return None
-        unsqueeze = producer_of(tr5.inputs[0], "Unsqueeze")
-        if unsqueeze is None or axes_of(unsqueeze) != [0] or not single_use(unsqueeze.outputs[0]):
-            return None
-        packed_reshape = producer_of(unsqueeze.inputs[0], "Reshape")  # [S,-1,3,D]
-        if packed_reshape is None or not single_use(packed_reshape.outputs[0]):
-            return None
-        packed_target = const_ints(packed_reshape.inputs[1])
-        if packed_target is None or len(packed_target) != 4 or packed_target[1:3] != [-1, 3]:
-            return None
-        seq, width = packed_target[0], packed_target[3]
-        if pack_target is None or unpack_target is None or len(pack_target) != 4 or len(unpack_target) != 3:
-            return None
-        heads, head_dim = pack_target[1], pack_target[3]
-        if pack_target != [-1, heads, seq, head_dim] or unpack_target != [seq, -1, head_dim]:
-            return None
-        if seq <= 0 or heads <= 0 or heads * head_dim != width:
-            return None
-        # the projection output must feed this cluster alone: its bias is about to be mutated
-        if not single_use(packed_reshape.inputs[0]):
-            return None
-        packed = bias_add(producer_of(packed_reshape.inputs[0], "Add"), 3 * width)
-        if packed is None or not single_use(packed[0]):
-            return None
-        mm_out, bias = packed
-        matmul = producer_of(mm_out, "MatMul")
-        if matmul is None:
-            return None
-        weight = matmul.inputs[1]
-        w_arr = const_array(weight)
-        if w_arr is None or w_arr.shape != (width, 3 * width):
-            return None
-        pre_tr = producer_of(matmul.inputs[0], "Transpose")
-        if pre_tr is None or perm_of(pre_tr) != [1, 0, 2] or not single_use(pre_tr.outputs[0]):
-            return None
-
-        # out side: Transpose(2,0,1,3) -> Reshape[-1,D] -> Gemm -> Reshape[S,-1,D] -> Transpose(1,0,2)
-        out_tr = sole_consumer(att.outputs[0], "Transpose")
-        if out_tr is None or perm_of(out_tr) != [2, 0, 1, 3]:
-            return None
-        out_flat = sole_consumer(out_tr.outputs[0], "Reshape")
-        if out_flat is None or const_ints(out_flat.inputs[1]) != [-1, width]:
-            return None
-        gemm = sole_consumer(out_flat.outputs[0], "Gemm")
-        if gemm is None or len(gemm.inputs) != 3:
-            return None
-        attrs = gemm.attributes
-        trans_b = attrs.get_int("transB", 0)
-        if attrs.get_float("alpha", 1.0) != 1.0 or attrs.get_float("beta", 1.0) != 1.0 or attrs.get_int("transA", 0):
-            return None
-        wo, bo = gemm.inputs[1], gemm.inputs[2]
-        wo_arr = const_array(wo)
-        bo_arr = const_array(bo)
-        if wo_arr is None or wo_arr.shape != (width, width) or not single_use(wo):
-            return None
-        if bo_arr is None or bo_arr.size != width or not single_use(bo):
-            return None
-        out_unflat = sole_consumer(gemm.outputs[0], "Reshape")
-        if out_unflat is None or const_ints(out_unflat.inputs[1]) != [seq, -1, width]:
-            return None
-        out_tr2 = sole_consumer(out_unflat.outputs[0], "Transpose")
-        if out_tr2 is None or perm_of(out_tr2) != [1, 0, 2]:
-            return None
-        return {
-            # add_out is the seq-first projection output: unusable batch-first, replaced on rewrite
-            "packed": Packed(pre_tr.inputs[0], weight, bias, packed_reshape.inputs[0], heads, width, seq),
-            "wo_t": wo_arr.T if trans_b else wo_arr,  # y = x @ wo_t orientation, fp-exact
-            "bo": bo,
-            "final": out_tr2.outputs[0],
-        }
-
-    def unbind_branch(value: ir.Value | None) -> tuple[int, ir.Node] | None:
-        """A ``Squeeze(Slice(shared, i:i+1, axis 0), [0])`` unbind branch -> (i, shared node)."""
-        squeeze = producer_of(value, "Squeeze")
-        if squeeze is None or axes_of(squeeze) != [0] or not single_use(squeeze.outputs[0]):
-            return None
-        unbind = producer_of(squeeze.inputs[0], "Slice")
-        if unbind is None or not single_use(unbind.outputs[0]):
-            return None
-        start = slice_start(unbind, 3)
-        source = unbind.inputs[0].producer()
-        if start is None or source is None:
-            return None
-        return start, source
-
-    def match_packed_shuffle(shared: ir.Node, n: int) -> Packed | None:
-        """The shared ``Transpose(2,0,3,1,4)(Reshape[-1,S,n,H,dh](MatMul+Add))`` unbind source."""
-        if shared.op_type != "Transpose" or perm_of(shared) != [2, 0, 3, 1, 4]:
-            return None
-        if len(shared.outputs[0].uses()) != n:
-            return None
-        reshape = producer_of(shared.inputs[0], "Reshape")
-        if reshape is None or not single_use(reshape.outputs[0]):
-            return None
-        target = const_ints(reshape.inputs[1])
-        if target is None or len(target) != 5 or target[0] != -1 or target[2] != n:
-            return None
-        seq, heads, head_dim = target[1], target[3], target[4]
-        width = heads * head_dim
-        if seq <= 0 or heads <= 0 or head_dim <= 0:
-            return None
-        # the projection output must feed this cluster alone: its bias is about to be mutated
-        if not single_use(reshape.inputs[0]):
-            return None
-        packed = bias_add(producer_of(reshape.inputs[0], "Add"), n * width)
-        if packed is None or not single_use(packed[0]):
-            return None
-        mm_out, bias = packed
-        matmul = producer_of(mm_out, "MatMul")
-        if matmul is None:
-            return None
-        w_arr = const_array(matmul.inputs[1])
-        if w_arr is None or w_arr.shape != (width, n * width):
-            return None
-        return Packed(matmul.inputs[0], matmul.inputs[1], bias, reshape.inputs[0], heads, width, seq)
-
-    def match_batchfirst_out(att: ir.Node, seq: int, width: int) -> dict[str, Any] | None:
-        """Batch-first out side: Transpose(0,2,1,3) -> Reshape[-1,S,D] -> MatMul + Add."""
-        out_tr = sole_consumer(att.outputs[0], "Transpose")
-        if out_tr is None or perm_of(out_tr) != [0, 2, 1, 3]:
-            return None
-        out_reshape = sole_consumer(out_tr.outputs[0], "Reshape")
-        if out_reshape is None or const_ints(out_reshape.inputs[1]) != [-1, seq, width]:
-            return None
-        out_mm = sole_consumer(out_reshape.outputs[0], "MatMul")
-        if out_mm is None:
-            return None
-        wo_arr = const_array(out_mm.inputs[1])
-        if wo_arr is None or wo_arr.shape != (width, width):
-            return None
-        folded = bias_add(sole_consumer(out_mm.outputs[0], "Add"), width)
-        if folded is None:
-            return None
-        return {"final": out_reshape.outputs[0], "wo": wo_arr, "bo": folded[1]}
-
-    def match_batchfirst_packed(att: ir.Node) -> dict[str, Any] | None:
-        """timm block: batch-first packed QKV unbind; all three inputs slice one shared shuffle."""
-        branches = [unbind_branch(att.inputs[i]) for i in range(3)]
-        if any(b is None for b in branches) or [b[0] for b in branches] != [0, 1, 2]:  # type: ignore[index]
-            return None
-        sources = {id(b[1]) for b in branches}  # type: ignore[index]
-        if len(sources) != 1:
-            return None
-        packed = match_packed_shuffle(branches[0][1], 3)  # type: ignore[index]
-        if packed is None:
-            return None
-        out = match_batchfirst_out(att, packed.seq, packed.width)
-        if out is None:
-            return None
-        return {"packed": packed, **out}
-
-    def match_attnpool(att: ir.Node) -> dict[str, Any] | None:
-        """SigLIP MAP head: folded-constant query + batch-first packed KV unbind (2-way)."""
-        branches = [unbind_branch(att.inputs[i]) for i in (1, 2)]
-        if any(b is None for b in branches) or [b[0] for b in branches] != [0, 1]:  # type: ignore[index]
-            return None
-        if branches[0][1] is not branches[1][1]:  # type: ignore[index]
-            return None
-        packed = match_packed_shuffle(branches[0][1], 2)  # type: ignore[index]
-        if packed is None:
-            return None
-        # q: Add(const [1,H,1,dh], Unsqueeze(batch_zeros_1d seed, [1,2,3])) from _FoldConstantAttnQuery
-        q_add = producer_of(att.inputs[0], "Add")
-        if q_add is None or not single_use(q_add.outputs[0]):
-            return None
-        query = next((v for v in q_add.inputs if const_array(v) is not None), None)
-        col = next((v for v in q_add.inputs if v is not query), None)
-        q_arr = const_array(query)
-        if q_arr is None or q_arr.shape != (1, packed.heads, 1, packed.width // packed.heads):
-            return None
-        unsqueeze = producer_of(col, "Unsqueeze")
-        if unsqueeze is None or axes_of(unsqueeze) != [1, 2, 3] or not single_use(unsqueeze.outputs[0]):
-            return None
-        out = match_batchfirst_out(att, 1, packed.width)
-        if out is None:
-            return None
-        return {"packed": packed, "query": query, "seed": unsqueeze.inputs[0], **out}
-
-    def match_separate(att: ir.Node) -> dict[str, Any] | None:
-        """HF-style separate q/k/v projections feeding per-head Reshape+Transpose (XLM-R)."""
-        sources = []
-        shape = None
-        for i in range(3):
-            head_tr = producer_of(att.inputs[i], "Transpose")
-            if head_tr is None or perm_of(head_tr) != [0, 2, 1, 3] or not single_use(head_tr.outputs[0]):
+            packed_reshape = producer_of(unsqueeze.inputs[0], "Reshape")  # [S,-1,3,D]
+            if packed_reshape is None or not single_use(packed_reshape.outputs[0]):
                 return None
-            reshape = producer_of(head_tr.inputs[0], "Reshape")
+            packed_target = const_ints(packed_reshape.inputs[1])
+            if packed_target is None or len(packed_target) != 4 or packed_target[1:3] != [-1, 3]:
+                return None
+            seq, width = packed_target[0], packed_target[3]
+            if pack_target is None or unpack_target is None or len(pack_target) != 4 or len(unpack_target) != 3:
+                return None
+            heads, head_dim = pack_target[1], pack_target[3]
+            if pack_target != [-1, heads, seq, head_dim] or unpack_target != [seq, -1, head_dim]:
+                return None
+            if seq <= 0 or heads <= 0 or heads * head_dim != width:
+                return None
+            # the projection output must feed this cluster alone: its bias is about to be mutated
+            if not single_use(packed_reshape.inputs[0]):
+                return None
+            packed = bias_add(producer_of(packed_reshape.inputs[0], "Add"), 3 * width)
+            if packed is None or not single_use(packed[0]):
+                return None
+            mm_out, bias = packed
+            matmul = producer_of(mm_out, "MatMul")
+            if matmul is None:
+                return None
+            weight = matmul.inputs[1]
+            w_arr = const_array(weight)
+            if w_arr is None or w_arr.shape != (width, 3 * width):
+                return None
+            pre_tr = producer_of(matmul.inputs[0], "Transpose")
+            if pre_tr is None or perm_of(pre_tr) != [1, 0, 2] or not single_use(pre_tr.outputs[0]):
+                return None
+
+            out_tr = sole_consumer(att.outputs[0], "Transpose")
+            if out_tr is None or perm_of(out_tr) != [2, 0, 1, 3]:
+                return None
+            out_flat = sole_consumer(out_tr.outputs[0], "Reshape")
+            if out_flat is None or const_ints(out_flat.inputs[1]) != [-1, width]:
+                return None
+            gemm = sole_consumer(out_flat.outputs[0], "Gemm")
+            if gemm is None or len(gemm.inputs) != 3:
+                return None
+            attrs = gemm.attributes
+            trans_b = attrs.get_int("transB", 0)
+            if (
+                attrs.get_float("alpha", 1.0) != 1.0
+                or attrs.get_float("beta", 1.0) != 1.0
+                or attrs.get_int("transA", 0)
+            ):
+                return None
+            wo, bo = gemm.inputs[1], gemm.inputs[2]
+            wo_arr = const_array(wo)
+            bo_arr = const_array(bo)
+            if wo_arr is None or wo_arr.shape != (width, width) or not single_use(wo):
+                return None
+            if bo_arr is None or bo_arr.size != width or not single_use(bo):
+                return None
+            out_unflat = sole_consumer(gemm.outputs[0], "Reshape")
+            if out_unflat is None or const_ints(out_unflat.inputs[1]) != [seq, -1, width]:
+                return None
+            out_tr2 = sole_consumer(out_unflat.outputs[0], "Transpose")
+            if out_tr2 is None or perm_of(out_tr2) != [1, 0, 2]:
+                return None
+            return {
+                # add_out is the seq-first projection output: unusable batch-first, replaced on rewrite
+                "packed": Packed(pre_tr.inputs[0], weight, bias, packed_reshape.inputs[0], heads, width, seq),
+                "wo_t": wo_arr.T if trans_b else wo_arr,  # y = x @ wo_t orientation, fp-exact
+                "bo": bo,
+                "final": out_tr2.outputs[0],
+            }
+
+        def unbind_branch(value: ir.Value | None) -> tuple[int, ir.Node] | None:
+            """A ``Squeeze(Slice(shared, i:i+1, axis 0), [0])`` unbind branch -> (i, shared node)."""
+            squeeze = producer_of(value, "Squeeze")
+            if squeeze is None or axes_of(squeeze) != [0] or not single_use(squeeze.outputs[0]):
+                return None
+            unbind = producer_of(squeeze.inputs[0], "Slice")
+            if unbind is None or not single_use(unbind.outputs[0]):
+                return None
+            start = slice_start(unbind, 3)
+            source = unbind.inputs[0].producer()
+            if start is None or source is None:
+                return None
+            return start, source
+
+        def match_packed_shuffle(shared: ir.Node, n: int) -> Packed | None:
+            """The shared ``Transpose(2,0,3,1,4)(Reshape[-1,S,n,H,dh](MatMul+Add))`` unbind source."""
+            if shared.op_type != "Transpose" or perm_of(shared) != [2, 0, 3, 1, 4]:
+                return None
+            if len(shared.outputs[0].uses()) != n:
+                return None
+            reshape = producer_of(shared.inputs[0], "Reshape")
             if reshape is None or not single_use(reshape.outputs[0]):
                 return None
             target = const_ints(reshape.inputs[1])
-            if target is None or len(target) != 4 or target[0] != -1 or min(target[1:]) <= 0:
+            if target is None or len(target) != 5 or target[0] != -1 or target[2] != n:
                 return None
-            if shape is None:
-                shape = target
-            elif target != shape:
+            seq, heads, head_dim = target[1], target[3], target[4]
+            width = heads * head_dim
+            if seq <= 0 or heads <= 0 or head_dim <= 0:
                 return None
-            projected = bias_add(reshape.inputs[0].producer(), target[2] * target[3])
-            if projected is None or producer_of(projected[0], "MatMul") is None:
+            # the projection output must feed this cluster alone: its bias is about to be mutated
+            if not single_use(reshape.inputs[0]):
                 return None
-            sources.append(reshape.inputs[0])
-        assert shape is not None
-        seq, heads, head_dim = shape[1], shape[2], shape[3]
-        out_tr = sole_consumer(att.outputs[0], "Transpose")
-        if out_tr is None or perm_of(out_tr) != [0, 2, 1, 3]:
-            return None
-        out_reshape = sole_consumer(out_tr.outputs[0], "Reshape")
-        if out_reshape is None or const_ints(out_reshape.inputs[1]) != [-1, seq, heads * head_dim]:
-            return None
-        return {"sources": sources, "heads": heads, "final": out_reshape.outputs[0]}
+            packed = bias_add(producer_of(reshape.inputs[0], "Add"), n * width)
+            if packed is None or not single_use(packed[0]):
+                return None
+            mm_out, bias = packed
+            matmul = producer_of(mm_out, "MatMul")
+            if matmul is None:
+                return None
+            w_arr = const_array(matmul.inputs[1])
+            if w_arr is None or w_arr.shape != (width, n * width):
+                return None
+            return Packed(matmul.inputs[0], matmul.inputs[1], bias, reshape.inputs[0], heads, width, seq)
 
-    split_sizes: dict[tuple[int, int], ir.Value] = {}  # (n, width) -> shared Split sizes initializer
+        def match_batchfirst_out(att: ir.Node, seq: int, width: int) -> dict[str, Any] | None:
+            """Batch-first out side: Transpose(0,2,1,3) -> Reshape[-1,S,D] -> MatMul + Add."""
+            out_tr = sole_consumer(att.outputs[0], "Transpose")
+            if out_tr is None or perm_of(out_tr) != [0, 2, 1, 3]:
+                return None
+            out_reshape = sole_consumer(out_tr.outputs[0], "Reshape")
+            if out_reshape is None or const_ints(out_reshape.inputs[1]) != [-1, seq, width]:
+                return None
+            out_mm = sole_consumer(out_reshape.outputs[0], "MatMul")
+            if out_mm is None:
+                return None
+            wo_arr = const_array(out_mm.inputs[1])
+            if wo_arr is None or wo_arr.shape != (width, width):
+                return None
+            folded = bias_add(sole_consumer(out_mm.outputs[0], "Add"), width)
+            if folded is None:
+                return None
+            return {"final": out_reshape.outputs[0], "wo": wo_arr, "bo": folded[1]}
 
-    def emit_split(base: str, packed: Packed, n: int) -> list[ir.Value]:
-        sizes = split_sizes.get((n, packed.width))
-        if sizes is None:
-            sizes = make_init(graph, f"attn3d_split_{n}x{packed.width}", np.full(n, packed.width, np.int64))
-            split_sizes[(n, packed.width)] = sizes
-        split = ir.node("Split", inputs=[packed.add_out, sizes], attributes={"axis": -1}, num_outputs=n)
-        split.name = f"{base}_qkv_split"
-        for out, tag in zip(split.outputs, ("q", "k", "v")[3 - n :]):
-            out.name = f"{base}_{tag}"
-        graph.append(split)
-        return list(split.outputs)
+        def match_batchfirst_packed(att: ir.Node) -> dict[str, Any] | None:
+            """timm block: batch-first packed QKV unbind; all three inputs slice one shared shuffle."""
+            branches = [unbind_branch(att.inputs[i]) for i in range(3)]
+            if any(b is None for b in branches) or [b[0] for b in branches] != [0, 1, 2]:  # type: ignore[index]
+                return None
+            sources = {id(b[1]) for b in branches}  # type: ignore[index]
+            if len(sources) != 1:
+                return None
+            packed = match_packed_shuffle(branches[0][1], 3)  # type: ignore[index]
+            if packed is None:
+                return None
+            out = match_batchfirst_out(att, packed.seq, packed.width)
+            if out is None:
+                return None
+            return {"packed": packed, **out}
 
-    rewritten = 0
-    for att in [n for n in graph if n.op_type == "Attention"]:
-        if len(att.outputs) != 1 or len(att.inputs) < 3 or len(att.inputs) > 4:
-            continue
-        if any(att.inputs[i] is None for i in range(3)):
-            continue
-        base = att.name or att.outputs[0].name
+        def match_attnpool(att: ir.Node) -> dict[str, Any] | None:
+            """SigLIP MAP head: folded-constant query + batch-first packed KV unbind (2-way)."""
+            branches = [unbind_branch(att.inputs[i]) for i in (1, 2)]
+            if any(b is None for b in branches) or [b[0] for b in branches] != [0, 1]:  # type: ignore[index]
+                return None
+            if branches[0][1] is not branches[1][1]:  # type: ignore[index]
+                return None
+            packed = match_packed_shuffle(branches[0][1], 2)  # type: ignore[index]
+            if packed is None:
+                return None
+            # the folded constant query `_FoldConstantAttnQuery` leaves
+            q_add = producer_of(att.inputs[0], "Add")
+            if q_add is None or not single_use(q_add.outputs[0]):
+                return None
+            query = next((v for v in q_add.inputs if const_array(v) is not None), None)
+            col = next((v for v in q_add.inputs if v is not query), None)
+            q_arr = const_array(query)
+            if q_arr is None or q_arr.shape != (1, packed.heads, 1, packed.width // packed.heads):
+                return None
+            unsqueeze = producer_of(col, "Unsqueeze")
+            if unsqueeze is None or axes_of(unsqueeze) != [1, 2, 3] or not single_use(unsqueeze.outputs[0]):
+                return None
+            out = match_batchfirst_out(att, 1, packed.width)
+            if out is None:
+                return None
+            return {"packed": packed, "query": query, "seed": unsqueeze.inputs[0], **out}
 
-        if (m := match_seqfirst_packed(att)) is not None:
-            packed: Packed = m["packed"]
-            fold_v_bias(packed.bias, m["wo_t"], m["bo"])
-            matmul = make_node("MatMul", [packed.x, packed.weight], name=f"{base}_qkv_mm", out=f"{base}_qkv_mm_out")
-            add = make_node("Add", [matmul.outputs[0], packed.bias], name=f"{base}_qkv_bias", out=f"{base}_qkv")
-            graph.extend([matmul, add])
-            qkv = emit_split(base, packed._replace(add_out=add.outputs[0]), 3)
+        def match_separate(att: ir.Node) -> dict[str, Any] | None:
+            """HF-style separate q/k/v projections feeding per-head Reshape+Transpose (XLM-R)."""
+            sources = []
+            shape = None
+            v_bias = None
             for i in range(3):
-                att.replace_input_with(i, qkv[i])
-            set_heads(att, packed.heads)
-            wo_t = make_init(graph, f"{base}_wo_t", np.ascontiguousarray(m["wo_t"]))
-            out_mm = make_node("MatMul", [att.outputs[0], wo_t], name=f"{base}_out_mm", out=f"{base}_out_mm_out")
-            out_add = make_node("Add", [out_mm.outputs[0], m["bo"]], name=f"{base}_out_bias", out=f"{base}_out")
-            graph.extend([out_mm, out_add])
-            m["final"].replace_all_uses_with(out_add.outputs[0], replace_graph_outputs=True)
-        elif (m := match_batchfirst_packed(att)) is not None:
-            packed = m["packed"]
-            fold_v_bias(packed.bias, m["wo"], m["bo"])
-            qkv = emit_split(base, packed, 3)
-            for i in range(3):
-                att.replace_input_with(i, qkv[i])
-            set_heads(att, packed.heads)
-            m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
-        elif (m := match_attnpool(att)) is not None:
-            packed = m["packed"]
-            fold_v_bias(packed.bias, m["wo"], m["bo"])
-            kv = emit_split(base, packed, 2)
-            q_arr = const_array(m["query"]).transpose(0, 2, 1, 3).reshape(1, 1, packed.width)
-            query = make_init(graph, f"{base}_q3", np.ascontiguousarray(q_arr))
-            axes = make_init(graph, f"{base}_q_col_axes", np.array([1, 2], np.int64))
-            unsqueeze = make_node("Unsqueeze", [m["seed"], axes], name=f"{base}_q_col", out=f"{base}_q_col_out")
-            q_add = make_node("Add", [query, unsqueeze.outputs[0]], name=f"{base}_q_bcast", out=f"{base}_q")
-            graph.extend([unsqueeze, q_add])
-            att.replace_input_with(0, q_add.outputs[0])
-            att.replace_input_with(1, kv[0])
-            att.replace_input_with(2, kv[1])
-            set_heads(att, packed.heads)
-            m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
-        elif (m := match_separate(att)) is not None:
-            for i in range(3):
-                att.replace_input_with(i, m["sources"][i])
-            set_heads(att, m["heads"])
-            m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
-        else:
-            continue
-        att.outputs[0].shape = None  # now [B,S,D]; stale per-head annotation must not survive
-        rewritten += 1
+                head_tr = producer_of(att.inputs[i], "Transpose")
+                if head_tr is None or perm_of(head_tr) != [0, 2, 1, 3] or not single_use(head_tr.outputs[0]):
+                    return None
+                reshape = producer_of(head_tr.inputs[0], "Reshape")
+                if reshape is None or not single_use(reshape.outputs[0]):
+                    return None
+                target = const_ints(reshape.inputs[1])
+                if target is None or len(target) != 4 or target[0] != -1 or min(target[1:]) <= 0:
+                    return None
+                if shape is None:
+                    shape = target
+                elif target != shape:
+                    return None
+                projected = bias_add(reshape.inputs[0].producer(), target[2] * target[3])
+                if projected is None or producer_of(projected[0], "MatMul") is None:
+                    return None
+                # V's bias folds into the out-proj's, so take the projection ahead of its Add; nothing else may read it
+                if i == 2:
+                    if not single_use(reshape.inputs[0]):
+                        return None
+                    sources.append(projected[0])
+                    v_bias = projected[1]
+                else:
+                    sources.append(reshape.inputs[0])
+            assert shape is not None
+            out = match_batchfirst_out(att, shape[1], shape[2] * shape[3])
+            if out is None:
+                return None
+            return {"sources": sources, "heads": shape[2], "v_bias": v_bias, **out}
 
-    if rewritten:
-        graph.sort()
-        common_passes.RemoveUnusedNodesPass()(model)
-    return rewritten
+        split_sizes: dict[tuple[int, int], ir.Value] = {}  # (n, width) -> shared Split sizes initializer
+
+        def emit_split(base: str, packed: Packed, n: int) -> list[ir.Value]:
+            sizes = split_sizes.get((n, packed.width))
+            if sizes is None:
+                sizes = make_init(graph, f"attn3d_split_{n}x{packed.width}", np.full(n, packed.width, np.int64))
+                split_sizes[(n, packed.width)] = sizes
+            split = ir.node("Split", inputs=[packed.add_out, sizes], attributes={"axis": -1}, num_outputs=n)
+            split.name = f"{base}_qkv_split"
+            for out, tag in zip(split.outputs, ("q", "k", "v")[3 - n :]):
+                out.name = f"{base}_{tag}"
+            graph.append(split)
+            return list(split.outputs)
+
+        rewritten = 0
+        for att in [n for n in graph if n.op_type == "Attention"]:
+            if len(att.outputs) != 1 or len(att.inputs) < 3 or len(att.inputs) > 4:
+                continue
+            if any(att.inputs[i] is None for i in range(3)):
+                continue
+            base = att.name or att.outputs[0].name
+
+            if (m := match_seqfirst_packed(att)) is not None:
+                packed: Packed = m["packed"]
+                fold_v_bias(packed.bias, m["wo_t"], m["bo"])
+                matmul = make_node("MatMul", [packed.x, packed.weight], name=f"{base}_qkv_mm", out=f"{base}_qkv_mm_out")
+                add = make_node("Add", [matmul.outputs[0], packed.bias], name=f"{base}_qkv_bias", out=f"{base}_qkv")
+                graph.extend([matmul, add])
+                qkv = emit_split(base, packed._replace(add_out=add.outputs[0]), 3)
+                for i in range(3):
+                    att.replace_input_with(i, qkv[i])
+                set_heads(att, packed.heads)
+                wo_t = make_init(graph, f"{base}_wo_t", np.ascontiguousarray(m["wo_t"]))
+                out_mm = make_node("MatMul", [att.outputs[0], wo_t], name=f"{base}_out_mm", out=f"{base}_out_mm_out")
+                out_add = make_node("Add", [out_mm.outputs[0], m["bo"]], name=f"{base}_out_bias", out=f"{base}_out")
+                graph.extend([out_mm, out_add])
+                m["final"].replace_all_uses_with(out_add.outputs[0], replace_graph_outputs=True)
+            elif (m := match_batchfirst_packed(att)) is not None:
+                packed = m["packed"]
+                fold_v_bias(packed.bias, m["wo"], m["bo"])
+                qkv = emit_split(base, packed, 3)
+                for i in range(3):
+                    att.replace_input_with(i, qkv[i])
+                set_heads(att, packed.heads)
+                m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
+            elif (m := match_attnpool(att)) is not None:
+                packed = m["packed"]
+                fold_v_bias(packed.bias, m["wo"], m["bo"])
+                kv = emit_split(base, packed, 2)
+                q_arr = const_array(m["query"]).transpose(0, 2, 1, 3).reshape(1, 1, packed.width)
+                query = make_init(graph, f"{base}_q3", np.ascontiguousarray(q_arr))
+                axes = make_init(graph, f"{base}_q_col_axes", np.array([1, 2], np.int64))
+                unsqueeze = make_node("Unsqueeze", [m["seed"], axes], name=f"{base}_q_col", out=f"{base}_q_col_out")
+                q_add = make_node("Add", [query, unsqueeze.outputs[0]], name=f"{base}_q_bcast", out=f"{base}_q")
+                graph.extend([unsqueeze, q_add])
+                att.replace_input_with(0, q_add.outputs[0])
+                att.replace_input_with(1, kv[0])
+                att.replace_input_with(2, kv[1])
+                set_heads(att, packed.heads)
+                m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
+            elif (m := match_separate(att)) is not None:
+                fold_v_bias(m["v_bias"], m["wo"], m["bo"])
+                for i in range(3):
+                    att.replace_input_with(i, m["sources"][i])
+                set_heads(att, m["heads"])
+                m["final"].replace_all_uses_with(att.outputs[0], replace_graph_outputs=True)
+            else:
+                continue
+            att.outputs[0].shape = None  # now [B,S,D]; stale per-head annotation must not survive
+            rewritten += 1
+
+        if rewritten:
+            common_passes.TopologicalSortPass()(model)
+            common_passes.RemoveUnusedNodesPass()(model)
+        log.info("Restructured %d attention site(s) into 3D Attention", rewritten)
+        return ir.passes.PassResult(model, bool(rewritten))
 
 
-def flip_causal_attention(model: ir.Model) -> int:
-    """Replace a constant causal ``Attention`` mask with ``is_causal=1``, in place. Opset-23 ``is_causal``
-    expresses the ``[1,1,S,S]`` lower-triangular additive mask exactly (q_len == kv_len == S here),
-    dropping the mask input and its initializer. Verified numerically (exact 0 on/below diagonal, <= -1e4
-    above — both underflow softmax to 0); anything else, incl. data-dependent padding masks, is left
-    untouched. Bit-exact on ORT CPU. Returns nodes flipped."""
-    graph = model.graph
-    flipped = 0
-    for node in graph:
-        if node.op_type != "Attention" or len(node.inputs) != 4 or node.inputs[3] is None:
-            continue
-        if node.attributes.get_int("is_causal", 0) != 0:
-            continue
-        mask_const = node.inputs[3].const_value
-        if mask_const is None:
-            continue
-        arr = mask_const.numpy()
-        if not np.issubdtype(arr.dtype, np.floating) or arr.ndim < 2:
-            continue
-        seq = arr.shape[-1]
-        if seq < 2 or arr.shape[-2] != seq or arr.size != seq * seq:
-            continue  # not a broadcastable square [.., S, S] mask
-        square = arr.reshape(seq, seq).astype(np.float64)
+class _FlipCausalAttention(RewriteRuleClassBase):
+    """Replace a constant causal ``Attention`` mask with ``is_causal=1``, exact here (q_len == kv_len). Terminates
+    without a guard: the replacement drops the mask input the pattern requires."""
+
+    def pattern(self, op: Any, q: Any, k: Any, v: Any, mask: Any) -> Any:
+        return op.Attention(q, k, v, mask, _allow_other_attributes=True, _outputs=["attn"])
+
+    def check(self, context: Any, mask: Any, attn: Any, **_: Any) -> MatchResult:
+        result = MatchResult()
+        if attn.producer().attributes.get_int("is_causal", 0) != 0:
+            return result.fail("the Attention is already causal")
+        array = const_array(mask)
+        if array is None or not np.issubdtype(array.dtype, np.floating) or array.ndim < 2:
+            return result.fail("the mask is not a float constant")
+        seq = array.shape[-1]
+        if seq < 2 or array.shape[-2] != seq or array.size != seq * seq:
+            return result.fail("the mask is not a broadcastable square [.., S, S] tensor")
+        square = array.reshape(seq, seq).astype(np.float64)
         on_or_below = np.tril(np.ones((seq, seq), np.bool_))
         if not (np.all(square[on_or_below] == 0.0) and np.all(square[~on_or_below] <= -1.0e4)):
+            return result.fail("the mask is not the lower-triangular additive one")
+        return result
+
+    def rewrite(self, op: Any, q: Any, k: Any, v: Any, mask: Any, attn: Any, **_: Any) -> Any:
+        return op.Attention(q, k, v, **{**attn.producer().attributes, "is_causal": 1})
+
+
+_ROW_WISE_UNARY = {"Gelu", "Relu", "Sigmoid"}
+_ROW_WISE_BINARY = {"Add", "Div", "Mul", "Sub"}
+
+
+def _find_pooling_select(graph: ir.Graph) -> tuple[ir.Node, ir.Value, int] | None:
+    """The tower's single-token pooling select -- EOT one-hot ``MatMul`` or ``Slice(axis=1)`` -> node, source, S."""
+    for node in graph:
+        if node.op_type == "MatMul" and _is_onehot_selector(node.inputs[0]):
+            data = node.inputs[1]
+        elif node.op_type == "Slice" and len(node.inputs) >= 4 and const_ints(node.inputs[3]) == [1]:
+            data = node.inputs[0]
+        else:
             continue
-        node.resize_inputs(3)  # drop the mask input; the initializer goes dead
-        node.attributes["is_causal"] = ir.AttrInt64("is_causal", 1)
-        flipped += 1
-    return flipped
+        dims, picked = data.shape, node.outputs[0].shape
+        if dims is not None and len(dims) == 3 and isinstance(dims[1], int) and dims[1] > 1 and picked[1] == 1:
+            return node, data, dims[1]
+    return None
 
 
-def prune_unused_initializers(model: ir.Model) -> int:
-    """Drop initializers no node references (rewrite leftovers). ORT strips these at load with a warning;
-    converters that don't (RKNN) ship the dead bytes."""
-    graph = model.graph
-    inputs = set(graph.inputs)
-    dead = [
-        name
-        for name, value in graph.initializers.items()
-        if value not in inputs and next(iter(value.uses()), None) is None
-    ]
-    for name in dead:
-        del graph.initializers[name]
-    return len(dead)
+class HoistPoolingSelectPass(ir.passes.InPlacePass):
+    """Push the single-token pooling select back through the last transformer block, so its tail runs at sequence
+    length 1. Sound because that tail is row-wise, which a masked or causal ``Attention`` is not -- its bias is indexed
+    by the query position, so those towers stop at the attention output. Runs last: needs the 3D ``Attention``."""
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        found = _find_pooling_select(graph)
+        if found is None:
+            return ir.passes.PassResult(model, False)
+        select, root, seq = found
+
+        def rows(value: ir.Value | None) -> bool:
+            """`value` carries one entry per token on axis 1, so the select applies to it."""
+            dims = value.shape if value is not None else None
+            return dims is not None and len(dims) == 3 and dims[1] == seq
+
+        def broadcasts(value: ir.Value) -> bool:
+            """A per-feature operand holding the same value on every token."""
+            dims = value.shape
+            return dims is not None and (len(dims) < 3 or (len(dims) == 3 and dims[1] == 1))
+
+        def row_wise(node: ir.Node) -> bool:
+            if node.op_type in _ROW_WISE_UNARY:
+                return True
+            if node.op_type in _ROW_WISE_BINARY:
+                return all(rows(v) or broadcasts(v) for v in node.inputs)
+            if node.op_type == "LayerNormalization":
+                return node.attributes.get_int("axis", -1) in (-1, 2)
+            if node.op_type == "MatMul":  # rank-2 rhs is a per-row projection; a rank-3 rhs mixes tokens
+                weight = node.inputs[1]
+                return rows(node.inputs[0]) and weight.shape is not None and len(weight.shape) == 2
+            return node.op_type == "Attention" and len(node.inputs) == 3 and not node.attributes.get_int("is_causal", 0)
+
+        region: list[ir.Node] = []
+        inside = {id(select)}
+        need: dict[int, ir.Value] = {id(root): root}
+        grew = True
+        while grew:  # fixed point: a diamond's second arm can admit a producer an earlier sweep deferred
+            grew = False
+            for value in list(need.values()):
+                node = value.producer()
+                if node is None or id(node) in inside or not row_wise(node):
+                    continue
+                # dropping rows is only sound when nothing outside the region reads the full-length result
+                if any(o.is_graph_output() or any(id(u.node) not in inside for u in o.uses()) for o in node.outputs):
+                    continue
+                inside.add(id(node))
+                region.append(node)
+                grew = True
+                for inp in node.inputs[:1] if node.op_type == "Attention" else node.inputs:
+                    if rows(inp):
+                        need.setdefault(id(inp), inp)
+
+        frontier = [v for v in need.values() if v.producer() is None or id(v.producer()) not in inside]
+        assert any(n.op_type == "Attention" for n in region) or any(
+            producer_of(v, "Attention") is not None for v in frontier
+        ), f"pooling-select hoist stopped short of the last Attention: {[n.op_type for n in region]}"
+
+        picked: dict[int, ir.Value] = {}
+        for value in frontier:
+            inputs = [select.inputs[0], value] if select.op_type == "MatMul" else [value, *select.inputs[1:]]
+            node = make_node(select.op_type, inputs, name=f"pool_hoist_{value.name}", out=f"{value.name}_pooled")
+            node.outputs[0].shape = ir.Shape([value.shape[0], 1, value.shape[2]])
+            node.outputs[0].type = value.type
+            picked[id(value)] = node.outputs[0]
+            graph.append(node)
+
+        for node in region:
+            for index, inp in enumerate(node.inputs):
+                if inp is not None and id(inp) in picked:
+                    node.replace_input_with(index, picked[id(inp)])
+            for out in node.outputs:
+                if rows(out):
+                    out.shape = ir.Shape([out.shape[0], 1, out.shape[2]])
+
+        select.outputs[0].replace_all_uses_with(root)  # root now carries exactly the row the select picked
+        graph.remove(select, safe=True)
+        common_passes.TopologicalSortPass()(model)
+        log.info("Hoisted the pooling select back over %d node(s)", len(region))
+        return ir.passes.PassResult(model, True)
 
 
-_CLASS_TOKEN_RULES = RewriteRuleSet([_FuseClassTokenPrepend.rule()])
-_CONST_GATHER_RULES = RewriteRuleSet([FoldConstantGatherElements.rule()])
-_SCALAR_GATHER_RULES = RewriteRuleSet([_ScalarGatherToSlice.rule()])
-_CLEANUP_RULES = RewriteRuleSet([_BroadcastMaskRebuild.rule(), _FloatMaskCount.rule(), _IdentityAveragePool.rule()])
-# applied after _CLEANUP_RULES: matches the And form _BroadcastMaskRebuild just emitted
-_ADDITIVE_MASK_RULES = RewriteRuleSet([_AdditivePadMask.rule()])
-_LN_COMMUTE_RULES = RewriteRuleSet([_SelectBeforeLayerNorm.rule(), _EotSelectBeforeLayerNorm.rule()])
-_ATTNPOOL_QUERY_RULES = RewriteRuleSet([_FoldConstantAttnQuery.rule()])
+def _assert_fp16_safe(array: np.ndarray, name: str) -> None:
+    """Export-time guard for the fp16 table: nothing may overflow fp16, and no LIVE row may lose relative L2 norm to
+    the round-trip. Damage alone is not a defect, so only rows above a norm floor are read."""
+    over = int(np.count_nonzero(np.abs(array) > 65504.0))
+    if over:
+        raise ValueError(f"{name}: {over} values exceed the fp16 max of 65504")
+    # blocked: a whole-table round-trip would treble the table's transient footprint
+    blocks = [array[start : start + 16384] for start in range(0, len(array), 16384)]
+    norms = np.concatenate([np.linalg.norm(block, axis=1) for block in blocks])
+    errors = np.concatenate([np.linalg.norm(block - block.astype(np.float16), axis=1) for block in blocks])
+    live = norms >= 1e-2 * float(np.median(norms))
+    damaged = int(np.count_nonzero((errors > 1e-3 * np.maximum(norms, 1e-30)) & live))
+    if damaged:
+        raise ValueError(f"{name}: {damaged} live rows lose more than 1e-3 of their L2 norm to fp16")
 
 
-def devitalize_shape_domain(model: ir.Model, *, rewrite_eot: bool = False) -> tuple[ir.Model, dict[str, int]]:
-    """Run the full shape-domain-elimination pipeline on a dynamo-exported encoder. `fuse_visual_input`
-    + `canonicalize_constants` must already have run — the probe needs the final input contract. Operates
-    on the lazy `ir.Model` (weights stay external); returns the re-inferred model + per-stage rewrite counts."""
-    probes = probe_runtime(model)
-    counts: dict[str, int] = {}
-    if rewrite_eot:
-        counts["eot"] = rewrite_eot_gathernd(model, probes)
-    # runs before eliminate_dynamic_expands so the class-token Expand is consumed here
-    counts["class_token"] = _CLASS_TOKEN_RULES.apply_to_model(model)
-    counts["position_ids"] = constantify_position_ids(model)
-    counts["token_type"] = constantify_token_type_embeddings(model)
-    counts["expands"] = eliminate_dynamic_expands(model, probes)
-    # both GatherElements operands are now constant (constant position-id indices over the
-    # batch-materialized token-type row): fold the lookup, dropping its materialization chain into DCE below
-    counts["gather_elements"] = _CONST_GATHER_RULES.apply_to_model(model)
-    counts["reshapes"] = constantify_reshape_targets(model, probes)
-    # mask-rebuild collapse, float token count, no-op AvgPool -> Identity (folded right after)
-    counts["cleanup"] = _CLEANUP_RULES.apply_to_model(model)
-    # the bool key mask _BroadcastMaskRebuild rebuilt -> float additive bias (kills the bool island)
-    counts["additive_masks"] = _ADDITIVE_MASK_RULES.apply_to_model(model)
-    common_passes.IdentityEliminationPass()(model)
-    counts["attnpool_queries"] = prune_attnpool_dead_queries(model)
-    # runs after eliminate_dynamic_expands/constantify_reshape_targets: materialized-Expand + const Reshape target
-    counts["attnpool_const_query"] = _ATTNPOOL_QUERY_RULES.apply_to_model(model)
+def _cast_source(value: ir.Value) -> ir.Value:
+    """Walk back through dtype/no-op casts to the value actually being indexed with."""
+    while (producer := value.producer()) is not None and producer.op_type in ("Cast", "Identity"):
+        source = producer.inputs[0]
+        if source is None:
+            break
+        value = source
+    return value
 
-    before = len(model.graph)  # DCE: drop the now-dead Shape chains
-    common_passes.RemoveUnusedNodesPass()(model)
-    counts["dead"] = before - len(model.graph)
 
-    # move single-token selects ahead of their LayerNormalization before the Gathers are lowered
-    counts["ln_commute"] = _LN_COMMUTE_RULES.apply_to_model(model)
-    counts["gathers"] = _SCALAR_GATHER_RULES.apply_to_model(model)
-    # size_limit=0: lift EVERY rule-emitted Constant (incl. 1-element Slice params + Pad amounts); the
-    # default size_limit=16 leaves those as Constant nodes the CoreML EP rejects (see canonicalize_constants)
-    common_passes.LiftConstantsToInitializersPass(size_limit=0)(model)
-    common_passes.DeduplicateInitializersPass()(model)
-    # after the lift: the MAP-head query constant from _FoldConstantAttnQuery must be an initializer for
-    # the attnpool motif to read it
-    counts["attention_3d"] = restructure_attention_3d(model)
-    # after the 3D restructure: constant causal masks -> is_causal; retired [1,1,S,S] masks fall to the prune below
-    counts["causal"] = flip_causal_attention(model)
-    counts["pruned_inits"] = prune_unused_initializers(model)
+class _Fp16TokenEmbedding(RewriteRuleClassBase):
+    """Store the token-embedding table as fp16, casting the gathered rows back to fp32 so compute is untouched: the
+    table dominates a textual export's size. GATHER-FIRST IS LOAD-BEARING -- the mirror shape `Cast(table) -> Gather`
+    constant-folds the whole table back to fp32 at session init and cannot be stopped. The fp32 check terminates it."""
 
-    # surgery leaves stale annotations on rewritten paths; clear all and re-derive. A partial merge would
-    # either fail or ship stale value_info (which the CUDA planner trusts).
-    clear_cached_annotations(model.graph)
-    model = common_passes.ShapeInferencePass()(model).model
-    return model, counts
+    def pattern(self, op: Any, table: Any, indices: Any) -> Any:
+        return op.Gather(table, indices, _outputs=["gathered"])
+
+    def check(self, context: Any, table: Any, indices: Any, gathered: Any) -> MatchResult:
+        result = MatchResult()
+        if gathered.producer().attributes.get_int("axis", 0) != 0:
+            return result.fail("Gather axis is not 0")
+        if not table.is_initializer() or table.const_value is None or table.dtype != ir.DataType.FLOAT:
+            return result.fail("table is not an fp32 initializer")
+        if table.shape is None or len(table.shape) != 2 or gathered.is_graph_output():
+            return result.fail("table is not a rank-2 lookup feeding the graph")
+        ids = {v for v in context.model.graph.inputs if v.dtype is not None and v.dtype.is_integer()}
+        if _cast_source(indices) not in ids:
+            return result.fail("indices are not (a cast of) an integer graph input")
+        return result
+
+    def rewrite(self, op: Any, table: Any, indices: Any, gathered: Any) -> Any:
+        array = table.const_value.numpy()
+        _assert_fp16_safe(array, table.name)  # raises: a rejected table must abort the export, not skip
+        fp16 = op.initializer(ir.tensor(array.astype(np.float16), name=f"{table.name}_fp16"))
+        return op.Cast(op.Gather(fp16, indices, axis=0), to=ir.DataType.FLOAT)
+
+
+class Fp16TokenEmbeddingPass(ir.passes.Sequential):
+    """`_Fp16TokenEmbedding`, sweeping the fp32 table it retired: the rule emits a fresh initializer beside it."""
+
+    def __init__(self) -> None:
+        super().__init__(RewritePass([_Fp16TokenEmbedding.rule()]), common_passes.RemoveUnusedNodesPass())
+
+
+class _FoldEmbeddingScale(RewriteRuleClassBase):
+    """Fold NLLB's ``embed_scale`` into the token-embedding table, dropping a full ``[B,S,D]`` Mul. Bit-exact only for
+    a power-of-two scale on a table with fp16 headroom, both checked. Runs after ``Fp16TokenEmbeddingPass`` so the
+    shift lands on the table that ships, and overwrites that initializer in place, being the last transform."""
+
+    def pattern(self, op: Any, table: Any, indices: Any, scale: Any) -> Any:
+        rows = op.Gather(table, indices, _allow_other_attributes=True, _outputs=["rows"])
+        return op.Mul(OrValue([op.Cast(rows, _outputs=["widened"]), rows], name="looked_up"), scale)
+
+    def check(self, context: Any, table: Any, indices: Any, scale: Any, **_: Any) -> MatchResult:
+        result = MatchResult()
+        factor = const_array(scale)
+        if factor is None or factor.size != 1 or abs(np.frexp(float(factor.reshape(-1)[0]))[0]) != 0.5:
+            return result.fail("the scale is not a single power-of-two constant")
+        if indices not in {v for v in context.model.graph.inputs if v.dtype is not None and v.dtype.is_integer()}:
+            return result.fail("the lookup is not indexed by an integer graph input")
+        weights = table.const_value  # metadata first; the table materializes only past the gate
+        if weights is None or len(weights.shape) != 2:
+            return result.fail("the table is not a rank-2 constant")
+        if float(np.abs(weights.numpy()).max()) * float(factor.reshape(-1)[0]) > 65504.0:
+            return result.fail("the scaled table would leave fp16 range")
+        return result
+
+    def rewrite(self, op: Any, table: Any, indices: Any, scale: Any, rows: Any, widened: Any = None, **_: Any) -> Any:
+        array, factor = table.const_value.numpy(), float(const_array(scale).reshape(-1)[0])
+        table.const_value = ir.tensor(array * array.dtype.type(factor), name=table.name)
+        looked_up = op.Gather(table, indices, **rows.producer().attributes)
+        return looked_up if widened is None else op.Cast(looked_up, **widened.producer().attributes)
+
+
+class FoldEmbeddingScalePass(RewritePass):
+    def __init__(self) -> None:
+        # commute: nothing pins which side of the Mul the exporter writes the scale on
+        super().__init__(RewriteRuleSet([_FoldEmbeddingScale.rule()], commute=True))
+
+    def requires(self, model: ir.Model) -> None:
+        ids = {v for v in model.graph.inputs if v.dtype is not None and v.dtype.is_integer()}
+        stuck = [
+            node.inputs[0].name
+            for node in model.graph
+            if node.op_type == "Gather"
+            and _cast_source(node.inputs[1]) in ids
+            and node.inputs[0].dtype == ir.DataType.FLOAT
+            and node.inputs[0].shape is not None
+            and len(node.inputs[0].shape) == 2
+        ]
+        if stuck:
+            raise ir.passes.PreconditionError(f"token table(s) {stuck} are still fp32: the fp16 pass runs first")
+
+
+class _FloatMaskConsumersPass(RewritePass):
+    """Leave nothing integer downstream of an explicit `attention_mask` input: rebuild the broadcast, hand
+    `Attention` the additive form, count the mean-pool divisor in float. The mclip counterpart to `FoldPadMaskPass`."""
+
+    def __init__(self) -> None:
+        super().__init__([_BroadcastMaskRebuild.rule(), _AdditivePadMask.rule(), _FloatMaskCount.rule()])
+
+    def ensures(self, model: ir.Model) -> None:
+        """Mask counts `_FloatMaskCount` had to floatify and did not; blind to everything downstream of the reduction.
+        A post-condition rather than a count pin: a tower reaching here with none did so via `FoldPadMaskPass`."""
+        integers = (int(ir.DataType.INT32), int(ir.DataType.INT64))
+        stuck = 0
+        for node in model.graph:
+            if node.op_type != "ReduceSum" or not node.inputs or node.inputs[0] is None:
+                continue
+            cast = node.inputs[0].producer()
+            if cast is not None and cast.op_type == "Cast" and cast.attributes.get_int("to", 0) in integers:
+                stuck += 1
+        if stuck:
+            raise ir.passes.PostconditionError(f"{stuck} integer mask count(s) survived _FloatMaskCount")
+
+
+class DevitalizeShapeDomainPass(ir.passes.InPlacePass):
+    """A dynamo-exported encoder's whole edit list, in order. One pass rather than pipeline entries because the probe
+    it opens with needs the final input contract."""
+
+    def __init__(self, *, rewrite_eot: bool = False) -> None:
+        self.rewrite_eot = rewrite_eot
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        probes = probe_runtime(model)
+        stages: list[ir.passes.PassBase] = []
+        if self.rewrite_eot:
+            stages.append(RewriteEotGatherndPass(probes))
+        stages += [
+            RewritePass([_FuseClassTokenPrepend.rule()]),
+            ConstantifyPositionIdsPass(),
+            # after the position ids and before the Expands, which would otherwise materialize the mask island
+            FoldPadMaskPass(),
+            # before the Expand pass materializes the token-type index into a batch-dependent chain
+            RewritePass([FoldZeroIndexGather.rule()]),
+            EliminateDynamicExpandsPass(probes),
+            # both lookups are compile-time by now, and their chains drop into the DCE below
+            RewritePass([FoldConstantGatherElements.rule(), _FoldConstantGather.rule()]),
+            ConstantifyReshapeTargetsPass(probes),
+            _FloatMaskConsumersPass(),
+            RewritePass([_IdentityAveragePool.rule()]),
+            common_passes.IdentityEliminationPass(),
+            PruneAttnpoolDeadQueriesPass(),
+            # after the Expands and the Reshape targets: materialized-Expand + const Reshape target
+            RewritePass([_FoldConstantAttnQuery.rule()]),
+            common_passes.RemoveUnusedNodesPass(),  # drop the now-dead Shape chains
+            RewritePass([_SelectBeforeLayerNorm.rule(), _EotSelectBeforeLayerNorm.rule()]),
+            _ScalarGatherToSlicePass(),
+            CanonicalizeConstantsPass(),
+            common_passes.DeduplicateInitializersPass(),
+            # after the lift: the V-bias fold rewrites a bias tensor in place, which only an initializer ships
+            RestructureAttention3dPass(),
+            # after the 3D restructure: constant causal masks -> is_causal, their [1,1,S,S] initializers dead
+            RewritePass([_FlipCausalAttention.rule()]),
+            common_passes.RemoveUnusedNodesPass(),
+            ReinferShapesPass(),  # surgery leaves stale annotations on every rewritten path
+            # last: reads the re-inferred [B,S,D] annotations and the 3D Attention, and maintains the shapes
+            # it changes itself rather than paying a second whole-graph inference
+            HoistPoolingSelectPass(),
+            # after every shape any pass declares is final
+            UnifyDimSymbolsPass(),
+        ]
+        return ir.passes.Sequential(*stages)(model)
+
+    def ensures(self, model: ir.Model) -> None:
+        """Every tower that builds a padding mask retires its GatherND, by family. Op type and nothing else:
+        `_AdditivePadMask` can only match the And `_BroadcastMaskRebuild` emits, so a miss in the first silently
+        disables the second and both counts read 0."""
+        if survivors := sum(1 for node in model.graph if node.op_type == "GatherND"):
+            raise ir.passes.PostconditionError(f"{survivors} GatherND mask rebuild(s) survived the collapse")

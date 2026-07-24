@@ -1,8 +1,4 @@
-"""InsightFace model transforms and pack exporter.
-
-Also consumed by immich_ml at load time; keep light — importable with only the base
-dependencies (onnx, onnxscript, numpy).
-"""
+"""InsightFace model transforms and pack exporter; also imported by immich_ml, so keep it base-deps only."""
 
 from .export import export
 from .transforms import transform_detection, transform_recognition

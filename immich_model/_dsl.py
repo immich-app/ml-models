@@ -1,22 +1,18 @@
-"""Shared prelude for the onnxscript eDSL modules (insightface/_dsl.py, ocr/_dsl.py), authored
-in script mode. Pyright checks them against the _dsl_typing.pyi facade (script-mode tracing:
-scalars/lists autocast to constant tensors); mypy exempts the eDSL files (its grammar rejects
-FLOAT[Batch, 512]).
-
-opset 19 deliberately: ORT CUDA MaxPool kernels stop at opset 21 (spec changed at 22), pushing
-a maxpool to CPU; rknn-toolkit2 rejects opset > 19."""
+"""Shared prelude for the onnxscript eDSL modules. Each package's opset must equal its converted
+backbone's; the ceiling is rknn-toolkit2, which rejects opset > 19."""
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # checker facade; no runtime counterpart
-    from ._dsl_typing import FLOAT, INT32, UINT8, op, script  # pyright: ignore[reportMissingModuleSource]
+    from ._dsl_typing import FLOAT, INT32, UINT8, script  # pyright: ignore[reportMissingModuleSource]
+    from ._dsl_typing import op as opset19  # pyright: ignore[reportMissingModuleSource]
+    from ._dsl_typing import op as opset20  # pyright: ignore[reportMissingModuleSource]
 else:
-    from onnxscript import FLOAT, INT32, UINT8, script
-    from onnxscript import opset19 as op
-
-OPSET = 19
+    from onnxscript import FLOAT, INT32, UINT8, opset19, opset20, script
 
 Batch = "batch"
+Height = "height"
+Width = "width"
 
-__all__ = ["FLOAT", "INT32", "UINT8", "op", "script", "OPSET", "Batch"]
+__all__ = ["FLOAT", "INT32", "UINT8", "opset19", "opset20", "script", "Batch", "Height", "Width"]

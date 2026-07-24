@@ -74,8 +74,7 @@ def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int
     # monkeypatch for tracing
     MultilingualCLIP.forward = forward
 
-    # batch of 2 so torch.export doesn't specialize the size-1 batch into reshape targets;
-    # XLM-R pools by masked mean, not an EOT gather, so no rewrite_eot
+    # batch of 2 so torch.export doesn't specialize the size-1 batch into reshape targets
     args = (torch.ones(2, 77, dtype=torch.int32), torch.ones(2, 77, dtype=torch.int32))
     inputs = ["input_ids", "attention_mask"]
     _export_encoder(model, args, output_path, opset_version, inputs, ["text_embedding"], tag="mclip textual")

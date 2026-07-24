@@ -32,18 +32,15 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
 
-      - run: uv run --extra export immich-model onnx export "$MODEL_NAME" "$MODEL_SOURCE" --hf-model-name "$HF_MODEL_NAME"
+      - run: uv run --frozen --extra export immich-model onnx export "$MODEL_NAME" "$MODEL_SOURCE" --hf-model-name "$HF_MODEL_NAME"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
           MODEL_SOURCE: ${{ inputs.model-source }}
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      # RKNN binaries are built from the same fused ONNX every other backend uses: `compile` runs
-      # prepare_for_rknn, which decomposes the opset-23 Attention/Gelu into the toolkit's
-      # exSDPAttention/exGelu fusion patterns (order-sensitive, so we emit them explicitly rather
-      # than letting a lower-opset export decompose them) and pins opset 19.
-      - run: uv run --extra rknn immich-model rknn compile "$MODEL_NAME"
+      # RKNN binaries are built from the same fused ONNX every other backend uses
+      - run: uv run --frozen --extra rknn immich-model rknn compile "$MODEL_NAME"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
 
@@ -67,7 +64,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      - run: uv sync --extra export
+      - run: uv sync --frozen --extra export
 
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -75,10 +72,8 @@ jobs:
           merge-multiple: 'true' # We don't actually have multiple, but this also sets the subfolder naming behaviour
           path: models/
 
-      # Every fused export publishes to the v2 revision (immich_ml pins v2); old installs keep
-      # reading the usable legacy format on main, which stays untouched.
       - run: |
-          uv run --extra export immich-model upload "$MODEL_NAME" \
+          uv run --frozen --extra export immich-model upload "$MODEL_NAME" \
             --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing --hf-branch v2
         env:
           MODEL_NAME: ${{ inputs.model-name }}
