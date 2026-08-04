@@ -15,10 +15,12 @@ class ModelSource(StrEnum):
     INSIGHTFACE = "insightface"
     MCLIP = "mclip"
     OPENCLIP = "openclip"
+    PADDLE = "paddle"
 
 
 class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
+    OCR = "ocr"
     SEARCH = "clip"
 
 
@@ -39,6 +41,7 @@ SOURCE_TO_METADATA = {
     ModelSource.INSIGHTFACE: SourceMetadata(
         "InsightFace", "https://github.com/deepinsight/insightface/tree/master", "facial recognition"
     ),
+    ModelSource.PADDLE: SourceMetadata("PaddleOCR", "https://github.com/PaddlePaddle/PaddleOCR", "OCR"),
 }
 
 
@@ -46,6 +49,7 @@ SOURCE_TO_TASK = {
     ModelSource.MCLIP: ModelTask.SEARCH,
     ModelSource.OPENCLIP: ModelTask.SEARCH,
     ModelSource.INSIGHTFACE: ModelTask.FACIAL_RECOGNITION,
+    ModelSource.PADDLE: ModelTask.OCR,
 }
 
 
@@ -108,6 +112,12 @@ BATCH = "batch"
 # RKNPU compiles one static graph, so the exporter -- not the runtime -- picks the canvases, and one canvas is
 # one binary. These mirror the shape grid immich_ml already snaps its inputs to.
 CANVASES: dict[tuple[ModelTask, Submodel], tuple[dict[str, int], ...]] = {
+    (ModelTask.OCR, Submodel.DETECTION): (
+        {"height": 736, "width": 736},
+        {"height": 736, "width": 1472},
+        {"height": 1472, "width": 736},
+    ),
+    (ModelTask.OCR, Submodel.RECOGNITION): ({"width": 160}, {"width": 320}, {"width": 640}, {"width": 1280}),
     (ModelTask.FACIAL_RECOGNITION, Submodel.DETECTION): ({"height": 640, "width": 640},),
 }
 
