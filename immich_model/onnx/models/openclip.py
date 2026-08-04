@@ -71,6 +71,7 @@ def to_onnx(
     text_vision_cfg = open_clip.get_model_config(model_cfg.name)
 
     model.eval()
+    _stabilize_sinusoids(model)
     for param in model.parameters():
         param.requires_grad_(False)
 
@@ -93,6 +94,30 @@ def to_onnx(
         else:
             print(f"Model {textual_path} already exists, skipping")
     return visual_path, textual_path
+
+
+def _stabilize_sinusoids(model: Any) -> None:
+    """Rebuild NLLB's position table, which is the one weight in the catalog computed at init rather than
+    read from a checkpoint. transformers builds the phase with float32 exp and multiply before sin/cos,
+    none of which are correctly rounded, so the table -- and the export -- comes out per-machine."""
+    import math
+
+    import torch
+    from transformers.models.m2m_100.modeling_m2m_100 import M2M100SinusoidalPositionalEmbedding
+
+    for module in model.modules():
+        if not isinstance(module, M2M100SinusoidalPositionalEmbedding):
+            continue
+        count, width = module.weights.shape
+        half = width // 2
+        freq = torch.exp(torch.arange(half, dtype=torch.float64) * -(math.log(10000) / (half - 1)))
+        phase = torch.arange(count, dtype=torch.float64).unsqueeze(1) * freq.unsqueeze(0)
+        table = torch.cat([torch.sin(phase), torch.cos(phase)], dim=1).view(count, -1)
+        if width % 2 == 1:
+            table = torch.cat([table, torch.zeros(count, 1, dtype=torch.float64)], dim=1)
+        if module.padding_idx is not None:
+            table[module.padding_idx, :] = 0
+        module.weights = table.to(module.weights.dtype)
 
 
 def _export_encoder(

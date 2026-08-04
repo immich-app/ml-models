@@ -17,6 +17,22 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # The plans need no model, so they gate every push instead of waiting on the export matrix
+  plans:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          # this job produces no artifact for a poisoned cache to reach
+          enable-cache: true # zizmor: ignore[cache-poisoning]
+          cache-dependency-glob: uv.lock
+      - run: uv run --frozen --extra export immich-model check
+
   configure:
     runs-on: ubuntu-latest
     outputs:
@@ -61,8 +77,9 @@ jobs:
           force: ${{ inputs.force || 'false' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
-          oldHash: ${{ hashFiles('./before/immich_model/**', './before/.github/workflows/push.yaml', './before/.github/workflows/export.yaml') }}
-          newHash: ${{ hashFiles('./immich_model/**', './.github/workflows/push.yaml', './.github/workflows/export.yaml') }}
+          # rendering-only modules: hashing them would re-export the catalog for a change that cannot alter it
+          oldHash: ${{ hashFiles('./before/immich_model/**', '!./before/immich_model/_check.py', '!./before/immich_model/_render.py', './before/.github/workflows/push.yaml', './before/.github/workflows/export.yaml') }}
+          newHash: ${{ hashFiles('./immich_model/**', '!./immich_model/_check.py', '!./immich_model/_render.py', './.github/workflows/push.yaml', './.github/workflows/export.yaml') }}
           script: |
             const script = require('./.github/scripts/scope.js')
             script({core})

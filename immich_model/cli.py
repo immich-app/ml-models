@@ -1,10 +1,10 @@
 from pathlib import Path
 from typing import Annotated
 
-from typer import Option, Typer
+from typer import Exit, Option, Typer, echo
 
 from ._cli import ModelName
-from .constants import DELETE_PATTERNS
+from .constants import DELETE_PATTERNS, FIXTURES
 from .onnx.cli import app as onnx_app
 from .rknn.cli import app as rknn_app
 
@@ -15,6 +15,40 @@ app = Typer(
 )
 app.add_typer(onnx_app, name="onnx")
 app.add_typer(rknn_app, name="rknn")
+
+
+@app.command()
+def check(
+    models: Annotated[Path | None, Option(help="Exported model tree; omit to check the plans alone.")] = None,
+    fixtures: Annotated[Path, Option(help="Directory holding the committed renderings.")] = FIXTURES,
+    bless: Annotated[bool, Option(help="Rewrite the committed renderings instead of diffing them.")] = False,
+) -> None:
+    """Diff the committed graph and rewrite-plan renderings against what this tree produces; a model with
+    no committed rendering fails, so a new one cannot merge without its fixture."""
+    from ._check import ELIDE, diff, gaps
+    from ._check import fixtures as rendered
+
+    failures = 0
+    fixtures = fixtures.resolve()
+    for problem in [] if bless else gaps(fixtures):
+        echo(problem)
+        failures += 1
+    for path, text in rendered(fixtures, models):
+        label = path.relative_to(fixtures.parent)
+        if bless:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+            echo(f"blessed {label}")
+        elif not path.exists():
+            echo(f"{label}: no committed rendering; rerun with --bless")
+            failures += 1
+        elif lines := diff(path.read_text(), text, str(label)):
+            echo("\n".join(lines[:ELIDE]))
+            if len(lines) > ELIDE:
+                echo(f"... and {len(lines) - ELIDE} more diff lines")
+            failures += 1
+    echo(f"{failures} problem(s)")
+    raise Exit(bool(failures))
 
 
 @app.command()

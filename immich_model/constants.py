@@ -82,6 +82,7 @@ RKNN_SOCS = list(Soc)
 SUBMODELS = list(Submodel)
 
 CATALOG = Path(__file__).resolve().parents[1] / "models.yaml"
+FIXTURES = CATALOG.parent / "ci"
 
 
 @cache
