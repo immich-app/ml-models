@@ -1,0 +1,92 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    +2 MatMul
+    +2 Mul
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Softmax axis=-1
+    +1 Sqrt
+    +1 Transpose perm=(0, 1, 3, 2)
+    -1 Transpose perm=(0, 3, 1, 2)
+    288 nodes, weights 7174d8c41236
+    DecomposeAttention x5 b00b8abe
+    DecomposeReduceL2 x3 80ee310c
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 16bb8366
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x164 84646c72
+
+MIGraphXExecutionProvider
+    +2 MatMul
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    +1 Mul
+    +1 Softmax axis=-1
+    +1 Transpose perm=(0, 1, 3, 2)
+    287 nodes, weights 7174d8c41236
+    DecomposeAttention x5 b00b8abe
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 e66e5f08
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x166 91df0027
+
+NvTensorRTRTXExecutionProvider
+    +2 MatMul
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    +1 Mul
+    +1 Softmax axis=-1
+    +1 Transpose perm=(0, 1, 3, 2)
+    287 nodes, weights 7174d8c41236
+    DecomposeAttention x5 b00b8abe
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 e66e5f08
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x166 91df0027
+
+OpenVINOExecutionProvider
+    +2 MatMul
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    +1 Mul
+    +1 Softmax axis=-1
+    +1 Transpose perm=(0, 1, 3, 2)
+    287 nodes, weights 7174d8c41236
+    DecomposeAttention x5 b00b8abe
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 e66e5f08
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x166 91df0027
+
+RKNPU static
+    +12 Slice
+    +11 MatMul
+    +9 Add
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    -1 Cast to=1
+    +1 Mul
+    +1 Softmax axis=-1
+    +1 Transpose perm=(0, 1, 3, 2)
+    316 nodes, weights 879b6ebde0db
+    DecomposeAttention x5 b00b8abe
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 e66e5f08
+    SplitLargeReduction x33 5c3b97e2
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x162 e776c70d
+
+TensorrtExecutionProvider
+    +2 MatMul
+    -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
+    +1 Mul
+    +1 Softmax axis=-1
+    +1 Transpose perm=(0, 1, 3, 2)
+    287 nodes, weights 7174d8c41236
+    DecomposeAttention x5 b00b8abe
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x106 e66e5f08
+    _ConstantifyReshapeTarget x9 8c4eb3c1
+    _ScalarGatherToSlice x1 68716d7d
+    unstamped x166 91df0027

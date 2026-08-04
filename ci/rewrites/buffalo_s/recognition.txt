@@ -1,0 +1,48 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    +1 Mul
+    -1 ReduceL2 keepdims=1
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    -1 Transpose perm=(0, 3, 1, 2)
+    104 nodes, weights efeaa0a825ce
+    DecomposeReduceL2 x3 7ed46f2f
+    Flatten2Reshape x1 c4dbf3af
+    FuseBatchNormIntoGemm x1 f3cf1b34
+    unstamped x99 b893587b
+
+MIGraphXExecutionProvider
+    +34 Add
+    +34 Mul
+    -34 PRelu
+    +34 Relu
+    +34 Sub
+    205 nodes, weights efeaa0a825ce
+    DecomposePRelu x136 f34d3d0b
+    Flatten2Reshape x1 aee873ab
+    FuseBatchNormIntoGemm x1 f3cf1b34
+    unstamped x67 b202e471
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    unchanged
+
+RKNPU static
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    100 nodes, weights 0e092d0799d2
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    Flatten2Reshape x1 c4dbf3af
+    FuseBatchNormIntoGemm x1 f3cf1b34
+    unstamped x98 e78d85c9
+
+TensorrtExecutionProvider
+    unchanged

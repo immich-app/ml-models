@@ -1,0 +1,163 @@
+CPUExecutionProvider
+    -24 Add
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    172 nodes, weights 5d48eaa96265
+    FuseSkipLayerNorm x23 a19fcdfa
+    FuseSkipLayerNorm, _FuseClassTokenPrepend x1 ed3bb91a
+    RemoveOptionalBiasFromConv x1 96ec0805
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x1 408ab1ab
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x143 c06e8243
+
+CUDAExecutionProvider
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -23 Add
+    +2 Reshape
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(32, 32)
+    +1 MatMul
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    +1 Transpose perm=(0, 2, 1, 3)
+    -1 Transpose perm=(0, 3, 1, 2)
+    173 nodes, weights fdf680ffd717
+    FuseSkipLayerNorm x23 a19fcdfa
+    FuseSkipLayerNorm, _FuseClassTokenPrepend x1 ed3bb91a
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x1 1c1de38b
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x141 01a24e57
+
+CoreMLExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +13 Mul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    -1 Transpose perm=(0, 3, 1, 2)
+    341 nodes, weights 4035002c61ab
+    DecomposeAttention x156 85a31e97
+    DecomposeReduceL2 x3 c614b08c
+    RemoveOptionalBiasFromConv x1 1eb5c379
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x2 64b83b02
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x176 880c1d43
+
+MIGraphXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    340 nodes, weights 4035002c61ab
+    DecomposeAttention x156 85a31e97
+    RemoveOptionalBiasFromConv x1 96ec0805
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x2 64b83b02
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x178 ebc84af2
+
+NvTensorRTRTXExecutionProvider
+    +50 Reshape
+    +49 Transpose perm=(0, 2, 1, 3)
+    +25 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(32, 32)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    341 nodes, weights 2540fd91198c
+    DecomposeAttention x156 85a31e97
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x176 46b1212d
+
+OpenVINOExecutionProvider
+    +50 Reshape
+    +49 Transpose perm=(0, 2, 1, 3)
+    +25 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(32, 32)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    341 nodes, weights 2540fd91198c
+    DecomposeAttention x156 85a31e97
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x176 46b1212d
+
+RKNPU static
+    +85 MatMul
+    +73 Add
+    +72 Slice
+    +50 Reshape
+    +49 Transpose perm=(0, 2, 1, 3)
+    +36 Mul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Div
+    +12 Erf
+    -12 Gelu approximate=none
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 Cast to=1
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(32, 32)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    580 nodes, weights d61eb1460b8f
+    DecomposeAttention x156 85a31e97
+    DecomposeGelu x60 8e465049
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 37ecaa30
+    SplitLargeReduction x204 37e23329
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x151 318b657f
+
+TensorrtExecutionProvider
+    +50 Reshape
+    +49 Transpose perm=(0, 2, 1, 3)
+    +25 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(32, 32)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    341 nodes, weights 2540fd91198c
+    DecomposeAttention x156 85a31e97
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x176 46b1212d

@@ -1,0 +1,144 @@
+CPUExecutionProvider
+    -49 Add
+    -49 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +49 SkipLayerNormalization epsilon=9.999999974752427e-07
+    340 nodes, weights a19036fe44da
+    FuseSkipLayerNorm x49 e0717af3
+    _ConstantifyReshapeTarget x1 f786528a
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x289 2a0d2edb
+
+CUDAExecutionProvider
+    -49 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +49 SkipLayerNormalization epsilon=9.999999974752427e-07
+    -48 Add
+    +2 Reshape
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(16, 16)
+    +1 MatMul
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    +1 Transpose perm=(0, 2, 1, 3)
+    -1 Transpose perm=(0, 3, 1, 2)
+    341 nodes, weights 9b0560ca2338
+    FuseSkipLayerNorm x49 446d8774
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 132b0235
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x286 436954d0
+
+CoreMLExecutionProvider
+    +100 Reshape
+    +100 Transpose perm=(0, 2, 1, 3)
+    +50 MatMul
+    +26 Mul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    -1 Transpose perm=(0, 3, 1, 2)
+    690 nodes, weights 99e04e9333c0
+    DecomposeAttention x325 9f03083a
+    DecomposeReduceL2 x3 0133aaa1
+    _ConstantifyReshapeTarget x1 f786528a
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x360 836dd833
+
+MIGraphXExecutionProvider
+    +100 Reshape
+    +100 Transpose perm=(0, 2, 1, 3)
+    +50 MatMul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Mul
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    689 nodes, weights 99e04e9333c0
+    DecomposeAttention x325 9f03083a
+    _ConstantifyReshapeTarget x1 f786528a
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x362 3174c3e4
+
+NvTensorRTRTXExecutionProvider
+    +102 Reshape
+    +101 Transpose perm=(0, 2, 1, 3)
+    +51 MatMul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Mul
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(16, 16)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    690 nodes, weights 1b5b52b99b8d
+    DecomposeAttention x325 9f03083a
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 132b0235
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x359 901d846d
+
+OpenVINOExecutionProvider
+    +102 Reshape
+    +101 Transpose perm=(0, 2, 1, 3)
+    +51 MatMul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Mul
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(16, 16)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    690 nodes, weights 1b5b52b99b8d
+    DecomposeAttention x325 9f03083a
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 132b0235
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x359 901d846d
+
+RKNPU static
+    +350 Slice
+    +301 MatMul
+    +276 Add
+    +102 Reshape
+    +101 Transpose perm=(0, 2, 1, 3)
+    +74 Mul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Div
+    +25 Erf
+    -25 Gelu approximate=none
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    -1 Cast to=1
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(16, 16)
+    -1 Reshape allowzero=1
+    +1 Sub
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    1639 nodes, weights eb729f708f4d
+    DecomposeAttention x325 9f03083a
+    DecomposeGelu x125 7f81a84b
+    OpaqueZeroMul x1 3037fff5
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 37ecaa30
+    SplitLargeReduction x950 e89ffa34
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x232 c8a0607d
+
+TensorrtExecutionProvider
+    +102 Reshape
+    +101 Transpose perm=(0, 2, 1, 3)
+    +51 MatMul
+    -25 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +25 Mul
+    +25 Softmax axis=-1
+    +25 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(16, 16)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    690 nodes, weights 1b5b52b99b8d
+    DecomposeAttention x325 9f03083a
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 132b0235
+    _ScalarGatherToSlice x1 60360a10
+    unstamped x359 901d846d

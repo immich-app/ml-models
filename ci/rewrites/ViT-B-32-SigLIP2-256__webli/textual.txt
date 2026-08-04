@@ -1,0 +1,122 @@
+CPUExecutionProvider
+    -23 Add
+    -23 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +23 SkipLayerNormalization epsilon=9.999999974752427e-07
+    168 nodes, weights 42e8c7693ecf
+    FuseSkipLayerNorm x23 6d24dab3
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x141 d1d6d5f5
+
+CUDAExecutionProvider
+    -23 Add
+    -23 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +23 SkipLayerNormalization epsilon=9.999999974752427e-07
+    168 nodes, weights 42e8c7693ecf
+    FuseSkipLayerNorm x23 6d24dab3
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x141 d1d6d5f5
+
+CoreMLExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +13 Mul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    337 nodes, weights 5d29e43b8b80
+    DecomposeAttention x156 f5d0980b
+    DecomposeReduceL2 x3 30350c72
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x174 07569f7e
+
+MIGraphXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    335 nodes, weights 5d29e43b8b80
+    DecomposeAttention x156 f5d0980b
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x175 28dedf84
+
+NvTensorRTRTXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    335 nodes, weights 5d29e43b8b80
+    DecomposeAttention x156 f5d0980b
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x175 28dedf84
+
+OpenVINOExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    335 nodes, weights 5d29e43b8b80
+    DecomposeAttention x156 f5d0980b
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x175 28dedf84
+
+RKNPU static
+    +84 MatMul
+    +72 Add
+    +72 Slice
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +36 Mul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Div
+    +12 Erf
+    -12 Gelu approximate=tanh
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    575 nodes, weights 00dbe6ad020c
+    DecomposeAttention x156 f5d0980b
+    DecomposeGelu x60 a6662a53
+    SplitLargeReduction x204 1e2c9a0f
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x151 508d039a
+
+TensorrtExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    335 nodes, weights 5d29e43b8b80
+    DecomposeAttention x156 f5d0980b
+    _Fp16TokenEmbedding x2 0d702441
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
+    _SelectBeforeLayerNorm x1 eba1fbae
+    unstamped x175 28dedf84

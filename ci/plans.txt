@@ -1,0 +1,54 @@
+REWRITE_SET_VERSION 22
+
+CPUExecutionProvider
+    skip_layer_norm
+
+CUDAExecutionProvider
+    greedy_ctc_topk
+    hard_swish
+    im2col_patchify
+    skip_layer_norm
+
+CoreMLExecutionProvider
+    decompose_attention
+    decompose_reduce_l2
+    nchw_image_input
+
+MIGraphXExecutionProvider
+    decompose_attention
+    broadcast_shape_workaround
+    decompose_prelu
+    symmetrize_conv_pads
+
+NvTensorRTRTXExecutionProvider
+    decompose_attention
+    greedy_ctc_topk
+    im2col_patchify
+
+OpenVINOExecutionProvider
+    decompose_attention
+    hard_swish
+    im2col_patchify
+    im2col_patchify_ragged
+    host_ctc_decode
+
+RKNPU
+    floatify_pad_mask
+    decompose_attention
+    im2col_patchify_batch1
+    uint8_image_input
+    float_image_input
+    raw_ctc_logits
+    floatify_not_equal
+    floatify_pad_keep
+    opaque_zero_mul
+    fold_gather_elements
+    decompose_gelu
+    split_large_reduction
+    pin_opset
+    reinfer_shapes
+
+TensorrtExecutionProvider
+    decompose_attention
+    greedy_ctc_topk
+    im2col_patchify

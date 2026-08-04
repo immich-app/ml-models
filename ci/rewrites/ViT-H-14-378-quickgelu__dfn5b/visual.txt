@@ -1,0 +1,159 @@
+CPUExecutionProvider
+    -64 Add
+    -64 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +64 SkipLayerNormalization epsilon=9.999999747378752e-06
+    496 nodes, weights f2e51a69fa6c
+    FuseSkipLayerNorm x63 f04b9281
+    FuseSkipLayerNorm, _FuseClassTokenPrepend x1 ed3bb91a
+    RemoveOptionalBiasFromConv x1 ba25fead
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x1 408ab1ab
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x427 4cdd0ed3
+
+CUDAExecutionProvider
+    -64 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +64 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -63 Add
+    +2 Reshape
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(14, 14)
+    +1 MatMul
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    +1 Transpose perm=(0, 2, 1, 3)
+    -1 Transpose perm=(0, 3, 1, 2)
+    497 nodes, weights 7514189a8a6c
+    FuseSkipLayerNorm x63 f04b9281
+    FuseSkipLayerNorm, _FuseClassTokenPrepend x1 ed3bb91a
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x1 1c1de38b
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x425 8b8ab3e8
+
+CoreMLExecutionProvider
+    +128 Reshape
+    +128 Transpose perm=(0, 2, 1, 3)
+    +64 MatMul
+    +33 Mul
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    -1 Transpose perm=(0, 3, 1, 2)
+    945 nodes, weights 39d8325ea94b
+    DecomposeAttention x416 069fbec6
+    DecomposeReduceL2 x3 71b66ba8
+    RemoveOptionalBiasFromConv x1 6e11bf99
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x2 64b83b02
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x520 1467f0d7
+
+MIGraphXExecutionProvider
+    +128 Reshape
+    +128 Transpose perm=(0, 2, 1, 3)
+    +64 MatMul
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Mul
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    944 nodes, weights 39d8325ea94b
+    DecomposeAttention x416 069fbec6
+    RemoveOptionalBiasFromConv x1 ba25fead
+    _ConstantifyReshapeTarget x1 f786528a
+    _FuseClassTokenPrepend x2 64b83b02
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x522 391159bc
+
+NvTensorRTRTXExecutionProvider
+    +130 Reshape
+    +129 Transpose perm=(0, 2, 1, 3)
+    +65 MatMul
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Mul
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(14, 14)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    945 nodes, weights cb39fe96122b
+    DecomposeAttention x416 069fbec6
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x520 9d18aa6a
+
+OpenVINOExecutionProvider
+    +130 Reshape
+    +129 Transpose perm=(0, 2, 1, 3)
+    +65 MatMul
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Mul
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(14, 14)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    945 nodes, weights cb39fe96122b
+    DecomposeAttention x416 069fbec6
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x520 9d18aa6a
+
+RKNPU static
+    +611 Slice
+    +547 MatMul
+    +483 Add
+    +130 Reshape
+    +129 Transpose perm=(0, 2, 1, 3)
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Mul
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    -1 Cast to=1
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(14, 14)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    2519 nodes, weights 44a55d332776
+    DecomposeAttention x416 069fbec6
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 37ecaa30
+    SplitLargeReduction x1704 82ccf3c4
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x390 e57fca97
+
+TensorrtExecutionProvider
+    +130 Reshape
+    +129 Transpose perm=(0, 2, 1, 3)
+    +65 MatMul
+    -32 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +32 Mul
+    +32 Softmax axis=-1
+    +32 Transpose perm=(0, 1, 3, 2)
+    +1 Add
+    -1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(0, 0, 0, 0) strides=(14, 14)
+    -1 Reshape allowzero=1
+    -1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    945 nodes, weights cb39fe96122b
+    DecomposeAttention x416 069fbec6
+    PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 132b0235
+    _FuseClassTokenPrepend x2 db84f216
+    _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
+    _SelectBeforeLayerNorm x1 ab62bee7
+    unstamped x520 9d18aa6a
