@@ -1,0 +1,125 @@
+CPUExecutionProvider
+    -24 Add
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    194 nodes, weights 15fd29cd8482
+    FuseSkipLayerNorm x23 43fd47b1
+    FuseSkipLayerNorm, _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 cec5f0c2
+    _EotOneHotSelect x3 ad46cb4f
+    _FlipCausalAttention x12 dcd041bf
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x153 da976bc3
+
+CUDAExecutionProvider
+    -24 Add
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    194 nodes, weights 15fd29cd8482
+    FuseSkipLayerNorm x23 43fd47b1
+    FuseSkipLayerNorm, _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 cec5f0c2
+    _EotOneHotSelect x3 ad46cb4f
+    _FlipCausalAttention x12 dcd041bf
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x153 da976bc3
+
+CoreMLExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +13 Mul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    376 nodes, weights d0e7a671b85c
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    DecomposeReduceL2 x3 919a4b2e
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x199 43397bf9
+
+MIGraphXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    374 nodes, weights d0e7a671b85c
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x200 910b5f46
+
+NvTensorRTRTXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    374 nodes, weights d0e7a671b85c
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x200 910b5f46
+
+OpenVINOExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    374 nodes, weights d0e7a671b85c
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x200 910b5f46
+
+RKNPU static
+    +170 Slice
+    +145 MatMul
+    +133 Add
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    786 nodes, weights c43e6785ea78
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    SplitLargeReduction x461 fef12197
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x151 361565c7
+
+TensorrtExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    374 nodes, weights d0e7a671b85c
+    DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
+    _EotOneHotSelect x3 b5dd8d0a
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x200 910b5f46

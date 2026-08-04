@@ -1,0 +1,587 @@
+<
+   ir_version: 10,
+   opset_import: ["" : 23],
+   producer_name: "pytorch"
+>
+main_graph (uint8[batch,224,224,3] image) => (float[batch,512] image_embedding) 
+   <
+      float[batch,197,768] add_1088
+      float[batch,197,768] add_1109
+      float[batch,197,768] add_1224
+      float[batch,197,768] add_1245
+      float[batch,197,768] add_136
+      float[batch,197,768] add_1360
+      float[batch,197,768] add_1381
+      float[batch,197,768] add_1496
+      float[batch,197,768] add_1517
+      float[batch,1,768] add_1517_pooled
+      float[batch,197,768] add_157
+      float[batch,1,768] add_1632
+      float[batch,1,768] add_1653
+      float[batch,197,768] add_17
+      float[batch,197,768] add_272
+      float[batch,197,768] add_293
+      float[batch,197,768] add_408
+      float[batch,197,768] add_429
+      float[batch,197,768] add_544
+      float[batch,197,768] add_565
+      float[batch,197,768] add_680
+      float[batch,197,768] add_701
+      float[batch,197,768] add_816
+      float[batch,197,768] add_837
+      float[batch,197,768] add_952
+      float[batch,197,768] add_973
+      float[batch,1] clamp_min
+      float[batch,768,14,14] conv2d
+      float[batch,197,3072] gelu
+      float[batch,197,3072] gelu_1
+      float[batch,197,3072] gelu_10
+      float[batch,1,3072] gelu_11
+      float[batch,197,3072] gelu_2
+      float[batch,197,3072] gelu_3
+      float[batch,197,3072] gelu_4
+      float[batch,197,3072] gelu_5
+      float[batch,197,3072] gelu_6
+      float[batch,197,3072] gelu_7
+      float[batch,197,3072] gelu_8
+      float[batch,197,3072] gelu_9
+      float[batch,3,224,224] image_chw
+      float[batch,224,224,3] image_f32
+      float[batch,197,768] layer_norm
+      float[batch,197,768] layer_norm_1
+      float[batch,197,768] layer_norm_10
+      float[batch,197,768] layer_norm_11
+      float[batch,197,768] layer_norm_12
+      float[batch,197,768] layer_norm_13
+      float[batch,197,768] layer_norm_14
+      float[batch,197,768] layer_norm_15
+      float[batch,197,768] layer_norm_16
+      float[batch,197,768] layer_norm_17
+      float[batch,197,768] layer_norm_18
+      float[batch,197,768] layer_norm_19
+      float[batch,197,768] layer_norm_2
+      float[batch,197,768] layer_norm_20
+      float[batch,197,768] layer_norm_21
+      float[batch,197,768] layer_norm_22
+      float[batch,197,768] layer_norm_23
+      float[batch,1,768] layer_norm_24
+      float[batch,197,768] layer_norm_3
+      float[batch,197,768] layer_norm_4
+      float[batch,197,768] layer_norm_5
+      float[batch,197,768] layer_norm_6
+      float[batch,197,768] layer_norm_7
+      float[batch,197,768] layer_norm_8
+      float[batch,197,768] layer_norm_9
+      float[batch,1] linalg_vector_norm
+      float[batch,197,3072] linear_10
+      float[batch,197,768] linear_11
+      float[batch,197,3072] linear_14
+      float[batch,197,768] linear_15
+      float[batch,197,3072] linear_18
+      float[batch,197,768] linear_19
+      float[batch,197,3072] linear_2
+      float[batch,197,3072] linear_22
+      float[batch,197,768] linear_23
+      float[batch,197,3072] linear_26
+      float[batch,197,768] linear_27
+      float[batch,197,768] linear_3
+      float[batch,197,3072] linear_30
+      float[batch,197,768] linear_31
+      float[batch,197,3072] linear_34
+      float[batch,197,768] linear_35
+      float[batch,197,3072] linear_38
+      float[batch,197,768] linear_39
+      float[batch,197,3072] linear_42
+      float[batch,197,768] linear_43
+      float[batch,1,3072] linear_46
+      float[batch,1,768] linear_47
+      float[batch,197,3072] linear_6
+      float[batch,197,768] linear_7
+      float[batch,512] matmul
+      float[batch,197,768] node_scaled_dot_product_attention_10_k
+      float[batch,197,768] node_scaled_dot_product_attention_10_out
+      float[batch,197,768] node_scaled_dot_product_attention_10_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_10_q
+      float[batch,197,2304] node_scaled_dot_product_attention_10_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_10_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_10_v
+      float[batch,197,768] node_scaled_dot_product_attention_11_k
+      float[batch,1,768] node_scaled_dot_product_attention_11_out
+      float[batch,1,768] node_scaled_dot_product_attention_11_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_11_q
+      float[batch,1,768] node_scaled_dot_product_attention_11_q_pooled
+      float[batch,197,2304] node_scaled_dot_product_attention_11_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_11_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_11_v
+      float[batch,197,768] node_scaled_dot_product_attention_1_k
+      float[batch,197,768] node_scaled_dot_product_attention_1_out
+      float[batch,197,768] node_scaled_dot_product_attention_1_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_1_q
+      float[batch,197,2304] node_scaled_dot_product_attention_1_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_1_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_1_v
+      float[batch,197,768] node_scaled_dot_product_attention_2_k
+      float[batch,197,768] node_scaled_dot_product_attention_2_out
+      float[batch,197,768] node_scaled_dot_product_attention_2_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_2_q
+      float[batch,197,2304] node_scaled_dot_product_attention_2_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_2_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_2_v
+      float[batch,197,768] node_scaled_dot_product_attention_3_k
+      float[batch,197,768] node_scaled_dot_product_attention_3_out
+      float[batch,197,768] node_scaled_dot_product_attention_3_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_3_q
+      float[batch,197,2304] node_scaled_dot_product_attention_3_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_3_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_3_v
+      float[batch,197,768] node_scaled_dot_product_attention_4_k
+      float[batch,197,768] node_scaled_dot_product_attention_4_out
+      float[batch,197,768] node_scaled_dot_product_attention_4_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_4_q
+      float[batch,197,2304] node_scaled_dot_product_attention_4_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_4_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_4_v
+      float[batch,197,768] node_scaled_dot_product_attention_5_k
+      float[batch,197,768] node_scaled_dot_product_attention_5_out
+      float[batch,197,768] node_scaled_dot_product_attention_5_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_5_q
+      float[batch,197,2304] node_scaled_dot_product_attention_5_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_5_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_5_v
+      float[batch,197,768] node_scaled_dot_product_attention_6_k
+      float[batch,197,768] node_scaled_dot_product_attention_6_out
+      float[batch,197,768] node_scaled_dot_product_attention_6_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_6_q
+      float[batch,197,2304] node_scaled_dot_product_attention_6_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_6_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_6_v
+      float[batch,197,768] node_scaled_dot_product_attention_7_k
+      float[batch,197,768] node_scaled_dot_product_attention_7_out
+      float[batch,197,768] node_scaled_dot_product_attention_7_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_7_q
+      float[batch,197,2304] node_scaled_dot_product_attention_7_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_7_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_7_v
+      float[batch,197,768] node_scaled_dot_product_attention_8_k
+      float[batch,197,768] node_scaled_dot_product_attention_8_out
+      float[batch,197,768] node_scaled_dot_product_attention_8_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_8_q
+      float[batch,197,2304] node_scaled_dot_product_attention_8_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_8_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_8_v
+      float[batch,197,768] node_scaled_dot_product_attention_9_k
+      float[batch,197,768] node_scaled_dot_product_attention_9_out
+      float[batch,197,768] node_scaled_dot_product_attention_9_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_9_q
+      float[batch,197,2304] node_scaled_dot_product_attention_9_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_9_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_9_v
+      float[batch,197,768] node_scaled_dot_product_attention_k
+      float[batch,197,768] node_scaled_dot_product_attention_out
+      float[batch,197,768] node_scaled_dot_product_attention_out_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_q
+      float[batch,197,2304] node_scaled_dot_product_attention_qkv
+      float[batch,197,2304] node_scaled_dot_product_attention_qkv_mm_out
+      float[batch,197,768] node_scaled_dot_product_attention_v
+      float[batch,196,768] permute
+      float[batch,197,768] scaled_dot_product_attention
+      float[batch,197,768] scaled_dot_product_attention_1
+      float[batch,197,768] scaled_dot_product_attention_10
+      float[batch,1,768] scaled_dot_product_attention_11
+      float[batch,197,768] scaled_dot_product_attention_2
+      float[batch,197,768] scaled_dot_product_attention_3
+      float[batch,197,768] scaled_dot_product_attention_4
+      float[batch,197,768] scaled_dot_product_attention_5
+      float[batch,197,768] scaled_dot_product_attention_6
+      float[batch,197,768] scaled_dot_product_attention_7
+      float[batch,197,768] scaled_dot_product_attention_8
+      float[batch,197,768] scaled_dot_product_attention_9
+      float[batch,768] select_36
+      float[batch,197,768] val_43
+      float[batch,197,3072] val_44
+      float[batch,197,768] val_45
+      float[batch,197,3072] val_46
+      float[batch,197,768] val_47
+      float[batch,197,3072] val_48
+      float[batch,197,768] val_49
+      float[batch,197,3072] val_50
+      float[batch,197,768] val_51
+      float[batch,197,3072] val_52
+      float[batch,197,768] val_53
+      float[batch,197,3072] val_54
+      float[batch,197,768] val_55
+      float[batch,197,3072] val_56
+      float[batch,197,768] val_57
+      float[batch,197,3072] val_58
+      float[batch,197,768] val_59
+      float[batch,197,3072] val_60
+      float[batch,197,768] val_61
+      float[batch,197,3072] val_62
+      float[batch,197,768] val_63
+      float[batch,197,3072] val_64
+      float[batch,197,768] val_65
+      float[batch,1,3072] val_66
+      float[batch,1,768] val_67
+      float[batch,768] val_68
+      float[batch,768,196] view
+   >
+{
+   [pre_cast] image_f32 = Cast <to: int = 1> (image)
+   [pre_nhwc_to_nchw] image_chw = Transpose <perm: ints = [0, 3, 1, 2]> (image_f32)
+   conv2d = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [16, 16]> (image_chw, "visual.conv1.weight", node_Conv_704_fused_bias)
+   view = Reshape <allowzero: int = 1> (conv2d, view_target)
+   [node_permute] permute = Transpose <perm: ints = [0, 2, 1]> (view)
+   val_43 = Pad (permute, val_3, val_4)
+   add_17 = Add (val_43, val_42)
+   [node_layer_norm] layer_norm = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_17, "visual.ln_pre.weight", "visual.ln_pre.bias")
+   layer_norm_1 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (layer_norm, "visual.transformer.resblocks.0.ln_1.weight", "visual.transformer.resblocks.0.ln_1.bias")
+   [node_scaled_dot_product_attention_qkv_mm] node_scaled_dot_product_attention_qkv_mm_out = MatMul (layer_norm_1, val_6)
+   [node_scaled_dot_product_attention_qkv_bias] node_scaled_dot_product_attention_qkv = Add (node_scaled_dot_product_attention_qkv_mm_out, "visual.transformer.resblocks.0.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_qkv_split] node_scaled_dot_product_attention_q, node_scaled_dot_product_attention_k, node_scaled_dot_product_attention_v = Split <axis: int = -1> (node_scaled_dot_product_attention_qkv, attn3d_split_3x768)
+   [node_scaled_dot_product_attention] scaled_dot_product_attention = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_q, node_scaled_dot_product_attention_k, node_scaled_dot_product_attention_v)
+   [node_scaled_dot_product_attention_out_mm] node_scaled_dot_product_attention_out_mm_out = MatMul (scaled_dot_product_attention, node_scaled_dot_product_attention_wo_t)
+   [node_scaled_dot_product_attention_out_bias] node_scaled_dot_product_attention_out = Add (node_scaled_dot_product_attention_out_mm_out, "visual.transformer.resblocks.0.attn.out_proj.bias")
+   add_136 = Add (layer_norm, node_scaled_dot_product_attention_out)
+   layer_norm_2 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_136, "visual.transformer.resblocks.0.ln_2.weight", "visual.transformer.resblocks.0.ln_2.bias")
+   val_44 = MatMul (layer_norm_2, val_7)
+   linear_2 = Add (val_44, "visual.transformer.resblocks.0.mlp.c_fc.bias")
+   [node_gelu] gelu = Gelu <approximate: string = "none"> (linear_2)
+   val_45 = MatMul (gelu, val_8)
+   linear_3 = Add (val_45, "visual.transformer.resblocks.0.mlp.c_proj.bias")
+   add_157 = Add (add_136, linear_3)
+   layer_norm_3 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_157, "visual.transformer.resblocks.1.ln_1.weight", "visual.transformer.resblocks.1.ln_1.bias")
+   [node_scaled_dot_product_attention_1_qkv_mm] node_scaled_dot_product_attention_1_qkv_mm_out = MatMul (layer_norm_3, val_9)
+   [node_scaled_dot_product_attention_1_qkv_bias] node_scaled_dot_product_attention_1_qkv = Add (node_scaled_dot_product_attention_1_qkv_mm_out, "visual.transformer.resblocks.1.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_1_qkv_split] node_scaled_dot_product_attention_1_q, node_scaled_dot_product_attention_1_k, node_scaled_dot_product_attention_1_v = Split <axis: int = -1> (node_scaled_dot_product_attention_1_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_1 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_1_q, node_scaled_dot_product_attention_1_k, node_scaled_dot_product_attention_1_v)
+   [node_scaled_dot_product_attention_1_out_mm] node_scaled_dot_product_attention_1_out_mm_out = MatMul (scaled_dot_product_attention_1, node_scaled_dot_product_attention_1_wo_t)
+   [node_scaled_dot_product_attention_1_out_bias] node_scaled_dot_product_attention_1_out = Add (node_scaled_dot_product_attention_1_out_mm_out, "visual.transformer.resblocks.1.attn.out_proj.bias")
+   add_272 = Add (add_157, node_scaled_dot_product_attention_1_out)
+   layer_norm_4 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_272, "visual.transformer.resblocks.1.ln_2.weight", "visual.transformer.resblocks.1.ln_2.bias")
+   val_46 = MatMul (layer_norm_4, val_10)
+   linear_6 = Add (val_46, "visual.transformer.resblocks.1.mlp.c_fc.bias")
+   gelu_1 = Gelu <approximate: string = "none"> (linear_6)
+   val_47 = MatMul (gelu_1, val_11)
+   linear_7 = Add (val_47, "visual.transformer.resblocks.1.mlp.c_proj.bias")
+   add_293 = Add (add_272, linear_7)
+   layer_norm_5 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_293, "visual.transformer.resblocks.2.ln_1.weight", "visual.transformer.resblocks.2.ln_1.bias")
+   [node_scaled_dot_product_attention_2_qkv_mm] node_scaled_dot_product_attention_2_qkv_mm_out = MatMul (layer_norm_5, val_12)
+   [node_scaled_dot_product_attention_2_qkv_bias] node_scaled_dot_product_attention_2_qkv = Add (node_scaled_dot_product_attention_2_qkv_mm_out, "visual.transformer.resblocks.2.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_2_qkv_split] node_scaled_dot_product_attention_2_q, node_scaled_dot_product_attention_2_k, node_scaled_dot_product_attention_2_v = Split <axis: int = -1> (node_scaled_dot_product_attention_2_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_2 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_2_q, node_scaled_dot_product_attention_2_k, node_scaled_dot_product_attention_2_v)
+   [node_scaled_dot_product_attention_2_out_mm] node_scaled_dot_product_attention_2_out_mm_out = MatMul (scaled_dot_product_attention_2, node_scaled_dot_product_attention_2_wo_t)
+   [node_scaled_dot_product_attention_2_out_bias] node_scaled_dot_product_attention_2_out = Add (node_scaled_dot_product_attention_2_out_mm_out, "visual.transformer.resblocks.2.attn.out_proj.bias")
+   add_408 = Add (add_293, node_scaled_dot_product_attention_2_out)
+   layer_norm_6 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_408, "visual.transformer.resblocks.2.ln_2.weight", "visual.transformer.resblocks.2.ln_2.bias")
+   val_48 = MatMul (layer_norm_6, val_13)
+   linear_10 = Add (val_48, "visual.transformer.resblocks.2.mlp.c_fc.bias")
+   gelu_2 = Gelu <approximate: string = "none"> (linear_10)
+   val_49 = MatMul (gelu_2, val_14)
+   linear_11 = Add (val_49, "visual.transformer.resblocks.2.mlp.c_proj.bias")
+   add_429 = Add (add_408, linear_11)
+   layer_norm_7 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_429, "visual.transformer.resblocks.3.ln_1.weight", "visual.transformer.resblocks.3.ln_1.bias")
+   [node_scaled_dot_product_attention_3_qkv_mm] node_scaled_dot_product_attention_3_qkv_mm_out = MatMul (layer_norm_7, val_15)
+   [node_scaled_dot_product_attention_3_qkv_bias] node_scaled_dot_product_attention_3_qkv = Add (node_scaled_dot_product_attention_3_qkv_mm_out, "visual.transformer.resblocks.3.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_3_qkv_split] node_scaled_dot_product_attention_3_q, node_scaled_dot_product_attention_3_k, node_scaled_dot_product_attention_3_v = Split <axis: int = -1> (node_scaled_dot_product_attention_3_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_3 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_3_q, node_scaled_dot_product_attention_3_k, node_scaled_dot_product_attention_3_v)
+   [node_scaled_dot_product_attention_3_out_mm] node_scaled_dot_product_attention_3_out_mm_out = MatMul (scaled_dot_product_attention_3, node_scaled_dot_product_attention_3_wo_t)
+   [node_scaled_dot_product_attention_3_out_bias] node_scaled_dot_product_attention_3_out = Add (node_scaled_dot_product_attention_3_out_mm_out, "visual.transformer.resblocks.3.attn.out_proj.bias")
+   add_544 = Add (add_429, node_scaled_dot_product_attention_3_out)
+   layer_norm_8 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_544, "visual.transformer.resblocks.3.ln_2.weight", "visual.transformer.resblocks.3.ln_2.bias")
+   val_50 = MatMul (layer_norm_8, val_16)
+   linear_14 = Add (val_50, "visual.transformer.resblocks.3.mlp.c_fc.bias")
+   gelu_3 = Gelu <approximate: string = "none"> (linear_14)
+   val_51 = MatMul (gelu_3, val_17)
+   linear_15 = Add (val_51, "visual.transformer.resblocks.3.mlp.c_proj.bias")
+   add_565 = Add (add_544, linear_15)
+   layer_norm_9 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_565, "visual.transformer.resblocks.4.ln_1.weight", "visual.transformer.resblocks.4.ln_1.bias")
+   [node_scaled_dot_product_attention_4_qkv_mm] node_scaled_dot_product_attention_4_qkv_mm_out = MatMul (layer_norm_9, val_18)
+   [node_scaled_dot_product_attention_4_qkv_bias] node_scaled_dot_product_attention_4_qkv = Add (node_scaled_dot_product_attention_4_qkv_mm_out, "visual.transformer.resblocks.4.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_4_qkv_split] node_scaled_dot_product_attention_4_q, node_scaled_dot_product_attention_4_k, node_scaled_dot_product_attention_4_v = Split <axis: int = -1> (node_scaled_dot_product_attention_4_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_4 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_4_q, node_scaled_dot_product_attention_4_k, node_scaled_dot_product_attention_4_v)
+   [node_scaled_dot_product_attention_4_out_mm] node_scaled_dot_product_attention_4_out_mm_out = MatMul (scaled_dot_product_attention_4, node_scaled_dot_product_attention_4_wo_t)
+   [node_scaled_dot_product_attention_4_out_bias] node_scaled_dot_product_attention_4_out = Add (node_scaled_dot_product_attention_4_out_mm_out, "visual.transformer.resblocks.4.attn.out_proj.bias")
+   add_680 = Add (add_565, node_scaled_dot_product_attention_4_out)
+   layer_norm_10 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_680, "visual.transformer.resblocks.4.ln_2.weight", "visual.transformer.resblocks.4.ln_2.bias")
+   val_52 = MatMul (layer_norm_10, val_19)
+   linear_18 = Add (val_52, "visual.transformer.resblocks.4.mlp.c_fc.bias")
+   gelu_4 = Gelu <approximate: string = "none"> (linear_18)
+   val_53 = MatMul (gelu_4, val_20)
+   linear_19 = Add (val_53, "visual.transformer.resblocks.4.mlp.c_proj.bias")
+   add_701 = Add (add_680, linear_19)
+   layer_norm_11 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_701, "visual.transformer.resblocks.5.ln_1.weight", "visual.transformer.resblocks.5.ln_1.bias")
+   [node_scaled_dot_product_attention_5_qkv_mm] node_scaled_dot_product_attention_5_qkv_mm_out = MatMul (layer_norm_11, val_21)
+   [node_scaled_dot_product_attention_5_qkv_bias] node_scaled_dot_product_attention_5_qkv = Add (node_scaled_dot_product_attention_5_qkv_mm_out, "visual.transformer.resblocks.5.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_5_qkv_split] node_scaled_dot_product_attention_5_q, node_scaled_dot_product_attention_5_k, node_scaled_dot_product_attention_5_v = Split <axis: int = -1> (node_scaled_dot_product_attention_5_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_5 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_5_q, node_scaled_dot_product_attention_5_k, node_scaled_dot_product_attention_5_v)
+   [node_scaled_dot_product_attention_5_out_mm] node_scaled_dot_product_attention_5_out_mm_out = MatMul (scaled_dot_product_attention_5, node_scaled_dot_product_attention_5_wo_t)
+   [node_scaled_dot_product_attention_5_out_bias] node_scaled_dot_product_attention_5_out = Add (node_scaled_dot_product_attention_5_out_mm_out, "visual.transformer.resblocks.5.attn.out_proj.bias")
+   add_816 = Add (add_701, node_scaled_dot_product_attention_5_out)
+   layer_norm_12 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_816, "visual.transformer.resblocks.5.ln_2.weight", "visual.transformer.resblocks.5.ln_2.bias")
+   val_54 = MatMul (layer_norm_12, val_22)
+   linear_22 = Add (val_54, "visual.transformer.resblocks.5.mlp.c_fc.bias")
+   gelu_5 = Gelu <approximate: string = "none"> (linear_22)
+   val_55 = MatMul (gelu_5, val_23)
+   linear_23 = Add (val_55, "visual.transformer.resblocks.5.mlp.c_proj.bias")
+   add_837 = Add (add_816, linear_23)
+   layer_norm_13 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_837, "visual.transformer.resblocks.6.ln_1.weight", "visual.transformer.resblocks.6.ln_1.bias")
+   [node_scaled_dot_product_attention_6_qkv_mm] node_scaled_dot_product_attention_6_qkv_mm_out = MatMul (layer_norm_13, val_24)
+   [node_scaled_dot_product_attention_6_qkv_bias] node_scaled_dot_product_attention_6_qkv = Add (node_scaled_dot_product_attention_6_qkv_mm_out, "visual.transformer.resblocks.6.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_6_qkv_split] node_scaled_dot_product_attention_6_q, node_scaled_dot_product_attention_6_k, node_scaled_dot_product_attention_6_v = Split <axis: int = -1> (node_scaled_dot_product_attention_6_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_6 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_6_q, node_scaled_dot_product_attention_6_k, node_scaled_dot_product_attention_6_v)
+   [node_scaled_dot_product_attention_6_out_mm] node_scaled_dot_product_attention_6_out_mm_out = MatMul (scaled_dot_product_attention_6, node_scaled_dot_product_attention_6_wo_t)
+   [node_scaled_dot_product_attention_6_out_bias] node_scaled_dot_product_attention_6_out = Add (node_scaled_dot_product_attention_6_out_mm_out, "visual.transformer.resblocks.6.attn.out_proj.bias")
+   add_952 = Add (add_837, node_scaled_dot_product_attention_6_out)
+   layer_norm_14 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_952, "visual.transformer.resblocks.6.ln_2.weight", "visual.transformer.resblocks.6.ln_2.bias")
+   val_56 = MatMul (layer_norm_14, val_25)
+   linear_26 = Add (val_56, "visual.transformer.resblocks.6.mlp.c_fc.bias")
+   gelu_6 = Gelu <approximate: string = "none"> (linear_26)
+   val_57 = MatMul (gelu_6, val_26)
+   linear_27 = Add (val_57, "visual.transformer.resblocks.6.mlp.c_proj.bias")
+   add_973 = Add (add_952, linear_27)
+   layer_norm_15 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_973, "visual.transformer.resblocks.7.ln_1.weight", "visual.transformer.resblocks.7.ln_1.bias")
+   [node_scaled_dot_product_attention_7_qkv_mm] node_scaled_dot_product_attention_7_qkv_mm_out = MatMul (layer_norm_15, val_27)
+   [node_scaled_dot_product_attention_7_qkv_bias] node_scaled_dot_product_attention_7_qkv = Add (node_scaled_dot_product_attention_7_qkv_mm_out, "visual.transformer.resblocks.7.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_7_qkv_split] node_scaled_dot_product_attention_7_q, node_scaled_dot_product_attention_7_k, node_scaled_dot_product_attention_7_v = Split <axis: int = -1> (node_scaled_dot_product_attention_7_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_7 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_7_q, node_scaled_dot_product_attention_7_k, node_scaled_dot_product_attention_7_v)
+   [node_scaled_dot_product_attention_7_out_mm] node_scaled_dot_product_attention_7_out_mm_out = MatMul (scaled_dot_product_attention_7, node_scaled_dot_product_attention_7_wo_t)
+   [node_scaled_dot_product_attention_7_out_bias] node_scaled_dot_product_attention_7_out = Add (node_scaled_dot_product_attention_7_out_mm_out, "visual.transformer.resblocks.7.attn.out_proj.bias")
+   add_1088 = Add (add_973, node_scaled_dot_product_attention_7_out)
+   layer_norm_16 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1088, "visual.transformer.resblocks.7.ln_2.weight", "visual.transformer.resblocks.7.ln_2.bias")
+   val_58 = MatMul (layer_norm_16, val_28)
+   linear_30 = Add (val_58, "visual.transformer.resblocks.7.mlp.c_fc.bias")
+   gelu_7 = Gelu <approximate: string = "none"> (linear_30)
+   val_59 = MatMul (gelu_7, val_29)
+   linear_31 = Add (val_59, "visual.transformer.resblocks.7.mlp.c_proj.bias")
+   add_1109 = Add (add_1088, linear_31)
+   layer_norm_17 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1109, "visual.transformer.resblocks.8.ln_1.weight", "visual.transformer.resblocks.8.ln_1.bias")
+   [node_scaled_dot_product_attention_8_qkv_mm] node_scaled_dot_product_attention_8_qkv_mm_out = MatMul (layer_norm_17, val_30)
+   [node_scaled_dot_product_attention_8_qkv_bias] node_scaled_dot_product_attention_8_qkv = Add (node_scaled_dot_product_attention_8_qkv_mm_out, "visual.transformer.resblocks.8.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_8_qkv_split] node_scaled_dot_product_attention_8_q, node_scaled_dot_product_attention_8_k, node_scaled_dot_product_attention_8_v = Split <axis: int = -1> (node_scaled_dot_product_attention_8_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_8 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_8_q, node_scaled_dot_product_attention_8_k, node_scaled_dot_product_attention_8_v)
+   [node_scaled_dot_product_attention_8_out_mm] node_scaled_dot_product_attention_8_out_mm_out = MatMul (scaled_dot_product_attention_8, node_scaled_dot_product_attention_8_wo_t)
+   [node_scaled_dot_product_attention_8_out_bias] node_scaled_dot_product_attention_8_out = Add (node_scaled_dot_product_attention_8_out_mm_out, "visual.transformer.resblocks.8.attn.out_proj.bias")
+   add_1224 = Add (add_1109, node_scaled_dot_product_attention_8_out)
+   layer_norm_18 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1224, "visual.transformer.resblocks.8.ln_2.weight", "visual.transformer.resblocks.8.ln_2.bias")
+   val_60 = MatMul (layer_norm_18, val_31)
+   linear_34 = Add (val_60, "visual.transformer.resblocks.8.mlp.c_fc.bias")
+   gelu_8 = Gelu <approximate: string = "none"> (linear_34)
+   val_61 = MatMul (gelu_8, val_32)
+   linear_35 = Add (val_61, "visual.transformer.resblocks.8.mlp.c_proj.bias")
+   add_1245 = Add (add_1224, linear_35)
+   layer_norm_19 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1245, "visual.transformer.resblocks.9.ln_1.weight", "visual.transformer.resblocks.9.ln_1.bias")
+   [node_scaled_dot_product_attention_9_qkv_mm] node_scaled_dot_product_attention_9_qkv_mm_out = MatMul (layer_norm_19, val_33)
+   [node_scaled_dot_product_attention_9_qkv_bias] node_scaled_dot_product_attention_9_qkv = Add (node_scaled_dot_product_attention_9_qkv_mm_out, "visual.transformer.resblocks.9.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_9_qkv_split] node_scaled_dot_product_attention_9_q, node_scaled_dot_product_attention_9_k, node_scaled_dot_product_attention_9_v = Split <axis: int = -1> (node_scaled_dot_product_attention_9_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_9 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_9_q, node_scaled_dot_product_attention_9_k, node_scaled_dot_product_attention_9_v)
+   [node_scaled_dot_product_attention_9_out_mm] node_scaled_dot_product_attention_9_out_mm_out = MatMul (scaled_dot_product_attention_9, node_scaled_dot_product_attention_9_wo_t)
+   [node_scaled_dot_product_attention_9_out_bias] node_scaled_dot_product_attention_9_out = Add (node_scaled_dot_product_attention_9_out_mm_out, "visual.transformer.resblocks.9.attn.out_proj.bias")
+   add_1360 = Add (add_1245, node_scaled_dot_product_attention_9_out)
+   layer_norm_20 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1360, "visual.transformer.resblocks.9.ln_2.weight", "visual.transformer.resblocks.9.ln_2.bias")
+   val_62 = MatMul (layer_norm_20, val_34)
+   linear_38 = Add (val_62, "visual.transformer.resblocks.9.mlp.c_fc.bias")
+   gelu_9 = Gelu <approximate: string = "none"> (linear_38)
+   val_63 = MatMul (gelu_9, val_35)
+   linear_39 = Add (val_63, "visual.transformer.resblocks.9.mlp.c_proj.bias")
+   add_1381 = Add (add_1360, linear_39)
+   layer_norm_21 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1381, "visual.transformer.resblocks.10.ln_1.weight", "visual.transformer.resblocks.10.ln_1.bias")
+   [node_scaled_dot_product_attention_10_qkv_mm] node_scaled_dot_product_attention_10_qkv_mm_out = MatMul (layer_norm_21, val_36)
+   [node_scaled_dot_product_attention_10_qkv_bias] node_scaled_dot_product_attention_10_qkv = Add (node_scaled_dot_product_attention_10_qkv_mm_out, "visual.transformer.resblocks.10.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_10_qkv_split] node_scaled_dot_product_attention_10_q, node_scaled_dot_product_attention_10_k, node_scaled_dot_product_attention_10_v = Split <axis: int = -1> (node_scaled_dot_product_attention_10_qkv, attn3d_split_3x768)
+   scaled_dot_product_attention_10 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_10_q, node_scaled_dot_product_attention_10_k, node_scaled_dot_product_attention_10_v)
+   [node_scaled_dot_product_attention_10_out_mm] node_scaled_dot_product_attention_10_out_mm_out = MatMul (scaled_dot_product_attention_10, node_scaled_dot_product_attention_10_wo_t)
+   [node_scaled_dot_product_attention_10_out_bias] node_scaled_dot_product_attention_10_out = Add (node_scaled_dot_product_attention_10_out_mm_out, "visual.transformer.resblocks.10.attn.out_proj.bias")
+   add_1496 = Add (add_1381, node_scaled_dot_product_attention_10_out)
+   layer_norm_22 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1496, "visual.transformer.resblocks.10.ln_2.weight", "visual.transformer.resblocks.10.ln_2.bias")
+   val_64 = MatMul (layer_norm_22, val_37)
+   linear_42 = Add (val_64, "visual.transformer.resblocks.10.mlp.c_fc.bias")
+   gelu_10 = Gelu <approximate: string = "none"> (linear_42)
+   val_65 = MatMul (gelu_10, val_38)
+   linear_43 = Add (val_65, "visual.transformer.resblocks.10.mlp.c_proj.bias")
+   add_1517 = Add (add_1496, linear_43)
+   layer_norm_23 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1517, "visual.transformer.resblocks.11.ln_1.weight", "visual.transformer.resblocks.11.ln_1.bias")
+   [node_scaled_dot_product_attention_11_qkv_mm] node_scaled_dot_product_attention_11_qkv_mm_out = MatMul (layer_norm_23, val_39)
+   [node_scaled_dot_product_attention_11_qkv_bias] node_scaled_dot_product_attention_11_qkv = Add (node_scaled_dot_product_attention_11_qkv_mm_out, "visual.transformer.resblocks.11.attn.in_proj_bias")
+   [node_scaled_dot_product_attention_11_qkv_split] node_scaled_dot_product_attention_11_q, node_scaled_dot_product_attention_11_k, node_scaled_dot_product_attention_11_v = Split <axis: int = -1> (node_scaled_dot_product_attention_11_qkv, attn3d_split_3x768)
+   [pool_hoist_node_scaled_dot_product_attention_11_q] node_scaled_dot_product_attention_11_q_pooled = Slice (node_scaled_dot_product_attention_11_q, val_2, val_5, val_5)
+   scaled_dot_product_attention_11 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, softcap: float = 0> (node_scaled_dot_product_attention_11_q_pooled, node_scaled_dot_product_attention_11_k, node_scaled_dot_product_attention_11_v)
+   [node_scaled_dot_product_attention_11_out_mm] node_scaled_dot_product_attention_11_out_mm_out = MatMul (scaled_dot_product_attention_11, node_scaled_dot_product_attention_11_wo_t)
+   [node_scaled_dot_product_attention_11_out_bias] node_scaled_dot_product_attention_11_out = Add (node_scaled_dot_product_attention_11_out_mm_out, "visual.transformer.resblocks.11.attn.out_proj.bias")
+   [pool_hoist_add_1517] add_1517_pooled = Slice (add_1517, val_2, val_5, val_5)
+   add_1632 = Add (add_1517_pooled, node_scaled_dot_product_attention_11_out)
+   layer_norm_24 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1632, "visual.transformer.resblocks.11.ln_2.weight", "visual.transformer.resblocks.11.ln_2.bias")
+   val_66 = MatMul (layer_norm_24, val_40)
+   linear_46 = Add (val_66, "visual.transformer.resblocks.11.mlp.c_fc.bias")
+   gelu_11 = Gelu <approximate: string = "none"> (linear_46)
+   val_67 = MatMul (gelu_11, val_41)
+   linear_47 = Add (val_67, "visual.transformer.resblocks.11.mlp.c_proj.bias")
+   add_1653 = Add (add_1632, linear_47)
+   val_68 = Squeeze (add_1653, val_5)
+   select_36 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (val_68, "visual.ln_post.weight", "visual.ln_post.bias")
+   [node_matmul] matmul = MatMul (select_36, "visual.proj")
+   [node_linalg_vector_norm] linalg_vector_norm = ReduceL2 <keepdims: int = 1, noop_with_empty_axes: int = 0> (matmul, val_0)
+   [node_clamp_min] clamp_min = Clip (linalg_vector_norm, val_1)
+   [node_div] image_embedding = Div (matmul, clamp_min)
+}
+
+weights:
+attn3d_split_3x768 INT64[3] eca50b2daf34
+node_Conv_704_fused_bias FLOAT[768] cec1400e09f9
+node_scaled_dot_product_attention_10_wo_t FLOAT[768,768] e4090d3a2b50
+node_scaled_dot_product_attention_11_wo_t FLOAT[768,768] ee5e54044120
+node_scaled_dot_product_attention_1_wo_t FLOAT[768,768] 85a0aaf77732
+node_scaled_dot_product_attention_2_wo_t FLOAT[768,768] 41cd1000c01b
+node_scaled_dot_product_attention_3_wo_t FLOAT[768,768] 50604d7e6bd3
+node_scaled_dot_product_attention_4_wo_t FLOAT[768,768] 25cb81a3cafa
+node_scaled_dot_product_attention_5_wo_t FLOAT[768,768] aa1b5c8d3875
+node_scaled_dot_product_attention_6_wo_t FLOAT[768,768] c2a3daaa6a4e
+node_scaled_dot_product_attention_7_wo_t FLOAT[768,768] 9485db8b4477
+node_scaled_dot_product_attention_8_wo_t FLOAT[768,768] fd1e09bb0459
+node_scaled_dot_product_attention_9_wo_t FLOAT[768,768] 189a30478cb6
+node_scaled_dot_product_attention_wo_t FLOAT[768,768] fd841bc7db44
+val_0 INT64[1] 12a3ae445661
+val_1 FLOAT[] 6708d9be4956
+val_10 FLOAT[768,3072] e82fdf403499
+val_11 FLOAT[3072,768] 0f8820cec287
+val_12 FLOAT[768,2304] 420520852da1
+val_13 FLOAT[768,3072] 492eaf1b9333
+val_14 FLOAT[3072,768] 93059353a373
+val_15 FLOAT[768,2304] ae0785ac8cd2
+val_16 FLOAT[768,3072] aac40e3150d9
+val_17 FLOAT[3072,768] 4979f5fc2abd
+val_18 FLOAT[768,2304] 3f335510d410
+val_19 FLOAT[768,3072] 4f5f6707990f
+val_2 INT64[1] af5570f5a181
+val_20 FLOAT[3072,768] 2cbd1ed0fc36
+val_21 FLOAT[768,2304] e435fe3febdf
+val_22 FLOAT[768,3072] 3b8bbc17ae7a
+val_23 FLOAT[3072,768] 7a50a18642e2
+val_24 FLOAT[768,2304] 706ade6d578d
+val_25 FLOAT[768,3072] 5e479711b042
+val_26 FLOAT[3072,768] af68103337b0
+val_27 FLOAT[768,2304] e2169090543f
+val_28 FLOAT[768,3072] eb1ea3fd824f
+val_29 FLOAT[3072,768] e20c46ca2a09
+val_3 INT64[6] 6b7d92eaae70
+val_30 FLOAT[768,2304] b2c34a6407e9
+val_31 FLOAT[768,3072] 5aeed81ddaed
+val_32 FLOAT[3072,768] f0fab4456d51
+val_33 FLOAT[768,2304] 26d0461b18eb
+val_34 FLOAT[768,3072] fe0710f5c4fd
+val_35 FLOAT[3072,768] a68d645e5e66
+val_36 FLOAT[768,2304] e1fbf5a09c31
+val_37 FLOAT[768,3072] 5c71779bd098
+val_38 FLOAT[3072,768] 668a99f1cd31
+val_39 FLOAT[768,2304] 7620acf5020e
+val_4 FLOAT[] df3f619804a9
+val_40 FLOAT[768,3072] c97f5e946a8b
+val_41 FLOAT[3072,768] 3f816e67b6ac
+val_42 FLOAT[1,197,768] 10c7d0597907
+val_5 INT64[1] 7c9fa136d441
+val_6 FLOAT[768,2304] e4fdcb3e4286
+val_7 FLOAT[768,3072] 718e14da1c58
+val_8 FLOAT[3072,768] c38884b606b4
+val_9 FLOAT[768,2304] 2a7639bc86dd
+view_target INT64[3] 8931c30473a4
+visual.conv1.weight FLOAT[768,3,16,16] c8964a02344e
+visual.ln_post.bias FLOAT[768] 05edeadcc14a
+visual.ln_post.weight FLOAT[768] 76420a5fbd79
+visual.ln_pre.bias FLOAT[768] dae5b0710c07
+visual.ln_pre.weight FLOAT[768] 87606085d4a8
+visual.proj FLOAT[768,512] 584e3a559624
+visual.transformer.resblocks.0.attn.in_proj_bias FLOAT[2304] 4c3d3778eb2e
+visual.transformer.resblocks.0.attn.out_proj.bias FLOAT[768] a3cfddb8581d
+visual.transformer.resblocks.0.ln_1.bias FLOAT[768] 18752a838d10
+visual.transformer.resblocks.0.ln_1.weight FLOAT[768] ff8e60ecba75
+visual.transformer.resblocks.0.ln_2.bias FLOAT[768] 65735ae2fe1a
+visual.transformer.resblocks.0.ln_2.weight FLOAT[768] af8b31e8f8f1
+visual.transformer.resblocks.0.mlp.c_fc.bias FLOAT[3072] 3133b886b3fd
+visual.transformer.resblocks.0.mlp.c_proj.bias FLOAT[768] 75908f7c62e2
+visual.transformer.resblocks.1.attn.in_proj_bias FLOAT[2304] 66e342885f6b
+visual.transformer.resblocks.1.attn.out_proj.bias FLOAT[768] 71f86b480699
+visual.transformer.resblocks.1.ln_1.bias FLOAT[768] a99e97c16888
+visual.transformer.resblocks.1.ln_1.weight FLOAT[768] 93a67e3b510a
+visual.transformer.resblocks.1.ln_2.bias FLOAT[768] 7219a15df74b
+visual.transformer.resblocks.1.ln_2.weight FLOAT[768] 5c9e0d47c798
+visual.transformer.resblocks.1.mlp.c_fc.bias FLOAT[3072] bca526bc7b40
+visual.transformer.resblocks.1.mlp.c_proj.bias FLOAT[768] 97b708d64690
+visual.transformer.resblocks.10.attn.in_proj_bias FLOAT[2304] 8454b47dfae2
+visual.transformer.resblocks.10.attn.out_proj.bias FLOAT[768] ed6f9b15eec4
+visual.transformer.resblocks.10.ln_1.bias FLOAT[768] fd9bfdfcb5f2
+visual.transformer.resblocks.10.ln_1.weight FLOAT[768] ad60e0cb0f84
+visual.transformer.resblocks.10.ln_2.bias FLOAT[768] c7ae17e6abba
+visual.transformer.resblocks.10.ln_2.weight FLOAT[768] 842fd0c890c0
+visual.transformer.resblocks.10.mlp.c_fc.bias FLOAT[3072] faf284b4ff17
+visual.transformer.resblocks.10.mlp.c_proj.bias FLOAT[768] d9978c397904
+visual.transformer.resblocks.11.attn.in_proj_bias FLOAT[2304] 0373df24cf43
+visual.transformer.resblocks.11.attn.out_proj.bias FLOAT[768] f918446b399d
+visual.transformer.resblocks.11.ln_1.bias FLOAT[768] c3cca2633992
+visual.transformer.resblocks.11.ln_1.weight FLOAT[768] 2e445eba75ce
+visual.transformer.resblocks.11.ln_2.bias FLOAT[768] 6302e82949d8
+visual.transformer.resblocks.11.ln_2.weight FLOAT[768] 43b70520478c
+visual.transformer.resblocks.11.mlp.c_fc.bias FLOAT[3072] b32be672af3b
+visual.transformer.resblocks.11.mlp.c_proj.bias FLOAT[768] 96847fc4b7ec
+visual.transformer.resblocks.2.attn.in_proj_bias FLOAT[2304] f0334a28b38e
+visual.transformer.resblocks.2.attn.out_proj.bias FLOAT[768] 9e5c225df113
+visual.transformer.resblocks.2.ln_1.bias FLOAT[768] 4ea5b97d7980
+visual.transformer.resblocks.2.ln_1.weight FLOAT[768] f746e9bf1a5e
+visual.transformer.resblocks.2.ln_2.bias FLOAT[768] 44f84d070782
+visual.transformer.resblocks.2.ln_2.weight FLOAT[768] d575753cdae1
+visual.transformer.resblocks.2.mlp.c_fc.bias FLOAT[3072] cd47f317c948
+visual.transformer.resblocks.2.mlp.c_proj.bias FLOAT[768] a88fdfe3904c
+visual.transformer.resblocks.3.attn.in_proj_bias FLOAT[2304] 5446110907a4
+visual.transformer.resblocks.3.attn.out_proj.bias FLOAT[768] baa7f35f3f2b
+visual.transformer.resblocks.3.ln_1.bias FLOAT[768] 61fbf6f330e1
+visual.transformer.resblocks.3.ln_1.weight FLOAT[768] 47f2273e6bbd
+visual.transformer.resblocks.3.ln_2.bias FLOAT[768] dfa906e3d69a
+visual.transformer.resblocks.3.ln_2.weight FLOAT[768] a0c6d317cd6c
+visual.transformer.resblocks.3.mlp.c_fc.bias FLOAT[3072] ec486a9f71a5
+visual.transformer.resblocks.3.mlp.c_proj.bias FLOAT[768] f68f6f354cae
+visual.transformer.resblocks.4.attn.in_proj_bias FLOAT[2304] 582509ef592a
+visual.transformer.resblocks.4.attn.out_proj.bias FLOAT[768] f5b34a75cda0
+visual.transformer.resblocks.4.ln_1.bias FLOAT[768] bb2de882e96c
+visual.transformer.resblocks.4.ln_1.weight FLOAT[768] aeacc2c8e6fe
+visual.transformer.resblocks.4.ln_2.bias FLOAT[768] 7e500902b529
+visual.transformer.resblocks.4.ln_2.weight FLOAT[768] d29ae150a1ab
+visual.transformer.resblocks.4.mlp.c_fc.bias FLOAT[3072] 725413d01afd
+visual.transformer.resblocks.4.mlp.c_proj.bias FLOAT[768] 9557a0fdff07
+visual.transformer.resblocks.5.attn.in_proj_bias FLOAT[2304] 17fa6077e880
+visual.transformer.resblocks.5.attn.out_proj.bias FLOAT[768] bb0dddae3a1c
+visual.transformer.resblocks.5.ln_1.bias FLOAT[768] 909a83cb1dcb
+visual.transformer.resblocks.5.ln_1.weight FLOAT[768] c7552c986ca9
+visual.transformer.resblocks.5.ln_2.bias FLOAT[768] f912d8abb75e
+visual.transformer.resblocks.5.ln_2.weight FLOAT[768] 245502dbf8e0
+visual.transformer.resblocks.5.mlp.c_fc.bias FLOAT[3072] 2de4938af0f5
+visual.transformer.resblocks.5.mlp.c_proj.bias FLOAT[768] 3283fa0a1ec4
+visual.transformer.resblocks.6.attn.in_proj_bias FLOAT[2304] d83601050d60
+visual.transformer.resblocks.6.attn.out_proj.bias FLOAT[768] 9c2bed6f7adf
+visual.transformer.resblocks.6.ln_1.bias FLOAT[768] 0f7a7b336d91
+visual.transformer.resblocks.6.ln_1.weight FLOAT[768] 7b97f13fc836
+visual.transformer.resblocks.6.ln_2.bias FLOAT[768] 45bd3a7cf0d5
+visual.transformer.resblocks.6.ln_2.weight FLOAT[768] a968d76ecd3b
+visual.transformer.resblocks.6.mlp.c_fc.bias FLOAT[3072] 61db3959a658
+visual.transformer.resblocks.6.mlp.c_proj.bias FLOAT[768] 630c63fa1c7e
+visual.transformer.resblocks.7.attn.in_proj_bias FLOAT[2304] a52443073867
+visual.transformer.resblocks.7.attn.out_proj.bias FLOAT[768] 1328ff4eb20d
+visual.transformer.resblocks.7.ln_1.bias FLOAT[768] 1187c3c21e27
+visual.transformer.resblocks.7.ln_1.weight FLOAT[768] 7e6d2d770c81
+visual.transformer.resblocks.7.ln_2.bias FLOAT[768] 1a8dd9823706
+visual.transformer.resblocks.7.ln_2.weight FLOAT[768] 78a96b994f89
+visual.transformer.resblocks.7.mlp.c_fc.bias FLOAT[3072] 859a841bc82e
+visual.transformer.resblocks.7.mlp.c_proj.bias FLOAT[768] 50e05c0e7c7f
+visual.transformer.resblocks.8.attn.in_proj_bias FLOAT[2304] 8f99f42600b8
+visual.transformer.resblocks.8.attn.out_proj.bias FLOAT[768] 8ab7c65a1147
+visual.transformer.resblocks.8.ln_1.bias FLOAT[768] 1e2c0f3b233f
+visual.transformer.resblocks.8.ln_1.weight FLOAT[768] 8a54f22e152a
+visual.transformer.resblocks.8.ln_2.bias FLOAT[768] c608b043682f
+visual.transformer.resblocks.8.ln_2.weight FLOAT[768] c7a77b537bcf
+visual.transformer.resblocks.8.mlp.c_fc.bias FLOAT[3072] 7d1b4c941648
+visual.transformer.resblocks.8.mlp.c_proj.bias FLOAT[768] eefa0bf9b17b
+visual.transformer.resblocks.9.attn.in_proj_bias FLOAT[2304] fedca5daa5a7
+visual.transformer.resblocks.9.attn.out_proj.bias FLOAT[768] 13898cfaab2a
+visual.transformer.resblocks.9.ln_1.bias FLOAT[768] b15fe18cd1df
+visual.transformer.resblocks.9.ln_1.weight FLOAT[768] 508c7bfd830d
+visual.transformer.resblocks.9.ln_2.bias FLOAT[768] c3b7d62b826c
+visual.transformer.resblocks.9.ln_2.weight FLOAT[768] 989a2b310a85
+visual.transformer.resblocks.9.mlp.c_fc.bias FLOAT[3072] 92dc9cdf1b7c
+visual.transformer.resblocks.9.mlp.c_proj.bias FLOAT[768] f0c4f18cbaec

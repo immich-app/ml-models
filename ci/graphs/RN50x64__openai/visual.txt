@@ -1,0 +1,1430 @@
+<
+   ir_version: 10,
+   opset_import: ["" : 23],
+   producer_name: "pytorch"
+>
+main_graph (uint8[batch,448,448,3] image) => (float[batch,1024] image_embedding) 
+   <
+      float[batch,1024,56,56] add_1072
+      float[batch,1024,56,56] add_1148
+      float[batch,1024,56,56] add_1224
+      float[batch,1024,56,56] add_1300
+      float[batch,1024,56,56] add_1376
+      float[batch,512,112,112] add_140
+      float[batch,1024,56,56] add_1452
+      float[batch,2048,28,28] add_1548
+      float[batch,2048,28,28] add_1624
+      float[batch,2048,28,28] add_1700
+      float[batch,2048,28,28] add_1776
+      float[batch,2048,28,28] add_1852
+      float[batch,2048,28,28] add_1928
+      float[batch,2048,28,28] add_2004
+      float[batch,2048,28,28] add_2080
+      float[batch,2048,28,28] add_2156
+      float[batch,512,112,112] add_216
+      float[batch,2048,28,28] add_2232
+      float[batch,2048,28,28] add_2308
+      float[batch,2048,28,28] add_2384
+      float[batch,2048,28,28] add_2460
+      float[batch,2048,28,28] add_2536
+      float[batch,2048,28,28] add_2612
+      float[batch,2048,28,28] add_2688
+      float[batch,2048,28,28] add_2764
+      float[batch,2048,28,28] add_2840
+      float[batch,2048,28,28] add_2916
+      float[batch,512,112,112] add_292
+      float[batch,2048,28,28] add_2992
+      float[batch,2048,28,28] add_3068
+      float[batch,2048,28,28] add_3144
+      float[batch,2048,28,28] add_3220
+      float[batch,2048,28,28] add_3296
+      float[batch,2048,28,28] add_3372
+      float[batch,2048,28,28] add_3448
+      float[batch,2048,28,28] add_3524
+      float[batch,2048,28,28] add_3600
+      float[batch,2048,28,28] add_3676
+      float[batch,2048,28,28] add_3752
+      float[batch,2048,28,28] add_3828
+      float[batch,1024,56,56] add_388
+      float[batch,2048,28,28] add_3904
+      float[batch,2048,28,28] add_3980
+      float[batch,2048,28,28] add_4056
+      float[batch,2048,28,28] add_4132
+      float[batch,2048,28,28] add_4208
+      float[batch,4096,14,14] add_4304
+      float[batch,4096,14,14] add_4380
+      float[batch,4096,14,14] add_4456
+      float[batch,4096,14,14] add_4532
+      float[batch,4096,14,14] add_4608
+      float[batch,1024,56,56] add_464
+      float[batch,4096,14,14] add_4684
+      float[batch,4096,14,14] add_4760
+      float[batch,4096,14,14] add_4836
+      float[batch,4096,14,14] add_4912
+      float[batch,4096,14,14] add_4988
+      float[197,batch,4096] add_5018
+      float[batch,1024,56,56] add_540
+      float[batch,1024,56,56] add_616
+      float[batch,1024,56,56] add_692
+      float[batch,1024,56,56] add_768
+      float[batch,1024,56,56] add_844
+      float[batch,1024,56,56] add_920
+      float[batch,1024,56,56] add_996
+      float[batch,128,112,112] avg_pool2d
+      float[batch,256,56,56] avg_pool2d_2
+      float[batch,512,56,56] avg_pool2d_3
+      float[batch,512,28,28] avg_pool2d_4
+      float[batch,1024,28,28] avg_pool2d_5
+      float[batch,1024,14,14] avg_pool2d_6
+      float[batch,2048,14,14] avg_pool2d_7
+      float[197,batch,4096] cat
+      float[batch,1] clamp_min
+      float[batch,64,224,224] getitem
+      float[batch,1024,56,56] getitem_102
+      float[batch,256,56,56] getitem_105
+      float[batch,256,56,56] getitem_108
+      float[batch,1024,56,56] getitem_111
+      float[batch,256,56,56] getitem_114
+      float[batch,256,56,56] getitem_117
+      float[batch,128,112,112] getitem_12
+      float[batch,1024,56,56] getitem_120
+      float[batch,256,56,56] getitem_123
+      float[batch,256,56,56] getitem_126
+      float[batch,1024,56,56] getitem_129
+      float[batch,256,56,56] getitem_132
+      float[batch,256,56,56] getitem_135
+      float[batch,1024,56,56] getitem_138
+      float[batch,256,56,56] getitem_141
+      float[batch,256,56,56] getitem_144
+      float[batch,1024,56,56] getitem_147
+      float[batch,512,112,112] getitem_15
+      float[batch,256,56,56] getitem_150
+      float[batch,256,56,56] getitem_153
+      float[batch,1024,56,56] getitem_156
+      float[batch,256,56,56] getitem_159
+      float[batch,256,56,56] getitem_162
+      float[batch,1024,56,56] getitem_165
+      float[batch,256,56,56] getitem_168
+      float[batch,256,56,56] getitem_171
+      float[batch,1024,56,56] getitem_174
+      float[batch,512,56,56] getitem_177
+      float[batch,512,112,112] getitem_18
+      float[batch,512,56,56] getitem_180
+      float[batch,2048,28,28] getitem_183
+      float[batch,2048,28,28] getitem_186
+      float[batch,512,28,28] getitem_189
+      float[batch,512,28,28] getitem_192
+      float[batch,2048,28,28] getitem_195
+      float[batch,512,28,28] getitem_198
+      float[batch,512,28,28] getitem_201
+      float[batch,2048,28,28] getitem_204
+      float[batch,512,28,28] getitem_207
+      float[batch,128,112,112] getitem_21
+      float[batch,512,28,28] getitem_210
+      float[batch,2048,28,28] getitem_213
+      float[batch,512,28,28] getitem_216
+      float[batch,512,28,28] getitem_219
+      float[batch,2048,28,28] getitem_222
+      float[batch,512,28,28] getitem_225
+      float[batch,512,28,28] getitem_228
+      float[batch,2048,28,28] getitem_231
+      float[batch,512,28,28] getitem_234
+      float[batch,512,28,28] getitem_237
+      float[batch,128,112,112] getitem_24
+      float[batch,2048,28,28] getitem_240
+      float[batch,512,28,28] getitem_243
+      float[batch,512,28,28] getitem_246
+      float[batch,2048,28,28] getitem_249
+      float[batch,512,28,28] getitem_252
+      float[batch,512,28,28] getitem_255
+      float[batch,2048,28,28] getitem_258
+      float[batch,512,28,28] getitem_261
+      float[batch,512,28,28] getitem_264
+      float[batch,2048,28,28] getitem_267
+      float[batch,512,112,112] getitem_27
+      float[batch,512,28,28] getitem_270
+      float[batch,512,28,28] getitem_273
+      float[batch,2048,28,28] getitem_276
+      float[batch,512,28,28] getitem_279
+      float[batch,512,28,28] getitem_282
+      float[batch,2048,28,28] getitem_285
+      float[batch,512,28,28] getitem_288
+      float[batch,512,28,28] getitem_291
+      float[batch,2048,28,28] getitem_294
+      float[batch,512,28,28] getitem_297
+      float[batch,64,224,224] getitem_3
+      float[batch,128,112,112] getitem_30
+      float[batch,512,28,28] getitem_300
+      float[batch,2048,28,28] getitem_303
+      float[batch,512,28,28] getitem_306
+      float[batch,512,28,28] getitem_309
+      float[batch,2048,28,28] getitem_312
+      float[batch,512,28,28] getitem_315
+      float[batch,512,28,28] getitem_318
+      float[batch,2048,28,28] getitem_321
+      float[batch,512,28,28] getitem_324
+      float[batch,512,28,28] getitem_327
+      float[batch,128,112,112] getitem_33
+      float[batch,2048,28,28] getitem_330
+      float[batch,512,28,28] getitem_333
+      float[batch,512,28,28] getitem_336
+      float[batch,2048,28,28] getitem_339
+      float[batch,512,28,28] getitem_342
+      float[batch,512,28,28] getitem_345
+      float[batch,2048,28,28] getitem_348
+      float[batch,512,28,28] getitem_351
+      float[batch,512,28,28] getitem_354
+      float[batch,2048,28,28] getitem_357
+      float[batch,512,112,112] getitem_36
+      float[batch,512,28,28] getitem_360
+      float[batch,512,28,28] getitem_363
+      float[batch,2048,28,28] getitem_366
+      float[batch,512,28,28] getitem_369
+      float[batch,512,28,28] getitem_372
+      float[batch,2048,28,28] getitem_375
+      float[batch,512,28,28] getitem_378
+      float[batch,512,28,28] getitem_381
+      float[batch,2048,28,28] getitem_384
+      float[batch,512,28,28] getitem_387
+      float[batch,256,112,112] getitem_39
+      float[batch,512,28,28] getitem_390
+      float[batch,2048,28,28] getitem_393
+      float[batch,512,28,28] getitem_396
+      float[batch,512,28,28] getitem_399
+      float[batch,2048,28,28] getitem_402
+      float[batch,512,28,28] getitem_405
+      float[batch,512,28,28] getitem_408
+      float[batch,2048,28,28] getitem_411
+      float[batch,512,28,28] getitem_414
+      float[batch,512,28,28] getitem_417
+      float[batch,256,112,112] getitem_42
+      float[batch,2048,28,28] getitem_420
+      float[batch,512,28,28] getitem_423
+      float[batch,512,28,28] getitem_426
+      float[batch,2048,28,28] getitem_429
+      float[batch,512,28,28] getitem_432
+      float[batch,512,28,28] getitem_435
+      float[batch,2048,28,28] getitem_438
+      float[batch,512,28,28] getitem_441
+      float[batch,512,28,28] getitem_444
+      float[batch,2048,28,28] getitem_447
+      float[batch,1024,56,56] getitem_45
+      float[batch,512,28,28] getitem_450
+      float[batch,512,28,28] getitem_453
+      float[batch,2048,28,28] getitem_456
+      float[batch,512,28,28] getitem_459
+      float[batch,512,28,28] getitem_462
+      float[batch,2048,28,28] getitem_465
+      float[batch,512,28,28] getitem_468
+      float[batch,512,28,28] getitem_471
+      float[batch,2048,28,28] getitem_474
+      float[batch,512,28,28] getitem_477
+      float[batch,1024,56,56] getitem_48
+      float[batch,512,28,28] getitem_480
+      float[batch,2048,28,28] getitem_483
+      float[batch,512,28,28] getitem_486
+      float[batch,512,28,28] getitem_489
+      float[batch,2048,28,28] getitem_492
+      float[batch,512,28,28] getitem_495
+      float[batch,512,28,28] getitem_498
+      float[batch,2048,28,28] getitem_501
+      float[batch,1024,28,28] getitem_504
+      float[batch,1024,28,28] getitem_507
+      float[batch,256,56,56] getitem_51
+      float[batch,4096,14,14] getitem_510
+      float[batch,4096,14,14] getitem_513
+      float[batch,1024,14,14] getitem_516
+      float[batch,1024,14,14] getitem_519
+      float[batch,4096,14,14] getitem_522
+      float[batch,1024,14,14] getitem_525
+      float[batch,1024,14,14] getitem_528
+      float[batch,4096,14,14] getitem_531
+      float[batch,1024,14,14] getitem_534
+      float[batch,1024,14,14] getitem_537
+      float[batch,256,56,56] getitem_54
+      float[batch,4096,14,14] getitem_540
+      float[batch,1024,14,14] getitem_543
+      float[batch,1024,14,14] getitem_546
+      float[batch,4096,14,14] getitem_549
+      float[batch,1024,14,14] getitem_552
+      float[batch,1024,14,14] getitem_555
+      float[batch,4096,14,14] getitem_558
+      float[batch,1024,14,14] getitem_561
+      float[batch,1024,14,14] getitem_564
+      float[batch,4096,14,14] getitem_567
+      float[batch,1024,56,56] getitem_57
+      float[batch,1024,14,14] getitem_570
+      float[batch,1024,14,14] getitem_573
+      float[batch,4096,14,14] getitem_576
+      float[batch,1024,14,14] getitem_579
+      float[batch,1024,14,14] getitem_582
+      float[batch,4096,14,14] getitem_585
+      float[batch,1024,14,14] getitem_588
+      float[batch,1024,14,14] getitem_591
+      float[batch,4096,14,14] getitem_594
+      float[batch,128,224,224] getitem_6
+      float[batch,256,56,56] getitem_60
+      float[batch,256,56,56] getitem_63
+      float[batch,1024,56,56] getitem_66
+      float[batch,256,56,56] getitem_69
+      float[batch,256,56,56] getitem_72
+      float[batch,1024,56,56] getitem_75
+      float[batch,256,56,56] getitem_78
+      float[batch,256,56,56] getitem_81
+      float[batch,1024,56,56] getitem_84
+      float[batch,256,56,56] getitem_87
+      float[batch,128,112,112] getitem_9
+      float[batch,256,56,56] getitem_90
+      float[batch,1024,56,56] getitem_93
+      float[batch,256,56,56] getitem_96
+      float[batch,256,56,56] getitem_99
+      float[batch,3,448,448] image_chw
+      float[batch,448,448,3] image_f32
+      float[batch,448,448,3] image_shifted
+      float[batch,1] linalg_vector_norm
+      float[1,batch,4096] linear
+      float[197,batch,4096] linear_1
+      float[197,batch,4096] linear_2
+      float[batch,1024] linear_3
+      float[1,batch,4096] mean
+      float[1,batch,4096] node_scaled_dot_product_attention_q_row
+      float[196,batch,4096] permute_1
+      float[1,batch,64,64] permute_2
+      float[batch,64,224,224] relu
+      float[batch,64,224,224] relu_1
+      float[batch,128,112,112] relu_10
+      float[batch,512,28,28] relu_100
+      float[batch,2048,28,28] relu_101
+      float[batch,512,28,28] relu_102
+      float[batch,512,28,28] relu_103
+      float[batch,2048,28,28] relu_104
+      float[batch,512,28,28] relu_105
+      float[batch,512,28,28] relu_106
+      float[batch,2048,28,28] relu_107
+      float[batch,512,28,28] relu_108
+      float[batch,512,28,28] relu_109
+      float[batch,512,112,112] relu_11
+      float[batch,2048,28,28] relu_110
+      float[batch,512,28,28] relu_111
+      float[batch,512,28,28] relu_112
+      float[batch,2048,28,28] relu_113
+      float[batch,512,28,28] relu_114
+      float[batch,512,28,28] relu_115
+      float[batch,2048,28,28] relu_116
+      float[batch,512,28,28] relu_117
+      float[batch,512,28,28] relu_118
+      float[batch,2048,28,28] relu_119
+      float[batch,256,112,112] relu_12
+      float[batch,512,28,28] relu_120
+      float[batch,512,28,28] relu_121
+      float[batch,2048,28,28] relu_122
+      float[batch,512,28,28] relu_123
+      float[batch,512,28,28] relu_124
+      float[batch,2048,28,28] relu_125
+      float[batch,512,28,28] relu_126
+      float[batch,512,28,28] relu_127
+      float[batch,2048,28,28] relu_128
+      float[batch,512,28,28] relu_129
+      float[batch,256,112,112] relu_13
+      float[batch,512,28,28] relu_130
+      float[batch,2048,28,28] relu_131
+      float[batch,512,28,28] relu_132
+      float[batch,512,28,28] relu_133
+      float[batch,2048,28,28] relu_134
+      float[batch,512,28,28] relu_135
+      float[batch,512,28,28] relu_136
+      float[batch,2048,28,28] relu_137
+      float[batch,512,28,28] relu_138
+      float[batch,512,28,28] relu_139
+      float[batch,1024,56,56] relu_14
+      float[batch,2048,28,28] relu_140
+      float[batch,512,28,28] relu_141
+      float[batch,512,28,28] relu_142
+      float[batch,2048,28,28] relu_143
+      float[batch,512,28,28] relu_144
+      float[batch,512,28,28] relu_145
+      float[batch,2048,28,28] relu_146
+      float[batch,512,28,28] relu_147
+      float[batch,512,28,28] relu_148
+      float[batch,2048,28,28] relu_149
+      float[batch,256,56,56] relu_15
+      float[batch,512,28,28] relu_150
+      float[batch,512,28,28] relu_151
+      float[batch,2048,28,28] relu_152
+      float[batch,512,28,28] relu_153
+      float[batch,512,28,28] relu_154
+      float[batch,2048,28,28] relu_155
+      float[batch,512,28,28] relu_156
+      float[batch,512,28,28] relu_157
+      float[batch,2048,28,28] relu_158
+      float[batch,512,28,28] relu_159
+      float[batch,256,56,56] relu_16
+      float[batch,512,28,28] relu_160
+      float[batch,2048,28,28] relu_161
+      float[batch,512,28,28] relu_162
+      float[batch,512,28,28] relu_163
+      float[batch,2048,28,28] relu_164
+      float[batch,1024,28,28] relu_165
+      float[batch,1024,28,28] relu_166
+      float[batch,4096,14,14] relu_167
+      float[batch,1024,14,14] relu_168
+      float[batch,1024,14,14] relu_169
+      float[batch,1024,56,56] relu_17
+      float[batch,4096,14,14] relu_170
+      float[batch,1024,14,14] relu_171
+      float[batch,1024,14,14] relu_172
+      float[batch,4096,14,14] relu_173
+      float[batch,1024,14,14] relu_174
+      float[batch,1024,14,14] relu_175
+      float[batch,4096,14,14] relu_176
+      float[batch,1024,14,14] relu_177
+      float[batch,1024,14,14] relu_178
+      float[batch,4096,14,14] relu_179
+      float[batch,256,56,56] relu_18
+      float[batch,1024,14,14] relu_180
+      float[batch,1024,14,14] relu_181
+      float[batch,4096,14,14] relu_182
+      float[batch,1024,14,14] relu_183
+      float[batch,1024,14,14] relu_184
+      float[batch,4096,14,14] relu_185
+      float[batch,1024,14,14] relu_186
+      float[batch,1024,14,14] relu_187
+      float[batch,4096,14,14] relu_188
+      float[batch,1024,14,14] relu_189
+      float[batch,256,56,56] relu_19
+      float[batch,1024,14,14] relu_190
+      float[batch,4096,14,14] relu_191
+      float[batch,1024,14,14] relu_192
+      float[batch,1024,14,14] relu_193
+      float[batch,4096,14,14] relu_194
+      float[batch,128,224,224] relu_2
+      float[batch,1024,56,56] relu_20
+      float[batch,256,56,56] relu_21
+      float[batch,256,56,56] relu_22
+      float[batch,1024,56,56] relu_23
+      float[batch,256,56,56] relu_24
+      float[batch,256,56,56] relu_25
+      float[batch,1024,56,56] relu_26
+      float[batch,256,56,56] relu_27
+      float[batch,256,56,56] relu_28
+      float[batch,1024,56,56] relu_29
+      float[batch,128,112,112] relu_3
+      float[batch,256,56,56] relu_30
+      float[batch,256,56,56] relu_31
+      float[batch,1024,56,56] relu_32
+      float[batch,256,56,56] relu_33
+      float[batch,256,56,56] relu_34
+      float[batch,1024,56,56] relu_35
+      float[batch,256,56,56] relu_36
+      float[batch,256,56,56] relu_37
+      float[batch,1024,56,56] relu_38
+      float[batch,256,56,56] relu_39
+      float[batch,128,112,112] relu_4
+      float[batch,256,56,56] relu_40
+      float[batch,1024,56,56] relu_41
+      float[batch,256,56,56] relu_42
+      float[batch,256,56,56] relu_43
+      float[batch,1024,56,56] relu_44
+      float[batch,256,56,56] relu_45
+      float[batch,256,56,56] relu_46
+      float[batch,1024,56,56] relu_47
+      float[batch,256,56,56] relu_48
+      float[batch,256,56,56] relu_49
+      float[batch,512,112,112] relu_5
+      float[batch,1024,56,56] relu_50
+      float[batch,256,56,56] relu_51
+      float[batch,256,56,56] relu_52
+      float[batch,1024,56,56] relu_53
+      float[batch,256,56,56] relu_54
+      float[batch,256,56,56] relu_55
+      float[batch,1024,56,56] relu_56
+      float[batch,512,56,56] relu_57
+      float[batch,512,56,56] relu_58
+      float[batch,2048,28,28] relu_59
+      float[batch,128,112,112] relu_6
+      float[batch,512,28,28] relu_60
+      float[batch,512,28,28] relu_61
+      float[batch,2048,28,28] relu_62
+      float[batch,512,28,28] relu_63
+      float[batch,512,28,28] relu_64
+      float[batch,2048,28,28] relu_65
+      float[batch,512,28,28] relu_66
+      float[batch,512,28,28] relu_67
+      float[batch,2048,28,28] relu_68
+      float[batch,512,28,28] relu_69
+      float[batch,128,112,112] relu_7
+      float[batch,512,28,28] relu_70
+      float[batch,2048,28,28] relu_71
+      float[batch,512,28,28] relu_72
+      float[batch,512,28,28] relu_73
+      float[batch,2048,28,28] relu_74
+      float[batch,512,28,28] relu_75
+      float[batch,512,28,28] relu_76
+      float[batch,2048,28,28] relu_77
+      float[batch,512,28,28] relu_78
+      float[batch,512,28,28] relu_79
+      float[batch,512,112,112] relu_8
+      float[batch,2048,28,28] relu_80
+      float[batch,512,28,28] relu_81
+      float[batch,512,28,28] relu_82
+      float[batch,2048,28,28] relu_83
+      float[batch,512,28,28] relu_84
+      float[batch,512,28,28] relu_85
+      float[batch,2048,28,28] relu_86
+      float[batch,512,28,28] relu_87
+      float[batch,512,28,28] relu_88
+      float[batch,2048,28,28] relu_89
+      float[batch,128,112,112] relu_9
+      float[batch,512,28,28] relu_90
+      float[batch,512,28,28] relu_91
+      float[batch,2048,28,28] relu_92
+      float[batch,512,28,28] relu_93
+      float[batch,512,28,28] relu_94
+      float[batch,2048,28,28] relu_95
+      float[batch,512,28,28] relu_96
+      float[batch,512,28,28] relu_97
+      float[batch,2048,28,28] relu_98
+      float[batch,512,28,28] relu_99
+      float[batch,64,1,64] scaled_dot_product_attention
+      float[batch,1024] select
+      float[4096] split_split_0
+      float[4096] split_split_1
+      float[4096] split_split_2
+      float[unk__1,1,64] transpose
+      float[unk__1,197,64] transpose_1
+      float[unk__1,197,64] transpose_2
+      float[197,1,4096] unsqueeze
+      float[1,batch,4096] val_7
+      float[197,batch,4096] val_8
+      float[197,batch,4096] val_9
+      float[1,batch,1024] view_10
+      float[batch,4096,196] view_2
+      float[1,unk__1,64] view_3
+      float[197,unk__1,64] view_4
+      float[197,unk__1,64] view_5
+      float[batch,64,1,64] view_6
+      float[batch,64,197,64] view_7
+      float[batch,64,197,64] view_8
+      float[batch,4096] view_9
+   >
+{
+   [pre_cast] image_f32 = Cast <to: int = 1> (image)
+   [pre_shift] image_shifted = Sub (image_f32, image_shift)
+   [pre_nhwc_to_nchw] image_chw = Transpose <perm: ints = [0, 3, 1, 2]> (image_shifted)
+   getitem = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> (image_chw, "visual.conv1.weight", "visual.conv1.weight_bias")
+   [node_relu] relu = Relu (getitem)
+   getitem_3 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu, "visual.conv2.weight", "visual.conv2.weight_bias")
+   relu_1 = Relu (getitem_3)
+   getitem_6 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_1, "visual.conv3.weight", "visual.conv3.weight_bias")
+   relu_2 = Relu (getitem_6)
+   [node_avg_pool2d] avg_pool2d = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_2)
+   getitem_9 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d, "visual.layer1.0.conv1.weight", "visual.layer1.0.conv1.weight_bias")
+   relu_3 = Relu (getitem_9)
+   getitem_12 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_3, "visual.layer1.0.conv2.weight", "visual.layer1.0.conv2.weight_bias")
+   relu_4 = Relu (getitem_12)
+   getitem_15 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_4, "visual.layer1.0.conv3.weight", "visual.layer1.0.conv3.weight_bias")
+   getitem_18 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d, "visual.layer1.0.downsample.0.weight", "visual.layer1.0.downsample.0.weight_bias")
+   add_140 = Add (getitem_15, getitem_18)
+   relu_5 = Relu (add_140)
+   getitem_21 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_5, "visual.layer1.1.conv1.weight", "visual.layer1.1.conv1.weight_bias")
+   relu_6 = Relu (getitem_21)
+   getitem_24 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_6, "visual.layer1.1.conv2.weight", "visual.layer1.1.conv2.weight_bias")
+   relu_7 = Relu (getitem_24)
+   getitem_27 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_7, "visual.layer1.1.conv3.weight", "visual.layer1.1.conv3.weight_bias")
+   add_216 = Add (getitem_27, relu_5)
+   relu_8 = Relu (add_216)
+   getitem_30 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_8, "visual.layer1.2.conv1.weight", "visual.layer1.2.conv1.weight_bias")
+   relu_9 = Relu (getitem_30)
+   getitem_33 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_9, "visual.layer1.2.conv2.weight", "visual.layer1.2.conv2.weight_bias")
+   relu_10 = Relu (getitem_33)
+   getitem_36 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_10, "visual.layer1.2.conv3.weight", "visual.layer1.2.conv3.weight_bias")
+   add_292 = Add (getitem_36, relu_8)
+   relu_11 = Relu (add_292)
+   getitem_39 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_11, "visual.layer2.0.conv1.weight", "visual.layer2.0.conv1.weight_bias")
+   relu_12 = Relu (getitem_39)
+   getitem_42 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_12, "visual.layer2.0.conv2.weight", "visual.layer2.0.conv2.weight_bias")
+   relu_13 = Relu (getitem_42)
+   avg_pool2d_2 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_13)
+   getitem_45 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_2, "visual.layer2.0.conv3.weight", "visual.layer2.0.conv3.weight_bias")
+   avg_pool2d_3 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_11)
+   getitem_48 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_3, "visual.layer2.0.downsample.0.weight", "visual.layer2.0.downsample.0.weight_bias")
+   add_388 = Add (getitem_45, getitem_48)
+   relu_14 = Relu (add_388)
+   getitem_51 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_14, "visual.layer2.1.conv1.weight", "visual.layer2.1.conv1.weight_bias")
+   relu_15 = Relu (getitem_51)
+   getitem_54 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_15, "visual.layer2.1.conv2.weight", "visual.layer2.1.conv2.weight_bias")
+   relu_16 = Relu (getitem_54)
+   getitem_57 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_16, "visual.layer2.1.conv3.weight", "visual.layer2.1.conv3.weight_bias")
+   add_464 = Add (getitem_57, relu_14)
+   relu_17 = Relu (add_464)
+   getitem_60 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_17, "visual.layer2.2.conv1.weight", "visual.layer2.2.conv1.weight_bias")
+   relu_18 = Relu (getitem_60)
+   getitem_63 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_18, "visual.layer2.2.conv2.weight", "visual.layer2.2.conv2.weight_bias")
+   relu_19 = Relu (getitem_63)
+   getitem_66 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_19, "visual.layer2.2.conv3.weight", "visual.layer2.2.conv3.weight_bias")
+   add_540 = Add (getitem_66, relu_17)
+   relu_20 = Relu (add_540)
+   getitem_69 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_20, "visual.layer2.3.conv1.weight", "visual.layer2.3.conv1.weight_bias")
+   relu_21 = Relu (getitem_69)
+   getitem_72 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_21, "visual.layer2.3.conv2.weight", "visual.layer2.3.conv2.weight_bias")
+   relu_22 = Relu (getitem_72)
+   getitem_75 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_22, "visual.layer2.3.conv3.weight", "visual.layer2.3.conv3.weight_bias")
+   add_616 = Add (getitem_75, relu_20)
+   relu_23 = Relu (add_616)
+   getitem_78 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_23, "visual.layer2.4.conv1.weight", "visual.layer2.4.conv1.weight_bias")
+   relu_24 = Relu (getitem_78)
+   getitem_81 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_24, "visual.layer2.4.conv2.weight", "visual.layer2.4.conv2.weight_bias")
+   relu_25 = Relu (getitem_81)
+   getitem_84 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_25, "visual.layer2.4.conv3.weight", "visual.layer2.4.conv3.weight_bias")
+   add_692 = Add (getitem_84, relu_23)
+   relu_26 = Relu (add_692)
+   getitem_87 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_26, "visual.layer2.5.conv1.weight", "visual.layer2.5.conv1.weight_bias")
+   relu_27 = Relu (getitem_87)
+   getitem_90 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_27, "visual.layer2.5.conv2.weight", "visual.layer2.5.conv2.weight_bias")
+   relu_28 = Relu (getitem_90)
+   getitem_93 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_28, "visual.layer2.5.conv3.weight", "visual.layer2.5.conv3.weight_bias")
+   add_768 = Add (getitem_93, relu_26)
+   relu_29 = Relu (add_768)
+   getitem_96 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_29, "visual.layer2.6.conv1.weight", "visual.layer2.6.conv1.weight_bias")
+   relu_30 = Relu (getitem_96)
+   getitem_99 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_30, "visual.layer2.6.conv2.weight", "visual.layer2.6.conv2.weight_bias")
+   relu_31 = Relu (getitem_99)
+   getitem_102 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_31, "visual.layer2.6.conv3.weight", "visual.layer2.6.conv3.weight_bias")
+   add_844 = Add (getitem_102, relu_29)
+   relu_32 = Relu (add_844)
+   getitem_105 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_32, "visual.layer2.7.conv1.weight", "visual.layer2.7.conv1.weight_bias")
+   relu_33 = Relu (getitem_105)
+   getitem_108 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_33, "visual.layer2.7.conv2.weight", "visual.layer2.7.conv2.weight_bias")
+   relu_34 = Relu (getitem_108)
+   getitem_111 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_34, "visual.layer2.7.conv3.weight", "visual.layer2.7.conv3.weight_bias")
+   add_920 = Add (getitem_111, relu_32)
+   relu_35 = Relu (add_920)
+   getitem_114 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_35, "visual.layer2.8.conv1.weight", "visual.layer2.8.conv1.weight_bias")
+   relu_36 = Relu (getitem_114)
+   getitem_117 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_36, "visual.layer2.8.conv2.weight", "visual.layer2.8.conv2.weight_bias")
+   relu_37 = Relu (getitem_117)
+   getitem_120 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_37, "visual.layer2.8.conv3.weight", "visual.layer2.8.conv3.weight_bias")
+   add_996 = Add (getitem_120, relu_35)
+   relu_38 = Relu (add_996)
+   getitem_123 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_38, "visual.layer2.9.conv1.weight", "visual.layer2.9.conv1.weight_bias")
+   relu_39 = Relu (getitem_123)
+   getitem_126 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_39, "visual.layer2.9.conv2.weight", "visual.layer2.9.conv2.weight_bias")
+   relu_40 = Relu (getitem_126)
+   getitem_129 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_40, "visual.layer2.9.conv3.weight", "visual.layer2.9.conv3.weight_bias")
+   add_1072 = Add (getitem_129, relu_38)
+   relu_41 = Relu (add_1072)
+   getitem_132 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_41, "visual.layer2.10.conv1.weight", "visual.layer2.10.conv1.weight_bias")
+   relu_42 = Relu (getitem_132)
+   getitem_135 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_42, "visual.layer2.10.conv2.weight", "visual.layer2.10.conv2.weight_bias")
+   relu_43 = Relu (getitem_135)
+   getitem_138 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_43, "visual.layer2.10.conv3.weight", "visual.layer2.10.conv3.weight_bias")
+   add_1148 = Add (getitem_138, relu_41)
+   relu_44 = Relu (add_1148)
+   getitem_141 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_44, "visual.layer2.11.conv1.weight", "visual.layer2.11.conv1.weight_bias")
+   relu_45 = Relu (getitem_141)
+   getitem_144 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_45, "visual.layer2.11.conv2.weight", "visual.layer2.11.conv2.weight_bias")
+   relu_46 = Relu (getitem_144)
+   getitem_147 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_46, "visual.layer2.11.conv3.weight", "visual.layer2.11.conv3.weight_bias")
+   add_1224 = Add (getitem_147, relu_44)
+   relu_47 = Relu (add_1224)
+   getitem_150 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_47, "visual.layer2.12.conv1.weight", "visual.layer2.12.conv1.weight_bias")
+   relu_48 = Relu (getitem_150)
+   getitem_153 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_48, "visual.layer2.12.conv2.weight", "visual.layer2.12.conv2.weight_bias")
+   relu_49 = Relu (getitem_153)
+   getitem_156 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_49, "visual.layer2.12.conv3.weight", "visual.layer2.12.conv3.weight_bias")
+   add_1300 = Add (getitem_156, relu_47)
+   relu_50 = Relu (add_1300)
+   getitem_159 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_50, "visual.layer2.13.conv1.weight", "visual.layer2.13.conv1.weight_bias")
+   relu_51 = Relu (getitem_159)
+   getitem_162 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_51, "visual.layer2.13.conv2.weight", "visual.layer2.13.conv2.weight_bias")
+   relu_52 = Relu (getitem_162)
+   getitem_165 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_52, "visual.layer2.13.conv3.weight", "visual.layer2.13.conv3.weight_bias")
+   add_1376 = Add (getitem_165, relu_50)
+   relu_53 = Relu (add_1376)
+   getitem_168 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_53, "visual.layer2.14.conv1.weight", "visual.layer2.14.conv1.weight_bias")
+   relu_54 = Relu (getitem_168)
+   getitem_171 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_54, "visual.layer2.14.conv2.weight", "visual.layer2.14.conv2.weight_bias")
+   relu_55 = Relu (getitem_171)
+   getitem_174 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_55, "visual.layer2.14.conv3.weight", "visual.layer2.14.conv3.weight_bias")
+   add_1452 = Add (getitem_174, relu_53)
+   relu_56 = Relu (add_1452)
+   getitem_177 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_56, "visual.layer3.0.conv1.weight", "visual.layer3.0.conv1.weight_bias")
+   relu_57 = Relu (getitem_177)
+   getitem_180 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_57, "visual.layer3.0.conv2.weight", "visual.layer3.0.conv2.weight_bias")
+   relu_58 = Relu (getitem_180)
+   avg_pool2d_4 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_58)
+   getitem_183 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_4, "visual.layer3.0.conv3.weight", "visual.layer3.0.conv3.weight_bias")
+   avg_pool2d_5 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_56)
+   getitem_186 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_5, "visual.layer3.0.downsample.0.weight", "visual.layer3.0.downsample.0.weight_bias")
+   add_1548 = Add (getitem_183, getitem_186)
+   relu_59 = Relu (add_1548)
+   getitem_189 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_59, "visual.layer3.1.conv1.weight", "visual.layer3.1.conv1.weight_bias")
+   relu_60 = Relu (getitem_189)
+   getitem_192 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_60, "visual.layer3.1.conv2.weight", "visual.layer3.1.conv2.weight_bias")
+   relu_61 = Relu (getitem_192)
+   getitem_195 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_61, "visual.layer3.1.conv3.weight", "visual.layer3.1.conv3.weight_bias")
+   add_1624 = Add (getitem_195, relu_59)
+   relu_62 = Relu (add_1624)
+   getitem_198 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_62, "visual.layer3.2.conv1.weight", "visual.layer3.2.conv1.weight_bias")
+   relu_63 = Relu (getitem_198)
+   getitem_201 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_63, "visual.layer3.2.conv2.weight", "visual.layer3.2.conv2.weight_bias")
+   relu_64 = Relu (getitem_201)
+   getitem_204 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_64, "visual.layer3.2.conv3.weight", "visual.layer3.2.conv3.weight_bias")
+   add_1700 = Add (getitem_204, relu_62)
+   relu_65 = Relu (add_1700)
+   getitem_207 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_65, "visual.layer3.3.conv1.weight", "visual.layer3.3.conv1.weight_bias")
+   relu_66 = Relu (getitem_207)
+   getitem_210 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_66, "visual.layer3.3.conv2.weight", "visual.layer3.3.conv2.weight_bias")
+   relu_67 = Relu (getitem_210)
+   getitem_213 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_67, "visual.layer3.3.conv3.weight", "visual.layer3.3.conv3.weight_bias")
+   add_1776 = Add (getitem_213, relu_65)
+   relu_68 = Relu (add_1776)
+   getitem_216 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_68, "visual.layer3.4.conv1.weight", "visual.layer3.4.conv1.weight_bias")
+   relu_69 = Relu (getitem_216)
+   getitem_219 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_69, "visual.layer3.4.conv2.weight", "visual.layer3.4.conv2.weight_bias")
+   relu_70 = Relu (getitem_219)
+   getitem_222 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_70, "visual.layer3.4.conv3.weight", "visual.layer3.4.conv3.weight_bias")
+   add_1852 = Add (getitem_222, relu_68)
+   relu_71 = Relu (add_1852)
+   getitem_225 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_71, "visual.layer3.5.conv1.weight", "visual.layer3.5.conv1.weight_bias")
+   relu_72 = Relu (getitem_225)
+   getitem_228 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_72, "visual.layer3.5.conv2.weight", "visual.layer3.5.conv2.weight_bias")
+   relu_73 = Relu (getitem_228)
+   getitem_231 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_73, "visual.layer3.5.conv3.weight", "visual.layer3.5.conv3.weight_bias")
+   add_1928 = Add (getitem_231, relu_71)
+   relu_74 = Relu (add_1928)
+   getitem_234 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_74, "visual.layer3.6.conv1.weight", "visual.layer3.6.conv1.weight_bias")
+   relu_75 = Relu (getitem_234)
+   getitem_237 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_75, "visual.layer3.6.conv2.weight", "visual.layer3.6.conv2.weight_bias")
+   relu_76 = Relu (getitem_237)
+   getitem_240 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_76, "visual.layer3.6.conv3.weight", "visual.layer3.6.conv3.weight_bias")
+   add_2004 = Add (getitem_240, relu_74)
+   relu_77 = Relu (add_2004)
+   getitem_243 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_77, "visual.layer3.7.conv1.weight", "visual.layer3.7.conv1.weight_bias")
+   relu_78 = Relu (getitem_243)
+   getitem_246 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_78, "visual.layer3.7.conv2.weight", "visual.layer3.7.conv2.weight_bias")
+   relu_79 = Relu (getitem_246)
+   getitem_249 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_79, "visual.layer3.7.conv3.weight", "visual.layer3.7.conv3.weight_bias")
+   add_2080 = Add (getitem_249, relu_77)
+   relu_80 = Relu (add_2080)
+   getitem_252 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_80, "visual.layer3.8.conv1.weight", "visual.layer3.8.conv1.weight_bias")
+   relu_81 = Relu (getitem_252)
+   getitem_255 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_81, "visual.layer3.8.conv2.weight", "visual.layer3.8.conv2.weight_bias")
+   relu_82 = Relu (getitem_255)
+   getitem_258 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_82, "visual.layer3.8.conv3.weight", "visual.layer3.8.conv3.weight_bias")
+   add_2156 = Add (getitem_258, relu_80)
+   relu_83 = Relu (add_2156)
+   getitem_261 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_83, "visual.layer3.9.conv1.weight", "visual.layer3.9.conv1.weight_bias")
+   relu_84 = Relu (getitem_261)
+   getitem_264 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_84, "visual.layer3.9.conv2.weight", "visual.layer3.9.conv2.weight_bias")
+   relu_85 = Relu (getitem_264)
+   getitem_267 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_85, "visual.layer3.9.conv3.weight", "visual.layer3.9.conv3.weight_bias")
+   add_2232 = Add (getitem_267, relu_83)
+   relu_86 = Relu (add_2232)
+   getitem_270 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_86, "visual.layer3.10.conv1.weight", "visual.layer3.10.conv1.weight_bias")
+   relu_87 = Relu (getitem_270)
+   getitem_273 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_87, "visual.layer3.10.conv2.weight", "visual.layer3.10.conv2.weight_bias")
+   relu_88 = Relu (getitem_273)
+   getitem_276 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_88, "visual.layer3.10.conv3.weight", "visual.layer3.10.conv3.weight_bias")
+   add_2308 = Add (getitem_276, relu_86)
+   relu_89 = Relu (add_2308)
+   getitem_279 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_89, "visual.layer3.11.conv1.weight", "visual.layer3.11.conv1.weight_bias")
+   relu_90 = Relu (getitem_279)
+   getitem_282 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_90, "visual.layer3.11.conv2.weight", "visual.layer3.11.conv2.weight_bias")
+   relu_91 = Relu (getitem_282)
+   getitem_285 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_91, "visual.layer3.11.conv3.weight", "visual.layer3.11.conv3.weight_bias")
+   add_2384 = Add (getitem_285, relu_89)
+   relu_92 = Relu (add_2384)
+   getitem_288 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_92, "visual.layer3.12.conv1.weight", "visual.layer3.12.conv1.weight_bias")
+   relu_93 = Relu (getitem_288)
+   getitem_291 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_93, "visual.layer3.12.conv2.weight", "visual.layer3.12.conv2.weight_bias")
+   relu_94 = Relu (getitem_291)
+   getitem_294 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_94, "visual.layer3.12.conv3.weight", "visual.layer3.12.conv3.weight_bias")
+   add_2460 = Add (getitem_294, relu_92)
+   relu_95 = Relu (add_2460)
+   getitem_297 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_95, "visual.layer3.13.conv1.weight", "visual.layer3.13.conv1.weight_bias")
+   relu_96 = Relu (getitem_297)
+   getitem_300 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_96, "visual.layer3.13.conv2.weight", "visual.layer3.13.conv2.weight_bias")
+   relu_97 = Relu (getitem_300)
+   getitem_303 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_97, "visual.layer3.13.conv3.weight", "visual.layer3.13.conv3.weight_bias")
+   add_2536 = Add (getitem_303, relu_95)
+   relu_98 = Relu (add_2536)
+   getitem_306 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_98, "visual.layer3.14.conv1.weight", "visual.layer3.14.conv1.weight_bias")
+   relu_99 = Relu (getitem_306)
+   getitem_309 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_99, "visual.layer3.14.conv2.weight", "visual.layer3.14.conv2.weight_bias")
+   relu_100 = Relu (getitem_309)
+   getitem_312 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_100, "visual.layer3.14.conv3.weight", "visual.layer3.14.conv3.weight_bias")
+   add_2612 = Add (getitem_312, relu_98)
+   relu_101 = Relu (add_2612)
+   getitem_315 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_101, "visual.layer3.15.conv1.weight", "visual.layer3.15.conv1.weight_bias")
+   relu_102 = Relu (getitem_315)
+   getitem_318 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_102, "visual.layer3.15.conv2.weight", "visual.layer3.15.conv2.weight_bias")
+   relu_103 = Relu (getitem_318)
+   getitem_321 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_103, "visual.layer3.15.conv3.weight", "visual.layer3.15.conv3.weight_bias")
+   add_2688 = Add (getitem_321, relu_101)
+   relu_104 = Relu (add_2688)
+   getitem_324 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_104, "visual.layer3.16.conv1.weight", "visual.layer3.16.conv1.weight_bias")
+   relu_105 = Relu (getitem_324)
+   getitem_327 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_105, "visual.layer3.16.conv2.weight", "visual.layer3.16.conv2.weight_bias")
+   relu_106 = Relu (getitem_327)
+   getitem_330 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_106, "visual.layer3.16.conv3.weight", "visual.layer3.16.conv3.weight_bias")
+   add_2764 = Add (getitem_330, relu_104)
+   relu_107 = Relu (add_2764)
+   getitem_333 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_107, "visual.layer3.17.conv1.weight", "visual.layer3.17.conv1.weight_bias")
+   relu_108 = Relu (getitem_333)
+   getitem_336 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_108, "visual.layer3.17.conv2.weight", "visual.layer3.17.conv2.weight_bias")
+   relu_109 = Relu (getitem_336)
+   getitem_339 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_109, "visual.layer3.17.conv3.weight", "visual.layer3.17.conv3.weight_bias")
+   add_2840 = Add (getitem_339, relu_107)
+   relu_110 = Relu (add_2840)
+   getitem_342 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_110, "visual.layer3.18.conv1.weight", "visual.layer3.18.conv1.weight_bias")
+   relu_111 = Relu (getitem_342)
+   getitem_345 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_111, "visual.layer3.18.conv2.weight", "visual.layer3.18.conv2.weight_bias")
+   relu_112 = Relu (getitem_345)
+   getitem_348 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_112, "visual.layer3.18.conv3.weight", "visual.layer3.18.conv3.weight_bias")
+   add_2916 = Add (getitem_348, relu_110)
+   relu_113 = Relu (add_2916)
+   getitem_351 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_113, "visual.layer3.19.conv1.weight", "visual.layer3.19.conv1.weight_bias")
+   relu_114 = Relu (getitem_351)
+   getitem_354 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_114, "visual.layer3.19.conv2.weight", "visual.layer3.19.conv2.weight_bias")
+   relu_115 = Relu (getitem_354)
+   getitem_357 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_115, "visual.layer3.19.conv3.weight", "visual.layer3.19.conv3.weight_bias")
+   add_2992 = Add (getitem_357, relu_113)
+   relu_116 = Relu (add_2992)
+   getitem_360 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_116, "visual.layer3.20.conv1.weight", "visual.layer3.20.conv1.weight_bias")
+   relu_117 = Relu (getitem_360)
+   getitem_363 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_117, "visual.layer3.20.conv2.weight", "visual.layer3.20.conv2.weight_bias")
+   relu_118 = Relu (getitem_363)
+   getitem_366 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_118, "visual.layer3.20.conv3.weight", "visual.layer3.20.conv3.weight_bias")
+   add_3068 = Add (getitem_366, relu_116)
+   relu_119 = Relu (add_3068)
+   getitem_369 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_119, "visual.layer3.21.conv1.weight", "visual.layer3.21.conv1.weight_bias")
+   relu_120 = Relu (getitem_369)
+   getitem_372 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_120, "visual.layer3.21.conv2.weight", "visual.layer3.21.conv2.weight_bias")
+   relu_121 = Relu (getitem_372)
+   getitem_375 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_121, "visual.layer3.21.conv3.weight", "visual.layer3.21.conv3.weight_bias")
+   add_3144 = Add (getitem_375, relu_119)
+   relu_122 = Relu (add_3144)
+   getitem_378 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_122, "visual.layer3.22.conv1.weight", "visual.layer3.22.conv1.weight_bias")
+   relu_123 = Relu (getitem_378)
+   getitem_381 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_123, "visual.layer3.22.conv2.weight", "visual.layer3.22.conv2.weight_bias")
+   relu_124 = Relu (getitem_381)
+   getitem_384 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_124, "visual.layer3.22.conv3.weight", "visual.layer3.22.conv3.weight_bias")
+   add_3220 = Add (getitem_384, relu_122)
+   relu_125 = Relu (add_3220)
+   getitem_387 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_125, "visual.layer3.23.conv1.weight", "visual.layer3.23.conv1.weight_bias")
+   relu_126 = Relu (getitem_387)
+   getitem_390 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_126, "visual.layer3.23.conv2.weight", "visual.layer3.23.conv2.weight_bias")
+   relu_127 = Relu (getitem_390)
+   getitem_393 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_127, "visual.layer3.23.conv3.weight", "visual.layer3.23.conv3.weight_bias")
+   add_3296 = Add (getitem_393, relu_125)
+   relu_128 = Relu (add_3296)
+   getitem_396 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_128, "visual.layer3.24.conv1.weight", "visual.layer3.24.conv1.weight_bias")
+   relu_129 = Relu (getitem_396)
+   getitem_399 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_129, "visual.layer3.24.conv2.weight", "visual.layer3.24.conv2.weight_bias")
+   relu_130 = Relu (getitem_399)
+   getitem_402 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_130, "visual.layer3.24.conv3.weight", "visual.layer3.24.conv3.weight_bias")
+   add_3372 = Add (getitem_402, relu_128)
+   relu_131 = Relu (add_3372)
+   getitem_405 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_131, "visual.layer3.25.conv1.weight", "visual.layer3.25.conv1.weight_bias")
+   relu_132 = Relu (getitem_405)
+   getitem_408 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_132, "visual.layer3.25.conv2.weight", "visual.layer3.25.conv2.weight_bias")
+   relu_133 = Relu (getitem_408)
+   getitem_411 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_133, "visual.layer3.25.conv3.weight", "visual.layer3.25.conv3.weight_bias")
+   add_3448 = Add (getitem_411, relu_131)
+   relu_134 = Relu (add_3448)
+   getitem_414 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_134, "visual.layer3.26.conv1.weight", "visual.layer3.26.conv1.weight_bias")
+   relu_135 = Relu (getitem_414)
+   getitem_417 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_135, "visual.layer3.26.conv2.weight", "visual.layer3.26.conv2.weight_bias")
+   relu_136 = Relu (getitem_417)
+   getitem_420 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_136, "visual.layer3.26.conv3.weight", "visual.layer3.26.conv3.weight_bias")
+   add_3524 = Add (getitem_420, relu_134)
+   relu_137 = Relu (add_3524)
+   getitem_423 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_137, "visual.layer3.27.conv1.weight", "visual.layer3.27.conv1.weight_bias")
+   relu_138 = Relu (getitem_423)
+   getitem_426 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_138, "visual.layer3.27.conv2.weight", "visual.layer3.27.conv2.weight_bias")
+   relu_139 = Relu (getitem_426)
+   getitem_429 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_139, "visual.layer3.27.conv3.weight", "visual.layer3.27.conv3.weight_bias")
+   add_3600 = Add (getitem_429, relu_137)
+   relu_140 = Relu (add_3600)
+   getitem_432 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_140, "visual.layer3.28.conv1.weight", "visual.layer3.28.conv1.weight_bias")
+   relu_141 = Relu (getitem_432)
+   getitem_435 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_141, "visual.layer3.28.conv2.weight", "visual.layer3.28.conv2.weight_bias")
+   relu_142 = Relu (getitem_435)
+   getitem_438 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_142, "visual.layer3.28.conv3.weight", "visual.layer3.28.conv3.weight_bias")
+   add_3676 = Add (getitem_438, relu_140)
+   relu_143 = Relu (add_3676)
+   getitem_441 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_143, "visual.layer3.29.conv1.weight", "visual.layer3.29.conv1.weight_bias")
+   relu_144 = Relu (getitem_441)
+   getitem_444 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_144, "visual.layer3.29.conv2.weight", "visual.layer3.29.conv2.weight_bias")
+   relu_145 = Relu (getitem_444)
+   getitem_447 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_145, "visual.layer3.29.conv3.weight", "visual.layer3.29.conv3.weight_bias")
+   add_3752 = Add (getitem_447, relu_143)
+   relu_146 = Relu (add_3752)
+   getitem_450 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_146, "visual.layer3.30.conv1.weight", "visual.layer3.30.conv1.weight_bias")
+   relu_147 = Relu (getitem_450)
+   getitem_453 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_147, "visual.layer3.30.conv2.weight", "visual.layer3.30.conv2.weight_bias")
+   relu_148 = Relu (getitem_453)
+   getitem_456 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_148, "visual.layer3.30.conv3.weight", "visual.layer3.30.conv3.weight_bias")
+   add_3828 = Add (getitem_456, relu_146)
+   relu_149 = Relu (add_3828)
+   getitem_459 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_149, "visual.layer3.31.conv1.weight", "visual.layer3.31.conv1.weight_bias")
+   relu_150 = Relu (getitem_459)
+   getitem_462 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_150, "visual.layer3.31.conv2.weight", "visual.layer3.31.conv2.weight_bias")
+   relu_151 = Relu (getitem_462)
+   getitem_465 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_151, "visual.layer3.31.conv3.weight", "visual.layer3.31.conv3.weight_bias")
+   add_3904 = Add (getitem_465, relu_149)
+   relu_152 = Relu (add_3904)
+   getitem_468 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_152, "visual.layer3.32.conv1.weight", "visual.layer3.32.conv1.weight_bias")
+   relu_153 = Relu (getitem_468)
+   getitem_471 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_153, "visual.layer3.32.conv2.weight", "visual.layer3.32.conv2.weight_bias")
+   relu_154 = Relu (getitem_471)
+   getitem_474 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_154, "visual.layer3.32.conv3.weight", "visual.layer3.32.conv3.weight_bias")
+   add_3980 = Add (getitem_474, relu_152)
+   relu_155 = Relu (add_3980)
+   getitem_477 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_155, "visual.layer3.33.conv1.weight", "visual.layer3.33.conv1.weight_bias")
+   relu_156 = Relu (getitem_477)
+   getitem_480 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_156, "visual.layer3.33.conv2.weight", "visual.layer3.33.conv2.weight_bias")
+   relu_157 = Relu (getitem_480)
+   getitem_483 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_157, "visual.layer3.33.conv3.weight", "visual.layer3.33.conv3.weight_bias")
+   add_4056 = Add (getitem_483, relu_155)
+   relu_158 = Relu (add_4056)
+   getitem_486 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_158, "visual.layer3.34.conv1.weight", "visual.layer3.34.conv1.weight_bias")
+   relu_159 = Relu (getitem_486)
+   getitem_489 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_159, "visual.layer3.34.conv2.weight", "visual.layer3.34.conv2.weight_bias")
+   relu_160 = Relu (getitem_489)
+   getitem_492 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_160, "visual.layer3.34.conv3.weight", "visual.layer3.34.conv3.weight_bias")
+   add_4132 = Add (getitem_492, relu_158)
+   relu_161 = Relu (add_4132)
+   getitem_495 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_161, "visual.layer3.35.conv1.weight", "visual.layer3.35.conv1.weight_bias")
+   relu_162 = Relu (getitem_495)
+   getitem_498 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_162, "visual.layer3.35.conv2.weight", "visual.layer3.35.conv2.weight_bias")
+   relu_163 = Relu (getitem_498)
+   getitem_501 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_163, "visual.layer3.35.conv3.weight", "visual.layer3.35.conv3.weight_bias")
+   add_4208 = Add (getitem_501, relu_161)
+   relu_164 = Relu (add_4208)
+   getitem_504 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_164, "visual.layer4.0.conv1.weight", "visual.layer4.0.conv1.weight_bias")
+   relu_165 = Relu (getitem_504)
+   getitem_507 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_165, "visual.layer4.0.conv2.weight", "visual.layer4.0.conv2.weight_bias")
+   relu_166 = Relu (getitem_507)
+   avg_pool2d_6 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_166)
+   getitem_510 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_6, "visual.layer4.0.conv3.weight", "visual.layer4.0.conv3.weight_bias")
+   avg_pool2d_7 = AveragePool <auto_pad: string = "NOTSET", ceil_mode: int = 0, count_include_pad: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> (relu_164)
+   getitem_513 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (avg_pool2d_7, "visual.layer4.0.downsample.0.weight", "visual.layer4.0.downsample.0.weight_bias")
+   add_4304 = Add (getitem_510, getitem_513)
+   relu_167 = Relu (add_4304)
+   getitem_516 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_167, "visual.layer4.1.conv1.weight", "visual.layer4.1.conv1.weight_bias")
+   relu_168 = Relu (getitem_516)
+   getitem_519 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_168, "visual.layer4.1.conv2.weight", "visual.layer4.1.conv2.weight_bias")
+   relu_169 = Relu (getitem_519)
+   getitem_522 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_169, "visual.layer4.1.conv3.weight", "visual.layer4.1.conv3.weight_bias")
+   add_4380 = Add (getitem_522, relu_167)
+   relu_170 = Relu (add_4380)
+   getitem_525 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_170, "visual.layer4.2.conv1.weight", "visual.layer4.2.conv1.weight_bias")
+   relu_171 = Relu (getitem_525)
+   getitem_528 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_171, "visual.layer4.2.conv2.weight", "visual.layer4.2.conv2.weight_bias")
+   relu_172 = Relu (getitem_528)
+   getitem_531 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_172, "visual.layer4.2.conv3.weight", "visual.layer4.2.conv3.weight_bias")
+   add_4456 = Add (getitem_531, relu_170)
+   relu_173 = Relu (add_4456)
+   getitem_534 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_173, "visual.layer4.3.conv1.weight", "visual.layer4.3.conv1.weight_bias")
+   relu_174 = Relu (getitem_534)
+   getitem_537 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_174, "visual.layer4.3.conv2.weight", "visual.layer4.3.conv2.weight_bias")
+   relu_175 = Relu (getitem_537)
+   getitem_540 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_175, "visual.layer4.3.conv3.weight", "visual.layer4.3.conv3.weight_bias")
+   add_4532 = Add (getitem_540, relu_173)
+   relu_176 = Relu (add_4532)
+   getitem_543 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_176, "visual.layer4.4.conv1.weight", "visual.layer4.4.conv1.weight_bias")
+   relu_177 = Relu (getitem_543)
+   getitem_546 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_177, "visual.layer4.4.conv2.weight", "visual.layer4.4.conv2.weight_bias")
+   relu_178 = Relu (getitem_546)
+   getitem_549 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_178, "visual.layer4.4.conv3.weight", "visual.layer4.4.conv3.weight_bias")
+   add_4608 = Add (getitem_549, relu_176)
+   relu_179 = Relu (add_4608)
+   getitem_552 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_179, "visual.layer4.5.conv1.weight", "visual.layer4.5.conv1.weight_bias")
+   relu_180 = Relu (getitem_552)
+   getitem_555 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_180, "visual.layer4.5.conv2.weight", "visual.layer4.5.conv2.weight_bias")
+   relu_181 = Relu (getitem_555)
+   getitem_558 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_181, "visual.layer4.5.conv3.weight", "visual.layer4.5.conv3.weight_bias")
+   add_4684 = Add (getitem_558, relu_179)
+   relu_182 = Relu (add_4684)
+   getitem_561 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_182, "visual.layer4.6.conv1.weight", "visual.layer4.6.conv1.weight_bias")
+   relu_183 = Relu (getitem_561)
+   getitem_564 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_183, "visual.layer4.6.conv2.weight", "visual.layer4.6.conv2.weight_bias")
+   relu_184 = Relu (getitem_564)
+   getitem_567 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_184, "visual.layer4.6.conv3.weight", "visual.layer4.6.conv3.weight_bias")
+   add_4760 = Add (getitem_567, relu_182)
+   relu_185 = Relu (add_4760)
+   getitem_570 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_185, "visual.layer4.7.conv1.weight", "visual.layer4.7.conv1.weight_bias")
+   relu_186 = Relu (getitem_570)
+   getitem_573 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_186, "visual.layer4.7.conv2.weight", "visual.layer4.7.conv2.weight_bias")
+   relu_187 = Relu (getitem_573)
+   getitem_576 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_187, "visual.layer4.7.conv3.weight", "visual.layer4.7.conv3.weight_bias")
+   add_4836 = Add (getitem_576, relu_185)
+   relu_188 = Relu (add_4836)
+   getitem_579 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_188, "visual.layer4.8.conv1.weight", "visual.layer4.8.conv1.weight_bias")
+   relu_189 = Relu (getitem_579)
+   getitem_582 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_189, "visual.layer4.8.conv2.weight", "visual.layer4.8.conv2.weight_bias")
+   relu_190 = Relu (getitem_582)
+   getitem_585 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_190, "visual.layer4.8.conv3.weight", "visual.layer4.8.conv3.weight_bias")
+   add_4912 = Add (getitem_585, relu_188)
+   relu_191 = Relu (add_4912)
+   getitem_588 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_191, "visual.layer4.9.conv1.weight", "visual.layer4.9.conv1.weight_bias")
+   relu_192 = Relu (getitem_588)
+   getitem_591 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> (relu_192, "visual.layer4.9.conv2.weight", "visual.layer4.9.conv2.weight_bias")
+   relu_193 = Relu (getitem_591)
+   getitem_594 = Conv <auto_pad: string = "NOTSET", dilations: ints = [1, 1], group: int = 1, pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (relu_193, "visual.layer4.9.conv3.weight", "visual.layer4.9.conv3.weight_bias")
+   add_4988 = Add (getitem_594, relu_191)
+   relu_194 = Relu (add_4988)
+   view_2 = Reshape <allowzero: int = 1> (relu_194, view_2_target)
+   permute_1 = Transpose <perm: ints = [2, 0, 1]> (view_2)
+   [node_mean] mean = ReduceMean <keepdims: int = 1, noop_with_empty_axes: int = 0> (permute_1, val_0)
+   [node_cat] cat = Concat <axis: int = 0> (mean, permute_1)
+   [node_unsqueeze] unsqueeze = Unsqueeze ("visual.attnpool.positional_embedding", val_3)
+   add_5018 = Add (cat, unsqueeze)
+   split_split_0, split_split_1, split_split_2 = Split <axis: int = 0, num_outputs: int = 3> (cat_1)
+   node_scaled_dot_product_attention_q_row = Slice (add_5018, val_0, val_3, val_0)
+   val_7 = MatMul (node_scaled_dot_product_attention_q_row, val_4)
+   [node_linear] linear = Add (val_7, split_split_0)
+   val_8 = MatMul (add_5018, val_5)
+   linear_1 = Add (val_8, split_split_1)
+   val_9 = MatMul (add_5018, val_6)
+   linear_2 = Add (val_9, split_split_2)
+   view_3 = Reshape <allowzero: int = 1> (linear, node_scaled_dot_product_attention_q_unpack_1)
+   [node_transpose] transpose = Transpose <perm: ints = [1, 0, 2]> (view_3)
+   view_4 = Reshape <allowzero: int = 1> (linear_1, view_4_target)
+   transpose_1 = Transpose <perm: ints = [1, 0, 2]> (view_4)
+   view_5 = Reshape <allowzero: int = 1> (linear_2, view_4_target)
+   transpose_2 = Transpose <perm: ints = [1, 0, 2]> (view_5)
+   view_6 = Reshape <allowzero: int = 1> (transpose, node_scaled_dot_product_attention_q_pack_1)
+   view_7 = Reshape <allowzero: int = 1> (transpose_1, view_7_target)
+   view_8 = Reshape <allowzero: int = 1> (transpose_2, view_7_target)
+   [node_scaled_dot_product_attention] scaled_dot_product_attention = Attention <is_causal: int = 0, qk_matmul_output_mode: int = 0, softcap: float = 0> (view_6, view_7, view_8)
+   permute_2 = Transpose <perm: ints = [2, 0, 1, 3]> (scaled_dot_product_attention)
+   view_9 = Reshape <allowzero: int = 1> (permute_2, view_9_target)
+   linear_3 = Gemm <alpha: float = 1, beta: float = 1, transA: int = 0, transB: int = 1> (view_9, "visual.attnpool.c_proj.weight", "visual.attnpool.c_proj.bias")
+   view_10 = Reshape <allowzero: int = 1> (linear_3, node_scaled_dot_product_attention_out_1)
+   select = Squeeze (view_10, val_0)
+   [node_linalg_vector_norm] linalg_vector_norm = ReduceL2 <keepdims: int = 1, noop_with_empty_axes: int = 0> (select, val_1)
+   [node_clamp_min] clamp_min = Clip (linalg_vector_norm, val_2)
+   [node_div] image_embedding = Div (select, clamp_min)
+}
+
+weights:
+cat_1 FLOAT[12288] f3bc9fd4a15d
+image_shift FLOAT[3] 2f7a50e604ad
+node_scaled_dot_product_attention_out_1 INT64[3] 7162728d1394
+node_scaled_dot_product_attention_q_pack_1 INT64[4] dc6cfe24d500
+node_scaled_dot_product_attention_q_unpack_1 INT64[3] cfe34a386daf
+val_0 INT64[1] af5570f5a181
+val_1 INT64[1] 12a3ae445661
+val_2 FLOAT[] 6708d9be4956
+val_3 INT64[1] 7c9fa136d441
+val_4 FLOAT[4096,4096] a174248b2b19
+val_5 FLOAT[4096,4096] 644df4b9439c
+val_6 FLOAT[4096,4096] 7db20657060c
+view_2_target INT64[3] 105ca240ffa2
+view_4_target INT64[3] 73e5306dc236
+view_7_target INT64[4] ad96207b8c08
+view_9_target INT64[2] 96fb1613a890
+visual.attnpool.c_proj.bias FLOAT[1024] 05f2bbc5ed03
+visual.attnpool.c_proj.weight FLOAT[1024,4096] df14b8517bbf
+visual.attnpool.positional_embedding FLOAT[197,4096] 6013dc5d2caa
+visual.conv1.weight FLOAT[64,3,3,3] 310cd617cb81
+visual.conv1.weight_bias FLOAT[64] 4e04008e909a
+visual.conv2.weight FLOAT[64,64,3,3] 9f7b74dc85d8
+visual.conv2.weight_bias FLOAT[64] 881654deb8f9
+visual.conv3.weight FLOAT[128,64,3,3] dc643ff73edb
+visual.conv3.weight_bias FLOAT[128] 0df01c31767e
+visual.layer1.0.conv1.weight FLOAT[128,128,1,1] 21f7d7382001
+visual.layer1.0.conv1.weight_bias FLOAT[128] 17b23d18c49f
+visual.layer1.0.conv2.weight FLOAT[128,128,3,3] 53ea940dda32
+visual.layer1.0.conv2.weight_bias FLOAT[128] ebd2d80a0beb
+visual.layer1.0.conv3.weight FLOAT[512,128,1,1] fd936b7f6bea
+visual.layer1.0.conv3.weight_bias FLOAT[512] b221ff1254d3
+visual.layer1.0.downsample.0.weight FLOAT[512,128,1,1] 781ade65f808
+visual.layer1.0.downsample.0.weight_bias FLOAT[512] 809ae89b6e30
+visual.layer1.1.conv1.weight FLOAT[128,512,1,1] 3202f500c5ae
+visual.layer1.1.conv1.weight_bias FLOAT[128] 5d8d1c15a3dd
+visual.layer1.1.conv2.weight FLOAT[128,128,3,3] c3599a080bfd
+visual.layer1.1.conv2.weight_bias FLOAT[128] d2b9e4dd182a
+visual.layer1.1.conv3.weight FLOAT[512,128,1,1] 2df3d01506b3
+visual.layer1.1.conv3.weight_bias FLOAT[512] 1cac115d608d
+visual.layer1.2.conv1.weight FLOAT[128,512,1,1] a3649e19481c
+visual.layer1.2.conv1.weight_bias FLOAT[128] 9eb9f024cf5a
+visual.layer1.2.conv2.weight FLOAT[128,128,3,3] 15a71672d6c5
+visual.layer1.2.conv2.weight_bias FLOAT[128] 08b3958ed811
+visual.layer1.2.conv3.weight FLOAT[512,128,1,1] db2515da1b39
+visual.layer1.2.conv3.weight_bias FLOAT[512] 2b5cd041a14e
+visual.layer2.0.conv1.weight FLOAT[256,512,1,1] 64520745c178
+visual.layer2.0.conv1.weight_bias FLOAT[256] ebc82c87edc5
+visual.layer2.0.conv2.weight FLOAT[256,256,3,3] 13ba3086d0ef
+visual.layer2.0.conv2.weight_bias FLOAT[256] e486736c1ddb
+visual.layer2.0.conv3.weight FLOAT[1024,256,1,1] fbe7c9590f8b
+visual.layer2.0.conv3.weight_bias FLOAT[1024] 0f7eae8c5541
+visual.layer2.0.downsample.0.weight FLOAT[1024,512,1,1] 8a8383aa8bfc
+visual.layer2.0.downsample.0.weight_bias FLOAT[1024] 851e43282ea2
+visual.layer2.1.conv1.weight FLOAT[256,1024,1,1] dbb9879c4227
+visual.layer2.1.conv1.weight_bias FLOAT[256] 5f86864604a2
+visual.layer2.1.conv2.weight FLOAT[256,256,3,3] 798c8d258778
+visual.layer2.1.conv2.weight_bias FLOAT[256] c58bf30be273
+visual.layer2.1.conv3.weight FLOAT[1024,256,1,1] 40189856d0e5
+visual.layer2.1.conv3.weight_bias FLOAT[1024] b3678960fab4
+visual.layer2.10.conv1.weight FLOAT[256,1024,1,1] 9be93450a313
+visual.layer2.10.conv1.weight_bias FLOAT[256] 42bb9972b8d0
+visual.layer2.10.conv2.weight FLOAT[256,256,3,3] bd95c8c4996a
+visual.layer2.10.conv2.weight_bias FLOAT[256] 4560cf297220
+visual.layer2.10.conv3.weight FLOAT[1024,256,1,1] ad4b5fc7529a
+visual.layer2.10.conv3.weight_bias FLOAT[1024] 0f6ab91b0613
+visual.layer2.11.conv1.weight FLOAT[256,1024,1,1] 1ddc0f3f86a0
+visual.layer2.11.conv1.weight_bias FLOAT[256] 325bd608dd43
+visual.layer2.11.conv2.weight FLOAT[256,256,3,3] a1698c2e1fee
+visual.layer2.11.conv2.weight_bias FLOAT[256] 68dfe94e8a7a
+visual.layer2.11.conv3.weight FLOAT[1024,256,1,1] 364b3b5f43b0
+visual.layer2.11.conv3.weight_bias FLOAT[1024] 7229c27b4a41
+visual.layer2.12.conv1.weight FLOAT[256,1024,1,1] 266e8c37bc80
+visual.layer2.12.conv1.weight_bias FLOAT[256] 2af87281952b
+visual.layer2.12.conv2.weight FLOAT[256,256,3,3] 309119502dc0
+visual.layer2.12.conv2.weight_bias FLOAT[256] e6e62b389412
+visual.layer2.12.conv3.weight FLOAT[1024,256,1,1] 832d0663f98a
+visual.layer2.12.conv3.weight_bias FLOAT[1024] 3e5c7237eb5a
+visual.layer2.13.conv1.weight FLOAT[256,1024,1,1] 8f54f6a4e24f
+visual.layer2.13.conv1.weight_bias FLOAT[256] 3cba797363a6
+visual.layer2.13.conv2.weight FLOAT[256,256,3,3] 7e3a4995b7c9
+visual.layer2.13.conv2.weight_bias FLOAT[256] faa025f5b832
+visual.layer2.13.conv3.weight FLOAT[1024,256,1,1] d0b69d876976
+visual.layer2.13.conv3.weight_bias FLOAT[1024] d44a60ca00d9
+visual.layer2.14.conv1.weight FLOAT[256,1024,1,1] 78a5e9d35daa
+visual.layer2.14.conv1.weight_bias FLOAT[256] ead13664c089
+visual.layer2.14.conv2.weight FLOAT[256,256,3,3] fb1a1236eaa2
+visual.layer2.14.conv2.weight_bias FLOAT[256] 4ac7ea49634f
+visual.layer2.14.conv3.weight FLOAT[1024,256,1,1] 5d222f064da6
+visual.layer2.14.conv3.weight_bias FLOAT[1024] 2878e9215521
+visual.layer2.2.conv1.weight FLOAT[256,1024,1,1] 79a1c0c7e85b
+visual.layer2.2.conv1.weight_bias FLOAT[256] f9346ee3d55f
+visual.layer2.2.conv2.weight FLOAT[256,256,3,3] db0a137fa711
+visual.layer2.2.conv2.weight_bias FLOAT[256] 9154512dcb74
+visual.layer2.2.conv3.weight FLOAT[1024,256,1,1] 1856029aa798
+visual.layer2.2.conv3.weight_bias FLOAT[1024] 86db72314112
+visual.layer2.3.conv1.weight FLOAT[256,1024,1,1] 7fabef5b844c
+visual.layer2.3.conv1.weight_bias FLOAT[256] e95f0a6f7d3d
+visual.layer2.3.conv2.weight FLOAT[256,256,3,3] cee7416f44bd
+visual.layer2.3.conv2.weight_bias FLOAT[256] 6316705d42d6
+visual.layer2.3.conv3.weight FLOAT[1024,256,1,1] 594c53a9e603
+visual.layer2.3.conv3.weight_bias FLOAT[1024] 060fb2e3c71e
+visual.layer2.4.conv1.weight FLOAT[256,1024,1,1] c635fc69eb75
+visual.layer2.4.conv1.weight_bias FLOAT[256] 569e709716b6
+visual.layer2.4.conv2.weight FLOAT[256,256,3,3] bde836fe800a
+visual.layer2.4.conv2.weight_bias FLOAT[256] 76b372cf0349
+visual.layer2.4.conv3.weight FLOAT[1024,256,1,1] c38d01674759
+visual.layer2.4.conv3.weight_bias FLOAT[1024] 77ff98bd1f67
+visual.layer2.5.conv1.weight FLOAT[256,1024,1,1] 8943bcbfe512
+visual.layer2.5.conv1.weight_bias FLOAT[256] 3b2d7e7314c8
+visual.layer2.5.conv2.weight FLOAT[256,256,3,3] 785aec4c720a
+visual.layer2.5.conv2.weight_bias FLOAT[256] 95e27259c32f
+visual.layer2.5.conv3.weight FLOAT[1024,256,1,1] 103f99d9edc3
+visual.layer2.5.conv3.weight_bias FLOAT[1024] 38b6a5a502a2
+visual.layer2.6.conv1.weight FLOAT[256,1024,1,1] 9a8fd4cb9751
+visual.layer2.6.conv1.weight_bias FLOAT[256] 139b7c86c99d
+visual.layer2.6.conv2.weight FLOAT[256,256,3,3] 5af0092c386a
+visual.layer2.6.conv2.weight_bias FLOAT[256] 85d2cc2835a6
+visual.layer2.6.conv3.weight FLOAT[1024,256,1,1] b7f53a702837
+visual.layer2.6.conv3.weight_bias FLOAT[1024] 2ddbdd7745e0
+visual.layer2.7.conv1.weight FLOAT[256,1024,1,1] 9b925b4d3ef4
+visual.layer2.7.conv1.weight_bias FLOAT[256] a2c2710aba53
+visual.layer2.7.conv2.weight FLOAT[256,256,3,3] da6b9495e6d9
+visual.layer2.7.conv2.weight_bias FLOAT[256] ff7cbc192298
+visual.layer2.7.conv3.weight FLOAT[1024,256,1,1] eaf979a682c3
+visual.layer2.7.conv3.weight_bias FLOAT[1024] c57a8f89cef9
+visual.layer2.8.conv1.weight FLOAT[256,1024,1,1] b745da828d19
+visual.layer2.8.conv1.weight_bias FLOAT[256] 37f60cf96ad3
+visual.layer2.8.conv2.weight FLOAT[256,256,3,3] f14a573becc6
+visual.layer2.8.conv2.weight_bias FLOAT[256] 0cf289fdbd3a
+visual.layer2.8.conv3.weight FLOAT[1024,256,1,1] 2c1dc7e6c216
+visual.layer2.8.conv3.weight_bias FLOAT[1024] 784fb3a24397
+visual.layer2.9.conv1.weight FLOAT[256,1024,1,1] e404448e70a3
+visual.layer2.9.conv1.weight_bias FLOAT[256] 2a87230099a2
+visual.layer2.9.conv2.weight FLOAT[256,256,3,3] 305803625a4b
+visual.layer2.9.conv2.weight_bias FLOAT[256] e79c367e4603
+visual.layer2.9.conv3.weight FLOAT[1024,256,1,1] 121c430ac208
+visual.layer2.9.conv3.weight_bias FLOAT[1024] 8deebad2bb54
+visual.layer3.0.conv1.weight FLOAT[512,1024,1,1] 794bf934252c
+visual.layer3.0.conv1.weight_bias FLOAT[512] aab8eefd278a
+visual.layer3.0.conv2.weight FLOAT[512,512,3,3] a67a2d887157
+visual.layer3.0.conv2.weight_bias FLOAT[512] 1b2cbd09ccfc
+visual.layer3.0.conv3.weight FLOAT[2048,512,1,1] e70019420aa6
+visual.layer3.0.conv3.weight_bias FLOAT[2048] 6ae6376c208f
+visual.layer3.0.downsample.0.weight FLOAT[2048,1024,1,1] 950088c3070c
+visual.layer3.0.downsample.0.weight_bias FLOAT[2048] b57ea2dd8c31
+visual.layer3.1.conv1.weight FLOAT[512,2048,1,1] 4b868ef6efe3
+visual.layer3.1.conv1.weight_bias FLOAT[512] 5b062a0be3eb
+visual.layer3.1.conv2.weight FLOAT[512,512,3,3] 904448cc4e92
+visual.layer3.1.conv2.weight_bias FLOAT[512] 25d808df91c9
+visual.layer3.1.conv3.weight FLOAT[2048,512,1,1] 20e25abba10d
+visual.layer3.1.conv3.weight_bias FLOAT[2048] 6a80f0ac3ed9
+visual.layer3.10.conv1.weight FLOAT[512,2048,1,1] 388576e29c80
+visual.layer3.10.conv1.weight_bias FLOAT[512] 5d9f5b00ac80
+visual.layer3.10.conv2.weight FLOAT[512,512,3,3] 974d92978dda
+visual.layer3.10.conv2.weight_bias FLOAT[512] 5bf5b5f376b7
+visual.layer3.10.conv3.weight FLOAT[2048,512,1,1] 9e8d7a07bbd0
+visual.layer3.10.conv3.weight_bias FLOAT[2048] 202995baed92
+visual.layer3.11.conv1.weight FLOAT[512,2048,1,1] e0fd748bfb62
+visual.layer3.11.conv1.weight_bias FLOAT[512] 9f1b2c0bbfc5
+visual.layer3.11.conv2.weight FLOAT[512,512,3,3] be7616421bc5
+visual.layer3.11.conv2.weight_bias FLOAT[512] 3444741a5ee4
+visual.layer3.11.conv3.weight FLOAT[2048,512,1,1] 6c1367aea6a0
+visual.layer3.11.conv3.weight_bias FLOAT[2048] 7637e7778cd9
+visual.layer3.12.conv1.weight FLOAT[512,2048,1,1] 931037e771c0
+visual.layer3.12.conv1.weight_bias FLOAT[512] db313553d771
+visual.layer3.12.conv2.weight FLOAT[512,512,3,3] 5c57e34cd9e9
+visual.layer3.12.conv2.weight_bias FLOAT[512] 01dd2a466512
+visual.layer3.12.conv3.weight FLOAT[2048,512,1,1] 3812c77a5b7c
+visual.layer3.12.conv3.weight_bias FLOAT[2048] 4f65f37e17ca
+visual.layer3.13.conv1.weight FLOAT[512,2048,1,1] 1f5367a7321e
+visual.layer3.13.conv1.weight_bias FLOAT[512] 4354c6323c3a
+visual.layer3.13.conv2.weight FLOAT[512,512,3,3] 2ef44478312f
+visual.layer3.13.conv2.weight_bias FLOAT[512] cf506bd1ae12
+visual.layer3.13.conv3.weight FLOAT[2048,512,1,1] 523e5cfca035
+visual.layer3.13.conv3.weight_bias FLOAT[2048] 2a6c4b987522
+visual.layer3.14.conv1.weight FLOAT[512,2048,1,1] c6825072c856
+visual.layer3.14.conv1.weight_bias FLOAT[512] 4e095004b9f7
+visual.layer3.14.conv2.weight FLOAT[512,512,3,3] 84fad0c6d422
+visual.layer3.14.conv2.weight_bias FLOAT[512] 75690882afee
+visual.layer3.14.conv3.weight FLOAT[2048,512,1,1] 5b89042b6812
+visual.layer3.14.conv3.weight_bias FLOAT[2048] 78fa32695b7f
+visual.layer3.15.conv1.weight FLOAT[512,2048,1,1] 9fd3880040ac
+visual.layer3.15.conv1.weight_bias FLOAT[512] 39051ea0614a
+visual.layer3.15.conv2.weight FLOAT[512,512,3,3] a9025835fa48
+visual.layer3.15.conv2.weight_bias FLOAT[512] 009cb407cb87
+visual.layer3.15.conv3.weight FLOAT[2048,512,1,1] cf7fa76f173f
+visual.layer3.15.conv3.weight_bias FLOAT[2048] ea7390df8b41
+visual.layer3.16.conv1.weight FLOAT[512,2048,1,1] 697958abf8e1
+visual.layer3.16.conv1.weight_bias FLOAT[512] 20cfe1ede88f
+visual.layer3.16.conv2.weight FLOAT[512,512,3,3] 7788dd3cb529
+visual.layer3.16.conv2.weight_bias FLOAT[512] e5ec0c8250fd
+visual.layer3.16.conv3.weight FLOAT[2048,512,1,1] 91109f29ddb7
+visual.layer3.16.conv3.weight_bias FLOAT[2048] 101f50363a31
+visual.layer3.17.conv1.weight FLOAT[512,2048,1,1] 38e467bb151a
+visual.layer3.17.conv1.weight_bias FLOAT[512] 1f7007ca67e7
+visual.layer3.17.conv2.weight FLOAT[512,512,3,3] 5842a8e931f2
+visual.layer3.17.conv2.weight_bias FLOAT[512] c3af54d2a5a7
+visual.layer3.17.conv3.weight FLOAT[2048,512,1,1] a78fa816cfd5
+visual.layer3.17.conv3.weight_bias FLOAT[2048] 8e57006bc2af
+visual.layer3.18.conv1.weight FLOAT[512,2048,1,1] b358e9b97a8f
+visual.layer3.18.conv1.weight_bias FLOAT[512] 600c15bf0673
+visual.layer3.18.conv2.weight FLOAT[512,512,3,3] c07e06037afd
+visual.layer3.18.conv2.weight_bias FLOAT[512] 0a93bf76c800
+visual.layer3.18.conv3.weight FLOAT[2048,512,1,1] 4590601a199c
+visual.layer3.18.conv3.weight_bias FLOAT[2048] fc6a12819019
+visual.layer3.19.conv1.weight FLOAT[512,2048,1,1] f418275fa3e6
+visual.layer3.19.conv1.weight_bias FLOAT[512] cccd7f97f904
+visual.layer3.19.conv2.weight FLOAT[512,512,3,3] d8d38951d053
+visual.layer3.19.conv2.weight_bias FLOAT[512] 52b1d4008769
+visual.layer3.19.conv3.weight FLOAT[2048,512,1,1] 0b64267638f2
+visual.layer3.19.conv3.weight_bias FLOAT[2048] 17a1f9407fb6
+visual.layer3.2.conv1.weight FLOAT[512,2048,1,1] 91a394d14f43
+visual.layer3.2.conv1.weight_bias FLOAT[512] 6a29a78625d2
+visual.layer3.2.conv2.weight FLOAT[512,512,3,3] b068fbee327f
+visual.layer3.2.conv2.weight_bias FLOAT[512] c845b48bbf4b
+visual.layer3.2.conv3.weight FLOAT[2048,512,1,1] 805985fbada9
+visual.layer3.2.conv3.weight_bias FLOAT[2048] 2fb4fd62d33a
+visual.layer3.20.conv1.weight FLOAT[512,2048,1,1] f77f144d5254
+visual.layer3.20.conv1.weight_bias FLOAT[512] 1a7619dd997a
+visual.layer3.20.conv2.weight FLOAT[512,512,3,3] 5cc72ecef495
+visual.layer3.20.conv2.weight_bias FLOAT[512] 0d509c2fa6b2
+visual.layer3.20.conv3.weight FLOAT[2048,512,1,1] a8693510c225
+visual.layer3.20.conv3.weight_bias FLOAT[2048] 36d0b5b8f483
+visual.layer3.21.conv1.weight FLOAT[512,2048,1,1] 1505fe0d0e3e
+visual.layer3.21.conv1.weight_bias FLOAT[512] 8a2b58114ad9
+visual.layer3.21.conv2.weight FLOAT[512,512,3,3] 8a1ea506e8d7
+visual.layer3.21.conv2.weight_bias FLOAT[512] 493778c13c70
+visual.layer3.21.conv3.weight FLOAT[2048,512,1,1] ede588a0a6e5
+visual.layer3.21.conv3.weight_bias FLOAT[2048] b6e0e2221e14
+visual.layer3.22.conv1.weight FLOAT[512,2048,1,1] 9bd0fbb28615
+visual.layer3.22.conv1.weight_bias FLOAT[512] 42254183df32
+visual.layer3.22.conv2.weight FLOAT[512,512,3,3] 3db9e702c096
+visual.layer3.22.conv2.weight_bias FLOAT[512] 6eb31466641a
+visual.layer3.22.conv3.weight FLOAT[2048,512,1,1] afe8d1931628
+visual.layer3.22.conv3.weight_bias FLOAT[2048] 84db815b1094
+visual.layer3.23.conv1.weight FLOAT[512,2048,1,1] 71b4020f06ab
+visual.layer3.23.conv1.weight_bias FLOAT[512] cbfee46e94be
+visual.layer3.23.conv2.weight FLOAT[512,512,3,3] ee6535a63ddb
+visual.layer3.23.conv2.weight_bias FLOAT[512] 5cb2bfd4879d
+visual.layer3.23.conv3.weight FLOAT[2048,512,1,1] 81c56e457b90
+visual.layer3.23.conv3.weight_bias FLOAT[2048] cdab1a138f90
+visual.layer3.24.conv1.weight FLOAT[512,2048,1,1] 6ac80a44f280
+visual.layer3.24.conv1.weight_bias FLOAT[512] 7f3a0d12916d
+visual.layer3.24.conv2.weight FLOAT[512,512,3,3] 1f406c8d0729
+visual.layer3.24.conv2.weight_bias FLOAT[512] c4937bd08d3e
+visual.layer3.24.conv3.weight FLOAT[2048,512,1,1] 3bfdaab1269d
+visual.layer3.24.conv3.weight_bias FLOAT[2048] 9412da15b169
+visual.layer3.25.conv1.weight FLOAT[512,2048,1,1] a417f70a41a4
+visual.layer3.25.conv1.weight_bias FLOAT[512] d66debcfc20c
+visual.layer3.25.conv2.weight FLOAT[512,512,3,3] 3dc69d19ec1a
+visual.layer3.25.conv2.weight_bias FLOAT[512] f54a9486d4e0
+visual.layer3.25.conv3.weight FLOAT[2048,512,1,1] e8c090db91fc
+visual.layer3.25.conv3.weight_bias FLOAT[2048] bffcbddac646
+visual.layer3.26.conv1.weight FLOAT[512,2048,1,1] cae683b8b5ca
+visual.layer3.26.conv1.weight_bias FLOAT[512] 795132d624e7
+visual.layer3.26.conv2.weight FLOAT[512,512,3,3] 228a678bdadb
+visual.layer3.26.conv2.weight_bias FLOAT[512] 1d34ea73a41e
+visual.layer3.26.conv3.weight FLOAT[2048,512,1,1] e634164279fe
+visual.layer3.26.conv3.weight_bias FLOAT[2048] e741d3024f60
+visual.layer3.27.conv1.weight FLOAT[512,2048,1,1] d5d380daa404
+visual.layer3.27.conv1.weight_bias FLOAT[512] 4dcfd83586f2
+visual.layer3.27.conv2.weight FLOAT[512,512,3,3] fda7d0230944
+visual.layer3.27.conv2.weight_bias FLOAT[512] f0c6c017d635
+visual.layer3.27.conv3.weight FLOAT[2048,512,1,1] 64624c0b5034
+visual.layer3.27.conv3.weight_bias FLOAT[2048] bba687e3e5b4
+visual.layer3.28.conv1.weight FLOAT[512,2048,1,1] a751be1b3585
+visual.layer3.28.conv1.weight_bias FLOAT[512] 560d4e3b10dd
+visual.layer3.28.conv2.weight FLOAT[512,512,3,3] 805a8d4f47e1
+visual.layer3.28.conv2.weight_bias FLOAT[512] 2313e64c9cd5
+visual.layer3.28.conv3.weight FLOAT[2048,512,1,1] 0b650d22403a
+visual.layer3.28.conv3.weight_bias FLOAT[2048] 99fa4962d2d9
+visual.layer3.29.conv1.weight FLOAT[512,2048,1,1] f05432226c15
+visual.layer3.29.conv1.weight_bias FLOAT[512] af8f76f7c9a9
+visual.layer3.29.conv2.weight FLOAT[512,512,3,3] ea2896d9074c
+visual.layer3.29.conv2.weight_bias FLOAT[512] 9ab2b4109cca
+visual.layer3.29.conv3.weight FLOAT[2048,512,1,1] 253b26c60e71
+visual.layer3.29.conv3.weight_bias FLOAT[2048] eb6a808c1c3b
+visual.layer3.3.conv1.weight FLOAT[512,2048,1,1] ac23f3d45137
+visual.layer3.3.conv1.weight_bias FLOAT[512] 80ff032e5710
+visual.layer3.3.conv2.weight FLOAT[512,512,3,3] 512ef35889a5
+visual.layer3.3.conv2.weight_bias FLOAT[512] af6600a507a5
+visual.layer3.3.conv3.weight FLOAT[2048,512,1,1] 9054dd4d9cf4
+visual.layer3.3.conv3.weight_bias FLOAT[2048] 2f699c16b995
+visual.layer3.30.conv1.weight FLOAT[512,2048,1,1] 7cf0d6bf315e
+visual.layer3.30.conv1.weight_bias FLOAT[512] 09a0c7b5e699
+visual.layer3.30.conv2.weight FLOAT[512,512,3,3] 3bf9b01f794e
+visual.layer3.30.conv2.weight_bias FLOAT[512] 5d29c6e75721
+visual.layer3.30.conv3.weight FLOAT[2048,512,1,1] 0db4bb97f19f
+visual.layer3.30.conv3.weight_bias FLOAT[2048] 5e2c8200134e
+visual.layer3.31.conv1.weight FLOAT[512,2048,1,1] 4d0b79112a64
+visual.layer3.31.conv1.weight_bias FLOAT[512] 9f6b44b453e1
+visual.layer3.31.conv2.weight FLOAT[512,512,3,3] 5c6ad750e405
+visual.layer3.31.conv2.weight_bias FLOAT[512] 7d6dae9ef449
+visual.layer3.31.conv3.weight FLOAT[2048,512,1,1] 68d5d99f4762
+visual.layer3.31.conv3.weight_bias FLOAT[2048] 202ede3bf5ba
+visual.layer3.32.conv1.weight FLOAT[512,2048,1,1] 32ae8f0030b2
+visual.layer3.32.conv1.weight_bias FLOAT[512] 58bbaaa321a4
+visual.layer3.32.conv2.weight FLOAT[512,512,3,3] 5a511a5c16e5
+visual.layer3.32.conv2.weight_bias FLOAT[512] f6c721296a0e
+visual.layer3.32.conv3.weight FLOAT[2048,512,1,1] 2d28ba7c8aed
+visual.layer3.32.conv3.weight_bias FLOAT[2048] 4dff9ce75f73
+visual.layer3.33.conv1.weight FLOAT[512,2048,1,1] 3030ad037576
+visual.layer3.33.conv1.weight_bias FLOAT[512] bb77671b5ed1
+visual.layer3.33.conv2.weight FLOAT[512,512,3,3] 9c83a47873fa
+visual.layer3.33.conv2.weight_bias FLOAT[512] fe7298eb8e38
+visual.layer3.33.conv3.weight FLOAT[2048,512,1,1] 3a7ce3f6cba2
+visual.layer3.33.conv3.weight_bias FLOAT[2048] b9f274013827
+visual.layer3.34.conv1.weight FLOAT[512,2048,1,1] f8a130c2ca0f
+visual.layer3.34.conv1.weight_bias FLOAT[512] 05f1dad6cc59
+visual.layer3.34.conv2.weight FLOAT[512,512,3,3] 5febb4b342b2
+visual.layer3.34.conv2.weight_bias FLOAT[512] 1ce2baf7ce12
+visual.layer3.34.conv3.weight FLOAT[2048,512,1,1] fb58ab295e1b
+visual.layer3.34.conv3.weight_bias FLOAT[2048] aed078a55b44
+visual.layer3.35.conv1.weight FLOAT[512,2048,1,1] 2d9d0e0b2975
+visual.layer3.35.conv1.weight_bias FLOAT[512] efbd2e069706
+visual.layer3.35.conv2.weight FLOAT[512,512,3,3] 1037a980d174
+visual.layer3.35.conv2.weight_bias FLOAT[512] 0c06f696ad39
+visual.layer3.35.conv3.weight FLOAT[2048,512,1,1] 11d4c1ffc0a3
+visual.layer3.35.conv3.weight_bias FLOAT[2048] ff808bf38ce7
+visual.layer3.4.conv1.weight FLOAT[512,2048,1,1] 6b7d3cae6202
+visual.layer3.4.conv1.weight_bias FLOAT[512] 7131b5370230
+visual.layer3.4.conv2.weight FLOAT[512,512,3,3] 45f669603c5f
+visual.layer3.4.conv2.weight_bias FLOAT[512] b5179c860150
+visual.layer3.4.conv3.weight FLOAT[2048,512,1,1] 685ffb513bb9
+visual.layer3.4.conv3.weight_bias FLOAT[2048] 060256ddf9f2
+visual.layer3.5.conv1.weight FLOAT[512,2048,1,1] 372a2d91e8f4
+visual.layer3.5.conv1.weight_bias FLOAT[512] 7878f6ab112f
+visual.layer3.5.conv2.weight FLOAT[512,512,3,3] cf151f7f7ec4
+visual.layer3.5.conv2.weight_bias FLOAT[512] c9f67f812ec1
+visual.layer3.5.conv3.weight FLOAT[2048,512,1,1] 056d92550320
+visual.layer3.5.conv3.weight_bias FLOAT[2048] da491cb684b2
+visual.layer3.6.conv1.weight FLOAT[512,2048,1,1] 3c7a87676844
+visual.layer3.6.conv1.weight_bias FLOAT[512] 79f0c164981e
+visual.layer3.6.conv2.weight FLOAT[512,512,3,3] fbe95e51a226
+visual.layer3.6.conv2.weight_bias FLOAT[512] 31f246cffaa2
+visual.layer3.6.conv3.weight FLOAT[2048,512,1,1] 43f3621c5697
+visual.layer3.6.conv3.weight_bias FLOAT[2048] 633d75bc552e
+visual.layer3.7.conv1.weight FLOAT[512,2048,1,1] 1feac3d10f45
+visual.layer3.7.conv1.weight_bias FLOAT[512] 8a4d8edf8f83
+visual.layer3.7.conv2.weight FLOAT[512,512,3,3] f99854884824
+visual.layer3.7.conv2.weight_bias FLOAT[512] 424a5fea0139
+visual.layer3.7.conv3.weight FLOAT[2048,512,1,1] 15a07b8e84de
+visual.layer3.7.conv3.weight_bias FLOAT[2048] 6f7a9f502ef9
+visual.layer3.8.conv1.weight FLOAT[512,2048,1,1] 9f0c1dac6924
+visual.layer3.8.conv1.weight_bias FLOAT[512] 9df2e78273ac
+visual.layer3.8.conv2.weight FLOAT[512,512,3,3] 9670f85ede83
+visual.layer3.8.conv2.weight_bias FLOAT[512] a17f9c063720
+visual.layer3.8.conv3.weight FLOAT[2048,512,1,1] d7586f865198
+visual.layer3.8.conv3.weight_bias FLOAT[2048] 6223cd427733
+visual.layer3.9.conv1.weight FLOAT[512,2048,1,1] 09cdfcec57b7
+visual.layer3.9.conv1.weight_bias FLOAT[512] 1fe3ae64aa3f
+visual.layer3.9.conv2.weight FLOAT[512,512,3,3] f2ca43108f30
+visual.layer3.9.conv2.weight_bias FLOAT[512] 8773855d2ef4
+visual.layer3.9.conv3.weight FLOAT[2048,512,1,1] fb986b8c2ade
+visual.layer3.9.conv3.weight_bias FLOAT[2048] 39e44825ec27
+visual.layer4.0.conv1.weight FLOAT[1024,2048,1,1] 6d8c5d17d1e1
+visual.layer4.0.conv1.weight_bias FLOAT[1024] fc02834e5e95
+visual.layer4.0.conv2.weight FLOAT[1024,1024,3,3] cc7ebd31f7b7
+visual.layer4.0.conv2.weight_bias FLOAT[1024] 503a5f32e7d0
+visual.layer4.0.conv3.weight FLOAT[4096,1024,1,1] fa5a19a1c50e
+visual.layer4.0.conv3.weight_bias FLOAT[4096] d7d50bd61f27
+visual.layer4.0.downsample.0.weight FLOAT[4096,2048,1,1] 91776c08c91c
+visual.layer4.0.downsample.0.weight_bias FLOAT[4096] 7fb659b9bc52
+visual.layer4.1.conv1.weight FLOAT[1024,4096,1,1] 3755b6d1b8a2
+visual.layer4.1.conv1.weight_bias FLOAT[1024] 1d62627d9727
+visual.layer4.1.conv2.weight FLOAT[1024,1024,3,3] 32917bde6312
+visual.layer4.1.conv2.weight_bias FLOAT[1024] ac4f5df17bdf
+visual.layer4.1.conv3.weight FLOAT[4096,1024,1,1] 1653db0a9e0b
+visual.layer4.1.conv3.weight_bias FLOAT[4096] 570ccf7470e3
+visual.layer4.2.conv1.weight FLOAT[1024,4096,1,1] faff8a876f6e
+visual.layer4.2.conv1.weight_bias FLOAT[1024] 5b7f7c52ba99
+visual.layer4.2.conv2.weight FLOAT[1024,1024,3,3] abe25840348f
+visual.layer4.2.conv2.weight_bias FLOAT[1024] 440858fad1c2
+visual.layer4.2.conv3.weight FLOAT[4096,1024,1,1] 26f9d0fb5e2c
+visual.layer4.2.conv3.weight_bias FLOAT[4096] 5807e792c042
+visual.layer4.3.conv1.weight FLOAT[1024,4096,1,1] 076d885d4075
+visual.layer4.3.conv1.weight_bias FLOAT[1024] 9fb704663292
+visual.layer4.3.conv2.weight FLOAT[1024,1024,3,3] b775f158d0a9
+visual.layer4.3.conv2.weight_bias FLOAT[1024] d49673b2b449
+visual.layer4.3.conv3.weight FLOAT[4096,1024,1,1] 04d74042fcbe
+visual.layer4.3.conv3.weight_bias FLOAT[4096] 79ecc53a869a
+visual.layer4.4.conv1.weight FLOAT[1024,4096,1,1] b1a4654fa465
+visual.layer4.4.conv1.weight_bias FLOAT[1024] 1fdd21109a7a
+visual.layer4.4.conv2.weight FLOAT[1024,1024,3,3] 49e6b26616ec
+visual.layer4.4.conv2.weight_bias FLOAT[1024] fc945654989b
+visual.layer4.4.conv3.weight FLOAT[4096,1024,1,1] 933ae6253134
+visual.layer4.4.conv3.weight_bias FLOAT[4096] f210b3a6ca52
+visual.layer4.5.conv1.weight FLOAT[1024,4096,1,1] 33bd264341b8
+visual.layer4.5.conv1.weight_bias FLOAT[1024] 02a15e2b5c90
+visual.layer4.5.conv2.weight FLOAT[1024,1024,3,3] a80e4b7ef69c
+visual.layer4.5.conv2.weight_bias FLOAT[1024] f541772d56c5
+visual.layer4.5.conv3.weight FLOAT[4096,1024,1,1] 2927b3ba911e
+visual.layer4.5.conv3.weight_bias FLOAT[4096] 7a1e92f279ea
+visual.layer4.6.conv1.weight FLOAT[1024,4096,1,1] 728ffce7882e
+visual.layer4.6.conv1.weight_bias FLOAT[1024] bcfac20625a8
+visual.layer4.6.conv2.weight FLOAT[1024,1024,3,3] 6da00c0ac8df
+visual.layer4.6.conv2.weight_bias FLOAT[1024] dc3f129f2839
+visual.layer4.6.conv3.weight FLOAT[4096,1024,1,1] 3fa93b7781cc
+visual.layer4.6.conv3.weight_bias FLOAT[4096] 0a06e5e64f72
+visual.layer4.7.conv1.weight FLOAT[1024,4096,1,1] bf27a9fa2d54
+visual.layer4.7.conv1.weight_bias FLOAT[1024] a48a1650414c
+visual.layer4.7.conv2.weight FLOAT[1024,1024,3,3] 453d315493af
+visual.layer4.7.conv2.weight_bias FLOAT[1024] be78be5d217c
+visual.layer4.7.conv3.weight FLOAT[4096,1024,1,1] 2ac35fc20dd8
+visual.layer4.7.conv3.weight_bias FLOAT[4096] 5e3e0f01c955
+visual.layer4.8.conv1.weight FLOAT[1024,4096,1,1] 8de67855e436
+visual.layer4.8.conv1.weight_bias FLOAT[1024] 505e79e4b296
+visual.layer4.8.conv2.weight FLOAT[1024,1024,3,3] 6921fc595126
+visual.layer4.8.conv2.weight_bias FLOAT[1024] c6329683d8f5
+visual.layer4.8.conv3.weight FLOAT[4096,1024,1,1] 7c6752d68518
+visual.layer4.8.conv3.weight_bias FLOAT[4096] 5aa7a8029105
+visual.layer4.9.conv1.weight FLOAT[1024,4096,1,1] 2b56d6c1f22f
+visual.layer4.9.conv1.weight_bias FLOAT[1024] b267fc0994ba
+visual.layer4.9.conv2.weight FLOAT[1024,1024,3,3] 9b0346d0873a
+visual.layer4.9.conv2.weight_bias FLOAT[1024] df869f60fba1
+visual.layer4.9.conv3.weight FLOAT[4096,1024,1,1] 3b8419b91ef3
+visual.layer4.9.conv3.weight_bias FLOAT[4096] a53731ae3157

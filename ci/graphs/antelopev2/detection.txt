@@ -1,0 +1,365 @@
+<
+   ir_version: 6,
+   opset_import: ["" : 19],
+   producer_name: "pytorch"
+>
+"torch-jit-export" (uint8[batch,height,width,3] image) => (float[batch,anchors8,1] scores8, float[batch,anchors16,1] scores16, float[batch,anchors32,1] scores32, float[batch,anchors8,4] boxes8, float[batch,anchors16,4] boxes16, float[batch,anchors32,4] boxes32, float[batch,anchors8,10] kps8, float[batch,anchors16,10] kps16, float[batch,anchors32,10] kps32) 
+   <
+      float[batch,28,unk__0,unk__1] "277"
+      float[batch,28,unk__0,unk__1] "279"
+      float[batch,28,unk__0,unk__1] "280"
+      float[batch,28,unk__0,unk__1] "282"
+      float[batch,56,unk__0,unk__1] "283"
+      float[batch,56,unk__0,unk__1] "285"
+      float[batch,56,unk__6,unk__7] "286"
+      float[batch,56,unk__6,unk__7] "287"
+      float[batch,56,unk__6,unk__7] "289"
+      float[batch,56,unk__6,unk__7] "290"
+      float[batch,56,unk__6,unk__7] "292"
+      float[batch,56,unk__6,unk__7] "293"
+      float[batch,56,unk__6,unk__7] "294"
+      float[batch,56,unk__6,unk__7] "296"
+      float[batch,56,unk__6,unk__7] "297"
+      float[batch,56,unk__6,unk__7] "299"
+      float[batch,56,unk__6,unk__7] "300"
+      float[batch,56,unk__6,unk__7] "301"
+      float[batch,56,unk__6,unk__7] "303"
+      float[batch,56,unk__6,unk__7] "304"
+      float[batch,56,unk__6,unk__7] "306"
+      float[batch,56,unk__6,unk__7] "307"
+      float[batch,88,unk__26,unk__27] "308"
+      float[batch,88,unk__26,unk__27] "310"
+      float[batch,88,unk__26,unk__27] "311"
+      float[batch,56,unk__26,unk__27] "313"
+      float[batch,88,unk__26,unk__27] "314"
+      float[batch,88,unk__26,unk__27] "316"
+      float[batch,88,unk__26,unk__27] "317"
+      float[batch,88,unk__26,unk__27] "318"
+      float[batch,88,unk__26,unk__27] "320"
+      float[batch,88,unk__26,unk__27] "321"
+      float[batch,88,unk__26,unk__27] "323"
+      float[batch,88,unk__26,unk__27] "324"
+      float[batch,88,unk__26,unk__27] "325"
+      float[batch,88,unk__26,unk__27] "327"
+      float[batch,88,unk__26,unk__27] "328"
+      float[batch,88,unk__26,unk__27] "330"
+      float[batch,88,unk__26,unk__27] "331"
+      float[batch,88,unk__26,unk__27] "332"
+      float[batch,88,unk__26,unk__27] "334"
+      float[batch,88,unk__26,unk__27] "335"
+      float[batch,88,unk__26,unk__27] "337"
+      float[batch,88,unk__26,unk__27] "338"
+      float[batch,88,unk__54,unk__55] "339"
+      float[batch,88,unk__54,unk__55] "341"
+      float[batch,88,unk__54,unk__55] "342"
+      float[batch,88,unk__54,unk__55] "344"
+      float[batch,88,unk__54,unk__55] "345"
+      float[batch,88,unk__54,unk__55] "347"
+      float[batch,88,unk__54,unk__55] "348"
+      float[batch,88,unk__54,unk__55] "349"
+      float[batch,88,unk__54,unk__55] "351"
+      float[batch,88,unk__54,unk__55] "352"
+      float[batch,88,unk__54,unk__55] "354"
+      float[batch,88,unk__54,unk__55] "355"
+      float[batch,224,unk__70,unk__71] "356"
+      float[batch,224,unk__70,unk__71] "358"
+      float[batch,224,unk__70,unk__71] "359"
+      float[batch,88,unk__70,unk__71] "361"
+      float[batch,224,unk__70,unk__71] "362"
+      float[batch,224,unk__70,unk__71] "364"
+      float[batch,224,unk__70,unk__71] "365"
+      float[batch,224,unk__70,unk__71] "366"
+      float[batch,224,unk__70,unk__71] "368"
+      float[batch,224,unk__70,unk__71] "369"
+      float[batch,224,unk__70,unk__71] "371"
+      float[batch,224,unk__70,unk__71] "372"
+      float[batch,224,unk__70,unk__71] "373"
+      float[batch,224,unk__70,unk__71] "375"
+      float[batch,224,unk__70,unk__71] "376"
+      float[batch,224,unk__70,unk__71] "378"
+      float[batch,224,unk__70,unk__71] "379"
+      float[batch,56,unk__26,unk__27] "380"
+      float[batch,56,unk__54,unk__55] "381"
+      float[batch,56,unk__70,unk__71] "382"
+      float[batch,56,unk__54,unk__55] "401"
+      float[batch,56,unk__54,unk__55] "402"
+      float[batch,56,unk__26,unk__27] "421"
+      float[batch,56,unk__26,unk__27] "422"
+      float[batch,56,unk__26,unk__27] "423"
+      float[batch,56,unk__54,unk__55] "424"
+      float[batch,56,unk__70,unk__71] "425"
+      float[batch,56,unk__54,unk__55] "426"
+      float[batch,56,unk__54,unk__55] "427"
+      float[batch,56,unk__70,unk__71] "428"
+      float[batch,56,unk__70,unk__71] "429"
+      float[batch,56,unk__54,unk__55] "430"
+      float[batch,56,unk__70,unk__71] "431"
+      float[batch,80,unk__26,unk__27] "432"
+      float[batch,80,unk__26,unk__27] "434"
+      float[batch,80,unk__26,unk__27] "435"
+      float[batch,80,unk__26,unk__27] "437"
+      float[batch,80,unk__26,unk__27] "438"
+      float[batch,80,unk__26,unk__27] "440"
+      float[batch,80,unk__54,unk__55] "455"
+      float[batch,80,unk__54,unk__55] "457"
+      float[batch,80,unk__54,unk__55] "458"
+      float[batch,80,unk__54,unk__55] "460"
+      float[batch,80,unk__54,unk__55] "461"
+      float[batch,80,unk__54,unk__55] "463"
+      float[batch,80,unk__70,unk__71] "478"
+      float[batch,80,unk__70,unk__71] "480"
+      float[batch,80,unk__70,unk__71] "481"
+      float[batch,80,unk__70,unk__71] "483"
+      float[batch,80,unk__70,unk__71] "484"
+      float[batch,80,unk__70,unk__71] "486"
+      float[batch,3,height,width] "input.1"
+      float[batch,height,width,3] tmp
+      float[batch,3,height,width] tmp_0
+      float[batch,30,unk__26,unk__27] val_0
+      float[batch,unk__26,unk__27,30] val_1
+      float[batch,anchors32,15] val_10
+      float[batch,anchors32,1] val_11
+      float[batch,anchors8,15] val_2
+      float[batch,anchors8,1] val_3
+      float[batch,30,unk__54,unk__55] val_4
+      float[batch,unk__54,unk__55,30] val_5
+      float[batch,anchors16,15] val_6
+      float[batch,anchors16,1] val_7
+      float[batch,30,unk__70,unk__71] val_8
+      float[batch,unk__70,unk__71,30] val_9
+   >
+{
+   [n0] tmp = Cast <to: int = 1> (image)
+   [n1] tmp_0 = Transpose <perm: ints = [0, 3, 1, 2]> (tmp)
+   [n4] "input.1" = Sub (tmp_0, const_cast)
+   [Conv_0] "277" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("input.1", "547", "549")
+   [Relu_2] "279" = Relu ("277")
+   [Conv_3] "280" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("279", "551", "553")
+   [Relu_5] "282" = Relu ("280")
+   [Conv_6] "283" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("282", "555", "557")
+   [Relu_8] "285" = Relu ("283")
+   [MaxPool_9] "286" = MaxPool <ceil_mode: int = 0, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("285")
+   [Conv_10] "287" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("286", "559", "561")
+   [Relu_12] "289" = Relu ("287")
+   [Conv_13] "290" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("289", "563", "565")
+   [Add_15] "292" = Add ("290", "286")
+   [Relu_16] "293" = Relu ("292")
+   [Conv_17] "294" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("293", "567", "569")
+   [Relu_19] "296" = Relu ("294")
+   [Conv_20] "297" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("296", "571", "573")
+   [Add_22] "299" = Add ("297", "293")
+   [Relu_23] "300" = Relu ("299")
+   [Conv_24] "301" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("300", "575", "577")
+   [Relu_26] "303" = Relu ("301")
+   [Conv_27] "304" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("303", "579", "581")
+   [Add_29] "306" = Add ("304", "300")
+   [Relu_30] "307" = Relu ("306")
+   [Conv_31] "308" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("307", "583", "585")
+   [Relu_33] "310" = Relu ("308")
+   [Conv_34] "311" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("310", "587", "589")
+   [AveragePool_36] "313" = AveragePool <ceil_mode: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("307")
+   [Conv_37] "314" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("313", "591", "593")
+   [Add_39] "316" = Add ("311", "314")
+   [Relu_40] "317" = Relu ("316")
+   [Conv_41] "318" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("317", "595", "597")
+   [Relu_43] "320" = Relu ("318")
+   [Conv_44] "321" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("320", "599", "601")
+   [Add_46] "323" = Add ("321", "317")
+   [Relu_47] "324" = Relu ("323")
+   [Conv_48] "325" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("324", "603", "605")
+   [Relu_50] "327" = Relu ("325")
+   [Conv_51] "328" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("327", "607", "609")
+   [Add_53] "330" = Add ("328", "324")
+   [Relu_54] "331" = Relu ("330")
+   [Conv_55] "332" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("331", "611", "613")
+   [Relu_57] "334" = Relu ("332")
+   [Conv_58] "335" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("334", "615", "617")
+   [Add_60] "337" = Add ("335", "331")
+   [Relu_61] "338" = Relu ("337")
+   [Conv_62] "339" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("338", "619", "621")
+   [Relu_64] "341" = Relu ("339")
+   [Conv_65] "342" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("341", "623", "625")
+   [AveragePool_67] "344" = AveragePool <ceil_mode: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("338")
+   [Conv_68] "345" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("344", "627", "629")
+   [Add_70] "347" = Add ("342", "345")
+   [Relu_71] "348" = Relu ("347")
+   [Conv_72] "349" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("348", "631", "633")
+   [Relu_74] "351" = Relu ("349")
+   [Conv_75] "352" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("351", "635", "637")
+   [Add_77] "354" = Add ("352", "348")
+   [Relu_78] "355" = Relu ("354")
+   [Conv_79] "356" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("355", "639", "641")
+   [Relu_81] "358" = Relu ("356")
+   [Conv_82] "359" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("358", "643", "645")
+   [AveragePool_84] "361" = AveragePool <ceil_mode: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("355")
+   [Conv_85] "362" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("361", "647", "649")
+   [Add_87] "364" = Add ("359", "362")
+   [Relu_88] "365" = Relu ("364")
+   [Conv_89] "366" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("365", "651", "653")
+   [Relu_91] "368" = Relu ("366")
+   [Conv_92] "369" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("368", "655", "657")
+   [Add_94] "371" = Add ("369", "365")
+   [Relu_95] "372" = Relu ("371")
+   [Conv_96] "373" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("372", "659", "661")
+   [Relu_98] "375" = Relu ("373")
+   [Conv_99] "376" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("375", "663", "665")
+   [Add_101] "378" = Add ("376", "372")
+   [Relu_102] "379" = Relu ("378")
+   [Conv_103] "380" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("338", "neck.lateral_convs.0.conv.weight", "neck.lateral_convs.0.conv.bias")
+   [Conv_104] "381" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("355", "neck.lateral_convs.1.conv.weight", "neck.lateral_convs.1.conv.bias")
+   [Conv_105] "382" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("379", "neck.lateral_convs.2.conv.weight", "neck.lateral_convs.2.conv.bias")
+   [Resize_124] "401" = Resize <coordinate_transformation_mode: string = "asymmetric", cubic_coeff_a: float = -0.75, mode: string = "nearest", nearest_mode: string = "floor"> ("382", "", Resize_124_scales_2x)
+   [Add_125] "402" = Add ("381", "401")
+   [Resize_144] "421" = Resize <coordinate_transformation_mode: string = "asymmetric", cubic_coeff_a: float = -0.75, mode: string = "nearest", nearest_mode: string = "floor"> ("402", "", Resize_124_scales_2x)
+   [Add_145] "422" = Add ("380", "421")
+   [Conv_146] "423" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("422", "neck.fpn_convs.0.conv.weight", "neck.fpn_convs.0.conv.bias")
+   [Conv_147] "424" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("402", "neck.fpn_convs.1.conv.weight", "neck.downsample_convs.0.conv.bias")
+   [Conv_148] "425" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("382", "neck.fpn_convs.2.conv.weight", "neck.downsample_convs.1.conv.bias")
+   [Conv_149] "426" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("423", "neck.downsample_convs.0.conv.weight", "neck.downsample_convs.0.conv.bias")
+   [Add_150] "427" = Add ("424", "426")
+   [Conv_151] "428" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("427", "neck.downsample_convs.1.conv.weight", "neck.downsample_convs.1.conv.bias")
+   [Add_152] "429" = Add ("425", "428")
+   [Conv_153] "430" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("427", "neck.pafpn_convs.0.conv.weight", "neck.pafpn_convs.0.conv.bias")
+   [Conv_154] "431" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("429", "neck.pafpn_convs.1.conv.weight", "neck.pafpn_convs.1.conv.bias")
+   [Conv_155] "432" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("423", "667", "669")
+   [Relu_157] "434" = Relu ("432")
+   [Conv_158] "435" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("434", "671", "673")
+   [Relu_160] "437" = Relu ("435")
+   [Conv_161] "438" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("437", "675", "677")
+   [Relu_163] "440" = Relu ("438")
+   val_0 = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("440", Conv_164_w, Conv_164_b)
+   val_1 = Transpose <perm: ints = [0, 2, 3, 1]> (val_0)
+   val_2 = Reshape (val_1, Conv_164_flat)
+   val_3, boxes8, kps8 = Split <axis: int = 2> (val_2, Conv_164_split)
+   scores8 = Sigmoid (val_3)
+   [Conv_178] "455" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("430", "679", "681")
+   [Relu_180] "457" = Relu ("455")
+   [Conv_181] "458" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("457", "683", "685")
+   [Relu_183] "460" = Relu ("458")
+   [Conv_184] "461" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("460", "687", "689")
+   [Relu_186] "463" = Relu ("461")
+   val_4 = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("463", Conv_187_w, Conv_187_b)
+   val_5 = Transpose <perm: ints = [0, 2, 3, 1]> (val_4)
+   val_6 = Reshape (val_5, Conv_164_flat)
+   val_7, boxes16, kps16 = Split <axis: int = 2> (val_6, Conv_164_split)
+   scores16 = Sigmoid (val_7)
+   [Conv_201] "478" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("431", "691", "693")
+   [Relu_203] "480" = Relu ("478")
+   [Conv_204] "481" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("480", "695", "697")
+   [Relu_206] "483" = Relu ("481")
+   [Conv_207] "484" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("483", "699", "701")
+   [Relu_209] "486" = Relu ("484")
+   val_8 = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("486", Conv_210_w, Conv_210_b)
+   val_9 = Transpose <perm: ints = [0, 2, 3, 1]> (val_8)
+   val_10 = Reshape (val_9, Conv_164_flat)
+   val_11, boxes32, kps32 = Split <axis: int = 2> (val_10, Conv_164_split)
+   scores32 = Sigmoid (val_11)
+}
+
+weights:
+547 FLOAT[28,3,3,3] 2adc8f431796
+549 FLOAT[28] 7e3bc04b2243
+551 FLOAT[28,28,3,3] 308344069794
+553 FLOAT[28] 314ceb110d94
+555 FLOAT[56,28,3,3] f6bdec96a609
+557 FLOAT[56] 265b2d5f98d7
+559 FLOAT[56,56,3,3] 3c09930cd668
+561 FLOAT[56] cb42a33e62fa
+563 FLOAT[56,56,3,3] c8338541ff3f
+565 FLOAT[56] 93cceb99cd73
+567 FLOAT[56,56,3,3] 725a49c59a50
+569 FLOAT[56] 6cac06440db4
+571 FLOAT[56,56,3,3] 9e363b8cf08c
+573 FLOAT[56] de7e85bf5b2b
+575 FLOAT[56,56,3,3] c7f9bd16c46f
+577 FLOAT[56] 6b9d55212fa3
+579 FLOAT[56,56,3,3] d6938a140db0
+581 FLOAT[56] 3af2b2fc751b
+583 FLOAT[88,56,3,3] 9159f2e5953a
+585 FLOAT[88] 8f598ac4b81a
+587 FLOAT[88,88,3,3] a8d702d7c69a
+589 FLOAT[88] 34acbe0a4424
+591 FLOAT[88,56,1,1] b967881b2143
+593 FLOAT[88] 82856d5f7092
+595 FLOAT[88,88,3,3] c580d92e2184
+597 FLOAT[88] b0d6c2791e8a
+599 FLOAT[88,88,3,3] 6da28cb560b7
+601 FLOAT[88] b422feb4a1f8
+603 FLOAT[88,88,3,3] 7c42117cf974
+605 FLOAT[88] 0dd00dd226fc
+607 FLOAT[88,88,3,3] fd346f46df10
+609 FLOAT[88] 640b67dab70e
+611 FLOAT[88,88,3,3] d84fb0cefe39
+613 FLOAT[88] 5021836c08c9
+615 FLOAT[88,88,3,3] 4aa447f05831
+617 FLOAT[88] 1301a7c1dcd4
+619 FLOAT[88,88,3,3] b15ea25e9ab9
+621 FLOAT[88] 69225fca42a8
+623 FLOAT[88,88,3,3] 8ece8dc44c3e
+625 FLOAT[88] 9e4c3d519b88
+627 FLOAT[88,88,1,1] 9f8a31a1c999
+629 FLOAT[88] 671ac6167952
+631 FLOAT[88,88,3,3] 9ed71915168e
+633 FLOAT[88] c0b27a9cdf05
+635 FLOAT[88,88,3,3] 0ae3ed44423d
+637 FLOAT[88] fa2cbab54281
+639 FLOAT[224,88,3,3] bfd2c0f6620b
+641 FLOAT[224] 707533900f13
+643 FLOAT[224,224,3,3] 3229e6859577
+645 FLOAT[224] 51766c5119e9
+647 FLOAT[224,88,1,1] 60907eb9cfc7
+649 FLOAT[224] 4a74232dad3c
+651 FLOAT[224,224,3,3] 48efcf0d8dc4
+653 FLOAT[224] 65ce03d37969
+655 FLOAT[224,224,3,3] 062d07048a3e
+657 FLOAT[224] e075af4b57cb
+659 FLOAT[224,224,3,3] dda337bf3e80
+661 FLOAT[224] 5dd0e3c45f6f
+663 FLOAT[224,224,3,3] 68de39ebc603
+665 FLOAT[224] 548f22f690fd
+667 FLOAT[80,56,3,3] bf9b6edb9253
+669 FLOAT[80] 939612a38c90
+671 FLOAT[80,80,3,3] b45d0bdfd9ca
+673 FLOAT[80] fdbdfc1333c3
+675 FLOAT[80,80,3,3] 3ef03b5926b1
+677 FLOAT[80] 5680cb02e85e
+679 FLOAT[80,56,3,3] 1d2450026404
+681 FLOAT[80] c21d0b61e0c0
+683 FLOAT[80,80,3,3] 271f818ef2ce
+685 FLOAT[80] 17a639acc7aa
+687 FLOAT[80,80,3,3] b30a4edd716c
+689 FLOAT[80] 37eb2e76aaa9
+691 FLOAT[80,56,3,3] 5d9825d16ca7
+693 FLOAT[80] bd4d6970c3ed
+695 FLOAT[80,80,3,3] d8e6af95fb17
+697 FLOAT[80] 15cffedaee68
+699 FLOAT[80,80,3,3] a7ed9648034c
+701 FLOAT[80] 6af31c002fd3
+Conv_164_b FLOAT[30] 5b146c8dfe17
+Conv_164_flat INT64[3] 9d186d7eddbd
+Conv_164_split INT64[3] 0afded624a27
+Conv_164_w FLOAT[30,80,3,3] 8a94b8c6a216
+Conv_187_b FLOAT[30] 807392f6030b
+Conv_187_w FLOAT[30,80,3,3] f57eb673214c
+Conv_210_b FLOAT[30] aac068cf46fb
+Conv_210_w FLOAT[30,80,3,3] 9fb3f909e004
+Resize_124_scales_2x FLOAT[4] aa5b3e0ef3e8
+const_cast FLOAT[] 9fd754fbfd83
+neck.downsample_convs.0.conv.bias FLOAT[56] 362cba94fc11
+neck.downsample_convs.0.conv.weight FLOAT[56,56,3,3] ca1d5d182a26
+neck.downsample_convs.1.conv.bias FLOAT[56] 208e8bcedf34
+neck.downsample_convs.1.conv.weight FLOAT[56,56,3,3] 5782c2d7b059
+neck.fpn_convs.0.conv.bias FLOAT[56] a3016a31cd79
+neck.fpn_convs.0.conv.weight FLOAT[56,56,3,3] 678e333c2b0a
+neck.fpn_convs.1.conv.weight FLOAT[56,56,3,3] da798a12ecef
+neck.fpn_convs.2.conv.weight FLOAT[56,56,3,3] 06c3f797dfee
+neck.lateral_convs.0.conv.bias FLOAT[56] 7f58bbf8e785
+neck.lateral_convs.0.conv.weight FLOAT[56,88,1,1] 8818473981b2
+neck.lateral_convs.1.conv.bias FLOAT[56] 09ab84a13c31
+neck.lateral_convs.1.conv.weight FLOAT[56,88,1,1] fddffd3df309
+neck.lateral_convs.2.conv.bias FLOAT[56] b42ecbd012f2
+neck.lateral_convs.2.conv.weight FLOAT[56,224,1,1] e2eae3617131
+neck.pafpn_convs.0.conv.bias FLOAT[56] bdcabb21bf54
+neck.pafpn_convs.0.conv.weight FLOAT[56,56,3,3] ceb9f4efb353
+neck.pafpn_convs.1.conv.bias FLOAT[56] 5cece3e3482c
+neck.pafpn_convs.1.conv.weight FLOAT[56,56,3,3] b5aec048309c

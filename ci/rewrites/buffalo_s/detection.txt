@@ -1,0 +1,34 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    115 nodes, weights 83ef10ccbfa6
+    _ConstantFpnScale x2 79c514cc
+    _MergeScrfdHeads x15 666c488a
+    unstamped x98 49b28c04
+
+MIGraphXExecutionProvider
+    unchanged
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    unchanged
+
+RKNPU height=640 width=640
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    113 nodes, weights c210c45356b4
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    _ConstantFpnScale x2 79c514cc
+    _MergeScrfdHeads x15 666c488a
+    unstamped x96 d06d462d
+
+TensorrtExecutionProvider
+    unchanged

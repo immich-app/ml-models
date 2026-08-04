@@ -1,0 +1,512 @@
+<
+   ir_version: 6,
+   opset_import: ["" : 19],
+   producer_name: "pytorch"
+>
+"torch-jit-export" (uint8[batch,112,112,3] image) => (float[batch,512] embedding) 
+   <
+      float[batch,64,112,112] "479"
+      float[batch,64,112,112] "480"
+      float[batch,64,112,112] "484"
+      float[batch,64,56,56] "489"
+      float[batch,64,56,56] "490"
+      float[batch,64,56,56] "494"
+      float[batch,64,56,56] "497"
+      float[batch,64,56,56] "498"
+      float[batch,64,56,56] "502"
+      float[batch,64,56,56] "505"
+      float[batch,64,56,56] "506"
+      float[batch,128,56,56] "510"
+      float[batch,128,28,28] "515"
+      float[batch,128,28,28] "516"
+      float[batch,128,28,28] "520"
+      float[batch,128,28,28] "523"
+      float[batch,128,28,28] "524"
+      float[batch,128,28,28] "528"
+      float[batch,128,28,28] "531"
+      float[batch,128,28,28] "532"
+      float[batch,128,28,28] "536"
+      float[batch,128,28,28] "539"
+      float[batch,128,28,28] "540"
+      float[batch,256,28,28] "544"
+      float[batch,256,14,14] "549"
+      float[batch,256,14,14] "550"
+      float[batch,256,14,14] "554"
+      float[batch,256,14,14] "557"
+      float[batch,256,14,14] "558"
+      float[batch,256,14,14] "562"
+      float[batch,256,14,14] "565"
+      float[batch,256,14,14] "566"
+      float[batch,256,14,14] "570"
+      float[batch,256,14,14] "573"
+      float[batch,256,14,14] "574"
+      float[batch,256,14,14] "578"
+      float[batch,256,14,14] "581"
+      float[batch,256,14,14] "582"
+      float[batch,256,14,14] "586"
+      float[batch,256,14,14] "589"
+      float[batch,256,14,14] "590"
+      float[batch,256,14,14] "594"
+      float[batch,256,14,14] "597"
+      float[batch,256,14,14] "598"
+      float[batch,256,14,14] "602"
+      float[batch,256,14,14] "605"
+      float[batch,256,14,14] "606"
+      float[batch,256,14,14] "610"
+      float[batch,256,14,14] "613"
+      float[batch,256,14,14] "614"
+      float[batch,256,14,14] "618"
+      float[batch,256,14,14] "621"
+      float[batch,256,14,14] "622"
+      float[batch,256,14,14] "626"
+      float[batch,256,14,14] "629"
+      float[batch,256,14,14] "630"
+      float[batch,256,14,14] "634"
+      float[batch,256,14,14] "637"
+      float[batch,256,14,14] "638"
+      float[batch,256,14,14] "642"
+      float[batch,256,14,14] "645"
+      float[batch,256,14,14] "646"
+      float[batch,256,14,14] "650"
+      float[batch,256,14,14] "653"
+      float[batch,256,14,14] "654"
+      float[batch,512,14,14] "658"
+      float[batch,512,7,7] "663"
+      float[batch,512,7,7] "664"
+      float[batch,512,7,7] "668"
+      float[batch,512,7,7] "671"
+      float[batch,512,7,7] "672"
+      float[batch,512,7,7] "676"
+      float[batch,512,7,7] "679"
+      float[batch,512] "683"
+      float[batch,64,112,112] "684"
+      float[batch,64,112,112] "687"
+      float[batch,64,56,56] "690"
+      float[batch,64,56,56] "693"
+      float[batch,64,56,56] "696"
+      float[batch,64,56,56] "699"
+      float[batch,64,56,56] "702"
+      float[batch,64,56,56] "705"
+      float[batch,128,56,56] "708"
+      float[batch,128,28,28] "711"
+      float[batch,128,28,28] "714"
+      float[batch,128,28,28] "717"
+      float[batch,128,28,28] "720"
+      float[batch,128,28,28] "723"
+      float[batch,128,28,28] "726"
+      float[batch,128,28,28] "729"
+      float[batch,128,28,28] "732"
+      float[batch,256,28,28] "735"
+      float[batch,256,14,14] "738"
+      float[batch,256,14,14] "741"
+      float[batch,256,14,14] "744"
+      float[batch,256,14,14] "747"
+      float[batch,256,14,14] "750"
+      float[batch,256,14,14] "753"
+      float[batch,256,14,14] "756"
+      float[batch,256,14,14] "759"
+      float[batch,256,14,14] "762"
+      float[batch,256,14,14] "765"
+      float[batch,256,14,14] "768"
+      float[batch,256,14,14] "771"
+      float[batch,256,14,14] "774"
+      float[batch,256,14,14] "777"
+      float[batch,256,14,14] "780"
+      float[batch,256,14,14] "783"
+      float[batch,256,14,14] "786"
+      float[batch,256,14,14] "789"
+      float[batch,256,14,14] "792"
+      float[batch,256,14,14] "795"
+      float[batch,256,14,14] "798"
+      float[batch,256,14,14] "801"
+      float[batch,256,14,14] "804"
+      float[batch,256,14,14] "807"
+      float[batch,256,14,14] "810"
+      float[batch,256,14,14] "813"
+      float[batch,256,14,14] "816"
+      float[batch,256,14,14] "819"
+      float[batch,512,14,14] "822"
+      float[batch,512,7,7] "825"
+      float[batch,512,7,7] "828"
+      float[batch,512,7,7] "831"
+      float[batch,512,7,7] "834"
+      float[batch,512,7,7] "837"
+      float[batch,512,7,7] "840"
+      float[batch,3,112,112] "input.1"
+      float[batch,1] norm
+      float[batch,112,112,3] tmp
+      float[batch,3,112,112] tmp_0
+      float[batch,1] tmp_0_2
+      float[batch,25088] val_0
+   >
+{
+   [n0] tmp = Cast <to: int = 1> (image)
+   [n1] tmp_0 = Transpose <perm: ints = [0, 3, 1, 2]> (tmp)
+   [n4] "input.1" = Sub (tmp_0, const_cast)
+   [Conv_0] "684" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("input.1", "685", "686")
+   [PRelu_1] "479" = PRelu ("684", "843")
+   [BatchNormalization_2] "480" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("479", "layer1.0.bn1.weight", "layer1.0.bn1.bias", "layer1.0.bn1.running_mean", "layer1.0.bn1.running_var")
+   [Conv_3] "687" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("480", "688", "689")
+   [PRelu_4] "484" = PRelu ("687", "844")
+   [Conv_5] "690" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("484", "691", "692")
+   [Conv_6] "693" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("479", "694", "695")
+   [Add_7] "489" = Add ("690", "693")
+   [BatchNormalization_8] "490" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("489", "layer1.1.bn1.weight", "layer1.1.bn1.bias", "layer1.1.bn1.running_mean", "layer1.1.bn1.running_var")
+   [Conv_9] "696" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("490", "697", "698")
+   [PRelu_10] "494" = PRelu ("696", "845")
+   [Conv_11] "699" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("494", "700", "701")
+   [Add_12] "497" = Add ("699", "489")
+   [BatchNormalization_13] "498" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("497", "layer1.2.bn1.weight", "layer1.2.bn1.bias", "layer1.2.bn1.running_mean", "layer1.2.bn1.running_var")
+   [Conv_14] "702" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("498", "703", "704")
+   [PRelu_15] "502" = PRelu ("702", "846")
+   [Conv_16] "705" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("502", "706", "707")
+   [Add_17] "505" = Add ("705", "497")
+   [BatchNormalization_18] "506" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("505", "layer2.0.bn1.weight", "layer2.0.bn1.bias", "layer2.0.bn1.running_mean", "layer2.0.bn1.running_var")
+   [Conv_19] "708" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("506", "709", "710")
+   [PRelu_20] "510" = PRelu ("708", "847")
+   [Conv_21] "711" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("510", "712", "713")
+   [Conv_22] "714" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("505", "715", "716")
+   [Add_23] "515" = Add ("711", "714")
+   [BatchNormalization_24] "516" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("515", "layer2.1.bn1.weight", "layer2.1.bn1.bias", "layer2.1.bn1.running_mean", "layer2.1.bn1.running_var")
+   [Conv_25] "717" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("516", "718", "719")
+   [PRelu_26] "520" = PRelu ("717", "848")
+   [Conv_27] "720" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("520", "721", "722")
+   [Add_28] "523" = Add ("720", "515")
+   [BatchNormalization_29] "524" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("523", "layer2.2.bn1.weight", "layer2.2.bn1.bias", "layer2.2.bn1.running_mean", "layer2.2.bn1.running_var")
+   [Conv_30] "723" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("524", "724", "725")
+   [PRelu_31] "528" = PRelu ("723", "849")
+   [Conv_32] "726" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("528", "727", "728")
+   [Add_33] "531" = Add ("726", "523")
+   [BatchNormalization_34] "532" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("531", "layer2.3.bn1.weight", "layer2.3.bn1.bias", "layer2.3.bn1.running_mean", "layer2.3.bn1.running_var")
+   [Conv_35] "729" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("532", "730", "731")
+   [PRelu_36] "536" = PRelu ("729", "850")
+   [Conv_37] "732" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("536", "733", "734")
+   [Add_38] "539" = Add ("732", "531")
+   [BatchNormalization_39] "540" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("539", "layer3.0.bn1.weight", "layer3.0.bn1.bias", "layer3.0.bn1.running_mean", "layer3.0.bn1.running_var")
+   [Conv_40] "735" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("540", "736", "737")
+   [PRelu_41] "544" = PRelu ("735", "851")
+   [Conv_42] "738" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("544", "739", "740")
+   [Conv_43] "741" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("539", "742", "743")
+   [Add_44] "549" = Add ("738", "741")
+   [BatchNormalization_45] "550" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("549", "layer3.1.bn1.weight", "layer3.1.bn1.bias", "layer3.1.bn1.running_mean", "layer3.1.bn1.running_var")
+   [Conv_46] "744" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("550", "745", "746")
+   [PRelu_47] "554" = PRelu ("744", "852")
+   [Conv_48] "747" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("554", "748", "749")
+   [Add_49] "557" = Add ("747", "549")
+   [BatchNormalization_50] "558" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("557", "layer3.2.bn1.weight", "layer3.2.bn1.bias", "layer3.2.bn1.running_mean", "layer3.2.bn1.running_var")
+   [Conv_51] "750" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("558", "751", "752")
+   [PRelu_52] "562" = PRelu ("750", "853")
+   [Conv_53] "753" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("562", "754", "755")
+   [Add_54] "565" = Add ("753", "557")
+   [BatchNormalization_55] "566" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("565", "layer3.3.bn1.weight", "layer3.3.bn1.bias", "layer3.3.bn1.running_mean", "layer3.3.bn1.running_var")
+   [Conv_56] "756" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("566", "757", "758")
+   [PRelu_57] "570" = PRelu ("756", "854")
+   [Conv_58] "759" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("570", "760", "761")
+   [Add_59] "573" = Add ("759", "565")
+   [BatchNormalization_60] "574" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("573", "layer3.4.bn1.weight", "layer3.4.bn1.bias", "layer3.4.bn1.running_mean", "layer3.4.bn1.running_var")
+   [Conv_61] "762" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("574", "763", "764")
+   [PRelu_62] "578" = PRelu ("762", "855")
+   [Conv_63] "765" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("578", "766", "767")
+   [Add_64] "581" = Add ("765", "573")
+   [BatchNormalization_65] "582" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("581", "layer3.5.bn1.weight", "layer3.5.bn1.bias", "layer3.5.bn1.running_mean", "layer3.5.bn1.running_var")
+   [Conv_66] "768" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("582", "769", "770")
+   [PRelu_67] "586" = PRelu ("768", "856")
+   [Conv_68] "771" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("586", "772", "773")
+   [Add_69] "589" = Add ("771", "581")
+   [BatchNormalization_70] "590" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("589", "layer3.6.bn1.weight", "layer3.6.bn1.bias", "layer3.6.bn1.running_mean", "layer3.6.bn1.running_var")
+   [Conv_71] "774" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("590", "775", "776")
+   [PRelu_72] "594" = PRelu ("774", "857")
+   [Conv_73] "777" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("594", "778", "779")
+   [Add_74] "597" = Add ("777", "589")
+   [BatchNormalization_75] "598" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("597", "layer3.7.bn1.weight", "layer3.7.bn1.bias", "layer3.7.bn1.running_mean", "layer3.7.bn1.running_var")
+   [Conv_76] "780" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("598", "781", "782")
+   [PRelu_77] "602" = PRelu ("780", "858")
+   [Conv_78] "783" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("602", "784", "785")
+   [Add_79] "605" = Add ("783", "597")
+   [BatchNormalization_80] "606" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("605", "layer3.8.bn1.weight", "layer3.8.bn1.bias", "layer3.8.bn1.running_mean", "layer3.8.bn1.running_var")
+   [Conv_81] "786" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("606", "787", "788")
+   [PRelu_82] "610" = PRelu ("786", "859")
+   [Conv_83] "789" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("610", "790", "791")
+   [Add_84] "613" = Add ("789", "605")
+   [BatchNormalization_85] "614" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("613", "layer3.9.bn1.weight", "layer3.9.bn1.bias", "layer3.9.bn1.running_mean", "layer3.9.bn1.running_var")
+   [Conv_86] "792" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("614", "793", "794")
+   [PRelu_87] "618" = PRelu ("792", "860")
+   [Conv_88] "795" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("618", "796", "797")
+   [Add_89] "621" = Add ("795", "613")
+   [BatchNormalization_90] "622" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("621", "layer3.10.bn1.weight", "layer3.10.bn1.bias", "layer3.10.bn1.running_mean", "layer3.10.bn1.running_var")
+   [Conv_91] "798" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("622", "799", "800")
+   [PRelu_92] "626" = PRelu ("798", "861")
+   [Conv_93] "801" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("626", "802", "803")
+   [Add_94] "629" = Add ("801", "621")
+   [BatchNormalization_95] "630" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("629", "layer3.11.bn1.weight", "layer3.11.bn1.bias", "layer3.11.bn1.running_mean", "layer3.11.bn1.running_var")
+   [Conv_96] "804" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("630", "805", "806")
+   [PRelu_97] "634" = PRelu ("804", "862")
+   [Conv_98] "807" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("634", "808", "809")
+   [Add_99] "637" = Add ("807", "629")
+   [BatchNormalization_100] "638" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("637", "layer3.12.bn1.weight", "layer3.12.bn1.bias", "layer3.12.bn1.running_mean", "layer3.12.bn1.running_var")
+   [Conv_101] "810" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("638", "811", "812")
+   [PRelu_102] "642" = PRelu ("810", "863")
+   [Conv_103] "813" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("642", "814", "815")
+   [Add_104] "645" = Add ("813", "637")
+   [BatchNormalization_105] "646" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("645", "layer3.13.bn1.weight", "layer3.13.bn1.bias", "layer3.13.bn1.running_mean", "layer3.13.bn1.running_var")
+   [Conv_106] "816" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("646", "817", "818")
+   [PRelu_107] "650" = PRelu ("816", "864")
+   [Conv_108] "819" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("650", "820", "821")
+   [Add_109] "653" = Add ("819", "645")
+   [BatchNormalization_110] "654" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("653", "layer4.0.bn1.weight", "layer4.0.bn1.bias", "layer4.0.bn1.running_mean", "layer4.0.bn1.running_var")
+   [Conv_111] "822" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("654", "823", "824")
+   [PRelu_112] "658" = PRelu ("822", "865")
+   [Conv_113] "825" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("658", "826", "827")
+   [Conv_114] "828" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("653", "829", "830")
+   [Add_115] "663" = Add ("825", "828")
+   [BatchNormalization_116] "664" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("663", "layer4.1.bn1.weight", "layer4.1.bn1.bias", "layer4.1.bn1.running_mean", "layer4.1.bn1.running_var")
+   [Conv_117] "831" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("664", "832", "833")
+   [PRelu_118] "668" = PRelu ("831", "866")
+   [Conv_119] "834" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("668", "835", "836")
+   [Add_120] "671" = Add ("834", "663")
+   [BatchNormalization_121] "672" = BatchNormalization <epsilon: float = 1e-05, momentum: float = 0.9> ("671", "layer4.2.bn1.weight", "layer4.2.bn1.bias", "layer4.2.bn1.running_mean", "layer4.2.bn1.running_var")
+   [Conv_122] "837" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("672", "838", "839")
+   [PRelu_123] "676" = PRelu ("837", "867")
+   [Conv_124] "840" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("676", "841", "842")
+   [Add_125] "679" = Add ("840", "671")
+   val_0 = Reshape ("679", "679/shape")
+   "683" = Gemm <alpha: float = 1, beta: float = 1, transB: int = 1> (val_0, "fc.weight_bn", "fc.bias_bn")
+   [n1_2] norm = ReduceL2 <keepdims: int = 1> ("683", int64_1_1d)
+   [n3_2] tmp_0_2 = Clip (norm, tmp_2)
+   [n4_2] embedding = Div ("683", tmp_0_2)
+}
+
+weights:
+679/shape INT64[2] 59caaa9e380f
+685 FLOAT[64,3,3,3] 4dfac001f853
+686 FLOAT[64] 7e7ab1e3e9d3
+688 FLOAT[64,64,3,3] 5ed0f7bd79d8
+689 FLOAT[64] 90ea84a5d3de
+691 FLOAT[64,64,3,3] 654a475e8da3
+692 FLOAT[64] 64016a6dd7a6
+694 FLOAT[64,64,1,1] b08401bb8714
+695 FLOAT[64] 2ade2606160e
+697 FLOAT[64,64,3,3] bfaf41a94abe
+698 FLOAT[64] 1e35a74e4db7
+700 FLOAT[64,64,3,3] 5fa271b18986
+701 FLOAT[64] c341219ff4cf
+703 FLOAT[64,64,3,3] 3370e6f012fd
+704 FLOAT[64] dfe09844fce5
+706 FLOAT[64,64,3,3] db4f1491c1f4
+707 FLOAT[64] 990fc214b0e7
+709 FLOAT[128,64,3,3] 5a29f6af5a75
+710 FLOAT[128] 5b499c7abc22
+712 FLOAT[128,128,3,3] 237cd6ea6801
+713 FLOAT[128] 12c8c2c228a1
+715 FLOAT[128,64,1,1] 3941e1c3a380
+716 FLOAT[128] 7346dc26446f
+718 FLOAT[128,128,3,3] cfcc37f8da7d
+719 FLOAT[128] d20a6cdd3d81
+721 FLOAT[128,128,3,3] e83fa5bfe8db
+722 FLOAT[128] 385b853edfa6
+724 FLOAT[128,128,3,3] 0e8ecb2a259d
+725 FLOAT[128] 219c247d26be
+727 FLOAT[128,128,3,3] 5537cb641fd3
+728 FLOAT[128] 07c70cce797a
+730 FLOAT[128,128,3,3] ba25a9c7648e
+731 FLOAT[128] 27438d84a245
+733 FLOAT[128,128,3,3] 9cb796958697
+734 FLOAT[128] deb731b32389
+736 FLOAT[256,128,3,3] 90c8b2b127ed
+737 FLOAT[256] bbb79f6f473a
+739 FLOAT[256,256,3,3] a4649fd19cf1
+740 FLOAT[256] 5010cf685248
+742 FLOAT[256,128,1,1] 452b24d0716f
+743 FLOAT[256] ebb88b8ff2a6
+745 FLOAT[256,256,3,3] cd0eefbaaa14
+746 FLOAT[256] 8f0ae6396d7b
+748 FLOAT[256,256,3,3] c6bdfeb9322f
+749 FLOAT[256] ad4932a4f6b6
+751 FLOAT[256,256,3,3] 882b4d952b9b
+752 FLOAT[256] 7ec13b7296e2
+754 FLOAT[256,256,3,3] 2028a119d36c
+755 FLOAT[256] aa6e5256b25d
+757 FLOAT[256,256,3,3] 71844ef6671c
+758 FLOAT[256] f6b605a996a5
+760 FLOAT[256,256,3,3] 77e2845a140f
+761 FLOAT[256] a6ea39cff30e
+763 FLOAT[256,256,3,3] b31c0fd6a04b
+764 FLOAT[256] d754af2b8a4d
+766 FLOAT[256,256,3,3] 68d6d20ae40f
+767 FLOAT[256] 7a2ee28acf02
+769 FLOAT[256,256,3,3] 45c6fa47e7d2
+770 FLOAT[256] 95c02e75f311
+772 FLOAT[256,256,3,3] 29327b3e3cd0
+773 FLOAT[256] 152f68f37056
+775 FLOAT[256,256,3,3] e7984c275606
+776 FLOAT[256] 61a5fa66850b
+778 FLOAT[256,256,3,3] 8c6b6d321ad6
+779 FLOAT[256] 10b9876e3374
+781 FLOAT[256,256,3,3] fcf6b0cb685e
+782 FLOAT[256] 1d0e59e2367a
+784 FLOAT[256,256,3,3] 45aa8f19e523
+785 FLOAT[256] d66144606e59
+787 FLOAT[256,256,3,3] 10c164509d37
+788 FLOAT[256] d67c63f985de
+790 FLOAT[256,256,3,3] 9ea401caf418
+791 FLOAT[256] 3006f9132ec5
+793 FLOAT[256,256,3,3] d69b9b1db122
+794 FLOAT[256] b91b715adc20
+796 FLOAT[256,256,3,3] cb4e6dabbb44
+797 FLOAT[256] bac5adf28a31
+799 FLOAT[256,256,3,3] dfd2cd864008
+800 FLOAT[256] 92869ad0d4d2
+802 FLOAT[256,256,3,3] 261d15a2c4b1
+803 FLOAT[256] 6e7bcaaeb068
+805 FLOAT[256,256,3,3] 198abc248ce7
+806 FLOAT[256] 0b25de3947b6
+808 FLOAT[256,256,3,3] b2389ab918b3
+809 FLOAT[256] 2b005ce8061a
+811 FLOAT[256,256,3,3] bfda8826972f
+812 FLOAT[256] e5307a4cc4e6
+814 FLOAT[256,256,3,3] aceae9fbe54a
+815 FLOAT[256] 9d12bf0d024b
+817 FLOAT[256,256,3,3] 0121efaf1219
+818 FLOAT[256] 3f60f9b0a053
+820 FLOAT[256,256,3,3] 4df78ada1c9a
+821 FLOAT[256] 3e643298e0a6
+823 FLOAT[512,256,3,3] 6a3d3c41eff7
+824 FLOAT[512] 8b9600a9528b
+826 FLOAT[512,512,3,3] e64534a22256
+827 FLOAT[512] 4b29d3189d11
+829 FLOAT[512,256,1,1] a9672f97eff9
+830 FLOAT[512] 34619a3c9abb
+832 FLOAT[512,512,3,3] d969174174ca
+833 FLOAT[512] c00f12472025
+835 FLOAT[512,512,3,3] 878ec2cca08f
+836 FLOAT[512] 0e6d2692a4d2
+838 FLOAT[512,512,3,3] 5e83a1fe7c2e
+839 FLOAT[512] 25891230ee88
+841 FLOAT[512,512,3,3] 0cc0588f7907
+842 FLOAT[512] 920a02d10a1d
+843 FLOAT[64,1,1] 35acbb24abdb
+844 FLOAT[64,1,1] 9d5028d714e5
+845 FLOAT[64,1,1] 560e5fb39329
+846 FLOAT[64,1,1] 2a42395a7098
+847 FLOAT[128,1,1] 401edde6b2e6
+848 FLOAT[128,1,1] 8d1313a3bdfd
+849 FLOAT[128,1,1] fab9dea4ddcb
+850 FLOAT[128,1,1] 9800c8fe0389
+851 FLOAT[256,1,1] 04ac03c2b797
+852 FLOAT[256,1,1] 8d523b6495b9
+853 FLOAT[256,1,1] 4351739439e6
+854 FLOAT[256,1,1] 53319ec1a917
+855 FLOAT[256,1,1] 55825a2d8b26
+856 FLOAT[256,1,1] a358e1f0e87d
+857 FLOAT[256,1,1] 5f36d7ff8ce4
+858 FLOAT[256,1,1] 35ac9b2b4e6a
+859 FLOAT[256,1,1] 7f40bd424ecf
+860 FLOAT[256,1,1] 66002fb0177c
+861 FLOAT[256,1,1] fec376932656
+862 FLOAT[256,1,1] c5a619531025
+863 FLOAT[256,1,1] 1fe58f0693b2
+864 FLOAT[256,1,1] d8e0f6be817c
+865 FLOAT[512,1,1] 2f1bb9aab5e7
+866 FLOAT[512,1,1] 0e1856f1e57a
+867 FLOAT[512,1,1] 9c7bdbb434c5
+const_cast FLOAT[] 9fd754fbfd83
+fc.bias_bn FLOAT[512] 1bddf1ce92d3
+fc.weight_bn FLOAT[512,25088] be6a95d494cf
+int64_1_1d INT64[1] 7c9fa136d441
+layer1.0.bn1.bias FLOAT[64] 36fa7e8e555d
+layer1.0.bn1.running_mean FLOAT[64] f10a62a2aae3
+layer1.0.bn1.running_var FLOAT[64] a4547ff1424b
+layer1.0.bn1.weight FLOAT[64] b6ff6e050bf0
+layer1.1.bn1.bias FLOAT[64] 9d6c56537c4e
+layer1.1.bn1.running_mean FLOAT[64] c0fceccfa773
+layer1.1.bn1.running_var FLOAT[64] 384f3e921b35
+layer1.1.bn1.weight FLOAT[64] 52ee7c22b2e7
+layer1.2.bn1.bias FLOAT[64] 0f633d92855e
+layer1.2.bn1.running_mean FLOAT[64] c3b0bf999320
+layer1.2.bn1.running_var FLOAT[64] 06546807f93b
+layer1.2.bn1.weight FLOAT[64] 17ea6a586a61
+layer2.0.bn1.bias FLOAT[64] b7f198b00e60
+layer2.0.bn1.running_mean FLOAT[64] 7b5ca1ef799d
+layer2.0.bn1.running_var FLOAT[64] b7388f2ce87e
+layer2.0.bn1.weight FLOAT[64] 26dde73e8c04
+layer2.1.bn1.bias FLOAT[128] bee92bae42fd
+layer2.1.bn1.running_mean FLOAT[128] d908f3fd7086
+layer2.1.bn1.running_var FLOAT[128] 7033a7358f07
+layer2.1.bn1.weight FLOAT[128] f3c00bfc56d5
+layer2.2.bn1.bias FLOAT[128] 4ba5d91cf65b
+layer2.2.bn1.running_mean FLOAT[128] a289357bfd0c
+layer2.2.bn1.running_var FLOAT[128] e1a721e29d61
+layer2.2.bn1.weight FLOAT[128] a0b3fc7a71c7
+layer2.3.bn1.bias FLOAT[128] 2dd026db84fc
+layer2.3.bn1.running_mean FLOAT[128] a094061cebf0
+layer2.3.bn1.running_var FLOAT[128] df8806295554
+layer2.3.bn1.weight FLOAT[128] bd79f478023c
+layer3.0.bn1.bias FLOAT[128] cddb7688c6ac
+layer3.0.bn1.running_mean FLOAT[128] d88fd1780f64
+layer3.0.bn1.running_var FLOAT[128] c2ef5e20bcf4
+layer3.0.bn1.weight FLOAT[128] 33122d79275d
+layer3.1.bn1.bias FLOAT[256] e1da03348dd9
+layer3.1.bn1.running_mean FLOAT[256] 4dbf82b35952
+layer3.1.bn1.running_var FLOAT[256] 335a1a60cc6b
+layer3.1.bn1.weight FLOAT[256] c6fe2c491bce
+layer3.10.bn1.bias FLOAT[256] 276cf5ce36d6
+layer3.10.bn1.running_mean FLOAT[256] 3287f2799b7d
+layer3.10.bn1.running_var FLOAT[256] ac0e12496216
+layer3.10.bn1.weight FLOAT[256] 5abfaddcb90e
+layer3.11.bn1.bias FLOAT[256] 85c0597aefb4
+layer3.11.bn1.running_mean FLOAT[256] ef626a820ebe
+layer3.11.bn1.running_var FLOAT[256] ebe78ba7390d
+layer3.11.bn1.weight FLOAT[256] 919602cf2fef
+layer3.12.bn1.bias FLOAT[256] ca47dec7d0dc
+layer3.12.bn1.running_mean FLOAT[256] bb1c7170cafd
+layer3.12.bn1.running_var FLOAT[256] d52016f5be5c
+layer3.12.bn1.weight FLOAT[256] f7ed50a960ae
+layer3.13.bn1.bias FLOAT[256] 8e763c05ed7e
+layer3.13.bn1.running_mean FLOAT[256] 30edd210ec6a
+layer3.13.bn1.running_var FLOAT[256] e5ec602ca7d7
+layer3.13.bn1.weight FLOAT[256] 54f9b6eefb74
+layer3.2.bn1.bias FLOAT[256] 0f38eb399151
+layer3.2.bn1.running_mean FLOAT[256] 8c9328b24375
+layer3.2.bn1.running_var FLOAT[256] db67682af107
+layer3.2.bn1.weight FLOAT[256] a1210d8ca874
+layer3.3.bn1.bias FLOAT[256] 477fdf99d088
+layer3.3.bn1.running_mean FLOAT[256] bcc75761f6bb
+layer3.3.bn1.running_var FLOAT[256] c29e5a983acc
+layer3.3.bn1.weight FLOAT[256] 8d1950f35000
+layer3.4.bn1.bias FLOAT[256] f58114928c11
+layer3.4.bn1.running_mean FLOAT[256] b6f088802aa7
+layer3.4.bn1.running_var FLOAT[256] edfd1f7eccb0
+layer3.4.bn1.weight FLOAT[256] 949ff6f66a5f
+layer3.5.bn1.bias FLOAT[256] 822c6fe07559
+layer3.5.bn1.running_mean FLOAT[256] ec276d6c01c8
+layer3.5.bn1.running_var FLOAT[256] 5193ebbca52a
+layer3.5.bn1.weight FLOAT[256] 50be32c8642e
+layer3.6.bn1.bias FLOAT[256] 795f00e30030
+layer3.6.bn1.running_mean FLOAT[256] b355df0001e9
+layer3.6.bn1.running_var FLOAT[256] f2cd8d849d32
+layer3.6.bn1.weight FLOAT[256] ddcb1ccdd167
+layer3.7.bn1.bias FLOAT[256] c8a641810ffa
+layer3.7.bn1.running_mean FLOAT[256] fb60165dd533
+layer3.7.bn1.running_var FLOAT[256] 8e1f27f06b76
+layer3.7.bn1.weight FLOAT[256] fcee618ab48d
+layer3.8.bn1.bias FLOAT[256] 274043abebdf
+layer3.8.bn1.running_mean FLOAT[256] f8951ee351b6
+layer3.8.bn1.running_var FLOAT[256] bd7f76e5ad14
+layer3.8.bn1.weight FLOAT[256] fa86d6b594e2
+layer3.9.bn1.bias FLOAT[256] db9a9bc045af
+layer3.9.bn1.running_mean FLOAT[256] 6192e29b2830
+layer3.9.bn1.running_var FLOAT[256] a53743322e55
+layer3.9.bn1.weight FLOAT[256] 443781f53c23
+layer4.0.bn1.bias FLOAT[256] ebfb6df267dd
+layer4.0.bn1.running_mean FLOAT[256] 2a0b52429698
+layer4.0.bn1.running_var FLOAT[256] 1de650667cf6
+layer4.0.bn1.weight FLOAT[256] 5478179ae7d5
+layer4.1.bn1.bias FLOAT[512] 58be413791fb
+layer4.1.bn1.running_mean FLOAT[512] d9cdc963ebc6
+layer4.1.bn1.running_var FLOAT[512] 23879f9b9c33
+layer4.1.bn1.weight FLOAT[512] c75b7c828e98
+layer4.2.bn1.bias FLOAT[512] a9a24bf2ae4d
+layer4.2.bn1.running_mean FLOAT[512] 601368e81792
+layer4.2.bn1.running_var FLOAT[512] e934cc4b0483
+layer4.2.bn1.weight FLOAT[512] 672a9490a0ed
+tmp_2 FLOAT[] 5ce7b4825ebc

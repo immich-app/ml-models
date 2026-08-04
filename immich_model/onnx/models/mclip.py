@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -64,7 +63,7 @@ def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int
     import torch
     from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
 
-    output_path = Path(output_path)
+    from .openclip import _export_encoder
 
     def forward(self: MultilingualCLIP, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         embs = self.transformer(input_ids, attention_mask)[0]
@@ -72,22 +71,10 @@ def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int
         embs = self.LinearTransformation(embs)
         return torch.nn.functional.normalize(embs, dim=-1)
 
-    # unfortunately need to monkeypatch for tracing to work here
-    # otherwise it hits the 2GiB protobuf serialization limit
+    # monkeypatch for tracing
     MultilingualCLIP.forward = forward
 
-    args = (torch.ones(1, 77, dtype=torch.int32), torch.ones(1, 77, dtype=torch.int32))
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
-        torch.onnx.export(
-            model,
-            args,
-            output_path.as_posix(),
-            input_names=["input_ids", "attention_mask"],
-            output_names=["text_embedding"],
-            opset_version=opset_version,
-            # dynamic_axes={
-            #     "input_ids": {0: "batch_size", 1: "sequence_length"},
-            #     "attention_mask": {0: "batch_size", 1: "sequence_length"},
-            # },
-        )
+    # batch of 2 so torch.export doesn't specialize the size-1 batch into reshape targets
+    args = (torch.ones(2, 77, dtype=torch.int32), torch.ones(2, 77, dtype=torch.int32))
+    inputs = ["input_ids", "attention_mask"]
+    _export_encoder(model, args, output_path, opset_version, inputs, ["text_embedding"], tag="mclip textual")

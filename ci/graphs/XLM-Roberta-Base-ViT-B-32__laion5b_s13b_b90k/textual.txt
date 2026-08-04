@@ -1,0 +1,655 @@
+<
+   ir_version: 10,
+   opset_import: ["" : 23],
+   producer_name: "pytorch"
+>
+main_graph (int32[batch,77] text) => (float[batch,512] text_embedding) 
+   <
+      float[batch,77,768] add_1050
+      float[batch,77,768] add_1075
+      float[batch,77,768] add_1148
+      float[batch,77,768] add_1173
+      float[batch,77,768] add_1246
+      float[batch,77,768] add_1271
+      float[batch,77,768] add_168
+      float[batch,77,768] add_193
+      float[batch,77,768] add_266
+      float[batch,77,768] add_291
+      float[batch,77,768] add_364
+      float[batch,77,768] add_389
+      float[batch,77,768] add_46
+      float[batch,77,768] add_462
+      float[batch,77,768] add_487
+      float[batch,77,768] add_55
+      float[batch,77,768] add_560
+      float[batch,77,768] add_585
+      float[batch,77,768] add_658
+      float[batch,77,768] add_683
+      float[batch,77,768] add_756
+      float[batch,77,768] add_781
+      float[batch,77,768] add_854
+      float[batch,77,768] add_879
+      float[batch,77,768] add_952
+      float[batch,77,768] add_977
+      float[batch,1,1,77] bitwise_and_1_f
+      float[batch,1] clamp_min
+      float[batch,768] div
+      float[batch,77,768] embedding
+      float[batch,77,3072] gelu
+      float[batch,77,3072] gelu_1
+      float[batch,77,3072] gelu_10
+      float[batch,77,3072] gelu_11
+      float[batch,640] gelu_12
+      float[batch,77,3072] gelu_2
+      float[batch,77,3072] gelu_3
+      float[batch,77,3072] gelu_4
+      float[batch,77,3072] gelu_5
+      float[batch,77,3072] gelu_6
+      float[batch,77,3072] gelu_7
+      float[batch,77,3072] gelu_8
+      float[batch,77,3072] gelu_9
+      float[batch,77,768] layer_norm
+      float[batch,77,768] layer_norm_1
+      float[batch,77,768] layer_norm_10
+      float[batch,77,768] layer_norm_11
+      float[batch,77,768] layer_norm_12
+      float[batch,77,768] layer_norm_13
+      float[batch,77,768] layer_norm_14
+      float[batch,77,768] layer_norm_15
+      float[batch,77,768] layer_norm_16
+      float[batch,77,768] layer_norm_17
+      float[batch,77,768] layer_norm_18
+      float[batch,77,768] layer_norm_19
+      float[batch,77,768] layer_norm_2
+      float[batch,77,768] layer_norm_20
+      float[batch,77,768] layer_norm_21
+      float[batch,77,768] layer_norm_22
+      float[batch,77,768] layer_norm_23
+      float[batch,77,768] layer_norm_24
+      float[batch,77,768] layer_norm_3
+      float[batch,77,768] layer_norm_4
+      float[batch,77,768] layer_norm_5
+      float[batch,77,768] layer_norm_6
+      float[batch,77,768] layer_norm_7
+      float[batch,77,768] layer_norm_8
+      float[batch,77,768] layer_norm_9
+      float[batch,1] linalg_vector_norm
+      float[batch,77,768] linear
+      float[batch,77,768] linear_1
+      float[batch,77,3072] linear_10
+      float[batch,77,768] linear_11
+      float[batch,77,768] linear_12
+      float[batch,77,768] linear_13
+      float[batch,77,768] linear_15
+      float[batch,77,3072] linear_16
+      float[batch,77,768] linear_17
+      float[batch,77,768] linear_18
+      float[batch,77,768] linear_19
+      float[batch,77,768] linear_21
+      float[batch,77,3072] linear_22
+      float[batch,77,768] linear_23
+      float[batch,77,768] linear_24
+      float[batch,77,768] linear_25
+      float[batch,77,768] linear_27
+      float[batch,77,3072] linear_28
+      float[batch,77,768] linear_29
+      float[batch,77,768] linear_3
+      float[batch,77,768] linear_30
+      float[batch,77,768] linear_31
+      float[batch,77,768] linear_33
+      float[batch,77,3072] linear_34
+      float[batch,77,768] linear_35
+      float[batch,77,768] linear_36
+      float[batch,77,768] linear_37
+      float[batch,77,768] linear_39
+      float[batch,77,3072] linear_4
+      float[batch,77,3072] linear_40
+      float[batch,77,768] linear_41
+      float[batch,77,768] linear_42
+      float[batch,77,768] linear_43
+      float[batch,77,768] linear_45
+      float[batch,77,3072] linear_46
+      float[batch,77,768] linear_47
+      float[batch,77,768] linear_48
+      float[batch,77,768] linear_49
+      float[batch,77,768] linear_5
+      float[batch,77,768] linear_51
+      float[batch,77,3072] linear_52
+      float[batch,77,768] linear_53
+      float[batch,77,768] linear_54
+      float[batch,77,768] linear_55
+      float[batch,77,768] linear_57
+      float[batch,77,3072] linear_58
+      float[batch,77,768] linear_59
+      float[batch,77,768] linear_6
+      float[batch,77,768] linear_60
+      float[batch,77,768] linear_61
+      float[batch,77,768] linear_63
+      float[batch,77,3072] linear_64
+      float[batch,77,768] linear_65
+      float[batch,77,768] linear_66
+      float[batch,77,768] linear_67
+      float[batch,77,768] linear_69
+      float[batch,77,768] linear_7
+      float[batch,77,3072] linear_70
+      float[batch,77,768] linear_71
+      float[batch,640] linear_72
+      float[batch,512] linear_73
+      float[batch,77,768] linear_9
+      float[batch,77,768] mul_637
+      float[batch,77,768] scaled_dot_product_attention
+      float[batch,77,768] scaled_dot_product_attention_1
+      float[batch,77,768] scaled_dot_product_attention_10
+      float[batch,77,768] scaled_dot_product_attention_11
+      float[batch,77,768] scaled_dot_product_attention_2
+      float[batch,77,768] scaled_dot_product_attention_3
+      float[batch,77,768] scaled_dot_product_attention_4
+      float[batch,77,768] scaled_dot_product_attention_5
+      float[batch,77,768] scaled_dot_product_attention_6
+      float[batch,77,768] scaled_dot_product_attention_7
+      float[batch,77,768] scaled_dot_product_attention_8
+      float[batch,77,768] scaled_dot_product_attention_9
+      float[batch,768] sum_1
+      float[batch,1] sum_2_f
+      float[batch,77] text_keep
+      float[batch,77,1] unsqueeze_12_f
+      float[batch,77,768] val_100
+      float[batch,77,768] val_101
+      float[batch,77,768] val_102
+      float[batch,77,768] val_103
+      float[batch,77,3072] val_104
+      float[batch,77,768] val_105
+      float[batch,77,768] val_106
+      float[batch,77,768] val_107
+      float[batch,77,768] val_108
+      float[batch,77,768] val_109
+      float[batch,77,3072] val_110
+      float[batch,77,768] val_111
+      float[batch,77,768] val_112
+      float[batch,77,768] val_113
+      float[batch,77,768] val_114
+      float[batch,77,768] val_115
+      float[batch,77,3072] val_116
+      float[batch,77,768] val_117
+      float[batch,77,768] val_118
+      float[batch,77,768] val_119
+      float[batch,77,768] val_120
+      float[batch,77,768] val_121
+      float[batch,77,3072] val_122
+      float[batch,77,768] val_123
+      float[batch,77,768] val_124
+      float[batch,77,768] val_125
+      float[batch,77,768] val_126
+      float[batch,77,768] val_127
+      float[batch,77,3072] val_128
+      float[batch,77,768] val_129
+      float[batch,77,768] val_130
+      float[batch,77,768] val_131
+      float[batch,77,768] val_132
+      float[batch,77,768] val_133
+      float[batch,77,3072] val_134
+      float[batch,77,768] val_135
+      float[batch,77,768] val_136
+      float[batch,77,768] val_137
+      float[batch,77,768] val_138
+      float[batch,77,768] val_139
+      float[batch,77,3072] val_140
+      float[batch,77,768] val_141
+      float[batch,77,768] val_142
+      float[batch,77,768] val_143
+      float[batch,77,768] val_144
+      float[batch,77,768] val_145
+      float[batch,77,3072] val_146
+      float[batch,77,768] val_147
+      float[batch,1,1,77] val_52_f
+      float[batch,1,1,77] val_52_f_bias
+      float[batch,1,77,77] val_52_f_mask
+      float[batch,77,768] val_76
+      float[batch,77,768] val_77
+      float[batch,77,768] val_78
+      float[batch,77,768] val_79
+      float[batch,77,3072] val_80
+      float[batch,77,768] val_81
+      float[batch,77,768] val_82
+      float[batch,77,768] val_83
+      float[batch,77,768] val_84
+      float[batch,77,768] val_85
+      float[batch,77,3072] val_86
+      float[batch,77,768] val_87
+      float[batch,77,768] val_88
+      float[batch,77,768] val_89
+      float[batch,77,768] val_90
+      float[batch,77,768] val_91
+      float[batch,77,3072] val_92
+      float[batch,77,768] val_93
+      float[batch,77,768] val_94
+      float[batch,77,768] val_95
+      float[batch,77,768] val_96
+      float[batch,77,768] val_97
+      float[batch,77,3072] val_98
+      float[batch,77,768] val_99
+   >
+{
+   val_75 = Gather <axis: int = 0> ("text.transformer.embeddings.word_embeddings.weight_fp16", text)
+   embedding = Cast <to: int = 1> (val_75)
+   add_46 = Add (embedding, embedding_1)
+   add_55 = Add (add_46, embedding_2)
+   [node_layer_norm] layer_norm = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_55, "text.transformer.embeddings.LayerNorm.weight", "text.transformer.embeddings.LayerNorm.bias")
+   val_76 = MatMul (layer_norm, val_3)
+   [node_linear] linear = Add (val_76, "text.transformer.encoder.layer.0.attention.self.query.bias")
+   val_77 = MatMul (layer_norm, val_4)
+   linear_1 = Add (val_77, "text.transformer.encoder.layer.0.attention.self.key.bias")
+   val_78 = MatMul (layer_norm, val_5)
+   [pad_keep] text_keep = Gather <axis: int = 0> (text_pad_keep, text)
+   [val_52_f] val_52_f = Unsqueeze (text_keep, text_row_axes)
+   [bitwise_and_1_f] bitwise_and_1_f = Sub (val_52_f, text_one)
+   val_52_f_bias = Mul (bitwise_and_1_f, text_scale)
+   val_52_f_mask = Add (val_52_f_bias, text_q_axis)
+   [node_scaled_dot_product_attention] scaled_dot_product_attention = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear, linear_1, val_78, val_52_f_mask)
+   val_79 = MatMul (scaled_dot_product_attention, val_6)
+   linear_3 = Add (val_79, "text.transformer.encoder.layer.0.attention.output.dense.bias")
+   add_168 = Add (linear_3, layer_norm)
+   layer_norm_1 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_168, "text.transformer.encoder.layer.0.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.0.attention.output.LayerNorm.bias")
+   val_80 = MatMul (layer_norm_1, val_7)
+   linear_4 = Add (val_80, "text.transformer.encoder.layer.0.intermediate.dense.bias")
+   [node_gelu] gelu = Gelu <approximate: string = "none"> (linear_4)
+   val_81 = MatMul (gelu, val_8)
+   linear_5 = Add (val_81, "text.transformer.encoder.layer.0.output.dense.bias")
+   add_193 = Add (linear_5, layer_norm_1)
+   layer_norm_2 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_193, "text.transformer.encoder.layer.0.output.LayerNorm.weight", "text.transformer.encoder.layer.0.output.LayerNorm.bias")
+   val_82 = MatMul (layer_norm_2, val_9)
+   linear_6 = Add (val_82, "text.transformer.encoder.layer.1.attention.self.query.bias")
+   val_83 = MatMul (layer_norm_2, val_10)
+   linear_7 = Add (val_83, "text.transformer.encoder.layer.1.attention.self.key.bias")
+   val_84 = MatMul (layer_norm_2, val_11)
+   scaled_dot_product_attention_1 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_6, linear_7, val_84, val_52_f_mask)
+   val_85 = MatMul (scaled_dot_product_attention_1, val_12)
+   linear_9 = Add (val_85, "text.transformer.encoder.layer.1.attention.output.dense.bias")
+   add_266 = Add (linear_9, layer_norm_2)
+   layer_norm_3 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_266, "text.transformer.encoder.layer.1.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.1.attention.output.LayerNorm.bias")
+   val_86 = MatMul (layer_norm_3, val_13)
+   linear_10 = Add (val_86, "text.transformer.encoder.layer.1.intermediate.dense.bias")
+   gelu_1 = Gelu <approximate: string = "none"> (linear_10)
+   val_87 = MatMul (gelu_1, val_14)
+   linear_11 = Add (val_87, "text.transformer.encoder.layer.1.output.dense.bias")
+   add_291 = Add (linear_11, layer_norm_3)
+   layer_norm_4 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_291, "text.transformer.encoder.layer.1.output.LayerNorm.weight", "text.transformer.encoder.layer.1.output.LayerNorm.bias")
+   val_88 = MatMul (layer_norm_4, val_15)
+   linear_12 = Add (val_88, "text.transformer.encoder.layer.2.attention.self.query.bias")
+   val_89 = MatMul (layer_norm_4, val_16)
+   linear_13 = Add (val_89, "text.transformer.encoder.layer.2.attention.self.key.bias")
+   val_90 = MatMul (layer_norm_4, val_17)
+   scaled_dot_product_attention_2 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_12, linear_13, val_90, val_52_f_mask)
+   val_91 = MatMul (scaled_dot_product_attention_2, val_18)
+   linear_15 = Add (val_91, "text.transformer.encoder.layer.2.attention.output.dense.bias")
+   add_364 = Add (linear_15, layer_norm_4)
+   layer_norm_5 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_364, "text.transformer.encoder.layer.2.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.2.attention.output.LayerNorm.bias")
+   val_92 = MatMul (layer_norm_5, val_19)
+   linear_16 = Add (val_92, "text.transformer.encoder.layer.2.intermediate.dense.bias")
+   gelu_2 = Gelu <approximate: string = "none"> (linear_16)
+   val_93 = MatMul (gelu_2, val_20)
+   linear_17 = Add (val_93, "text.transformer.encoder.layer.2.output.dense.bias")
+   add_389 = Add (linear_17, layer_norm_5)
+   layer_norm_6 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_389, "text.transformer.encoder.layer.2.output.LayerNorm.weight", "text.transformer.encoder.layer.2.output.LayerNorm.bias")
+   val_94 = MatMul (layer_norm_6, val_21)
+   linear_18 = Add (val_94, "text.transformer.encoder.layer.3.attention.self.query.bias")
+   val_95 = MatMul (layer_norm_6, val_22)
+   linear_19 = Add (val_95, "text.transformer.encoder.layer.3.attention.self.key.bias")
+   val_96 = MatMul (layer_norm_6, val_23)
+   scaled_dot_product_attention_3 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_18, linear_19, val_96, val_52_f_mask)
+   val_97 = MatMul (scaled_dot_product_attention_3, val_24)
+   linear_21 = Add (val_97, "text.transformer.encoder.layer.3.attention.output.dense.bias")
+   add_462 = Add (linear_21, layer_norm_6)
+   layer_norm_7 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_462, "text.transformer.encoder.layer.3.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.3.attention.output.LayerNorm.bias")
+   val_98 = MatMul (layer_norm_7, val_25)
+   linear_22 = Add (val_98, "text.transformer.encoder.layer.3.intermediate.dense.bias")
+   gelu_3 = Gelu <approximate: string = "none"> (linear_22)
+   val_99 = MatMul (gelu_3, val_26)
+   linear_23 = Add (val_99, "text.transformer.encoder.layer.3.output.dense.bias")
+   add_487 = Add (linear_23, layer_norm_7)
+   layer_norm_8 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_487, "text.transformer.encoder.layer.3.output.LayerNorm.weight", "text.transformer.encoder.layer.3.output.LayerNorm.bias")
+   val_100 = MatMul (layer_norm_8, val_27)
+   linear_24 = Add (val_100, "text.transformer.encoder.layer.4.attention.self.query.bias")
+   val_101 = MatMul (layer_norm_8, val_28)
+   linear_25 = Add (val_101, "text.transformer.encoder.layer.4.attention.self.key.bias")
+   val_102 = MatMul (layer_norm_8, val_29)
+   scaled_dot_product_attention_4 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_24, linear_25, val_102, val_52_f_mask)
+   val_103 = MatMul (scaled_dot_product_attention_4, val_30)
+   linear_27 = Add (val_103, "text.transformer.encoder.layer.4.attention.output.dense.bias")
+   add_560 = Add (linear_27, layer_norm_8)
+   layer_norm_9 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_560, "text.transformer.encoder.layer.4.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.4.attention.output.LayerNorm.bias")
+   val_104 = MatMul (layer_norm_9, val_31)
+   linear_28 = Add (val_104, "text.transformer.encoder.layer.4.intermediate.dense.bias")
+   gelu_4 = Gelu <approximate: string = "none"> (linear_28)
+   val_105 = MatMul (gelu_4, val_32)
+   linear_29 = Add (val_105, "text.transformer.encoder.layer.4.output.dense.bias")
+   add_585 = Add (linear_29, layer_norm_9)
+   layer_norm_10 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_585, "text.transformer.encoder.layer.4.output.LayerNorm.weight", "text.transformer.encoder.layer.4.output.LayerNorm.bias")
+   val_106 = MatMul (layer_norm_10, val_33)
+   linear_30 = Add (val_106, "text.transformer.encoder.layer.5.attention.self.query.bias")
+   val_107 = MatMul (layer_norm_10, val_34)
+   linear_31 = Add (val_107, "text.transformer.encoder.layer.5.attention.self.key.bias")
+   val_108 = MatMul (layer_norm_10, val_35)
+   scaled_dot_product_attention_5 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_30, linear_31, val_108, val_52_f_mask)
+   val_109 = MatMul (scaled_dot_product_attention_5, val_36)
+   linear_33 = Add (val_109, "text.transformer.encoder.layer.5.attention.output.dense.bias")
+   add_658 = Add (linear_33, layer_norm_10)
+   layer_norm_11 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_658, "text.transformer.encoder.layer.5.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.5.attention.output.LayerNorm.bias")
+   val_110 = MatMul (layer_norm_11, val_37)
+   linear_34 = Add (val_110, "text.transformer.encoder.layer.5.intermediate.dense.bias")
+   gelu_5 = Gelu <approximate: string = "none"> (linear_34)
+   val_111 = MatMul (gelu_5, val_38)
+   linear_35 = Add (val_111, "text.transformer.encoder.layer.5.output.dense.bias")
+   add_683 = Add (linear_35, layer_norm_11)
+   layer_norm_12 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_683, "text.transformer.encoder.layer.5.output.LayerNorm.weight", "text.transformer.encoder.layer.5.output.LayerNorm.bias")
+   val_112 = MatMul (layer_norm_12, val_39)
+   linear_36 = Add (val_112, "text.transformer.encoder.layer.6.attention.self.query.bias")
+   val_113 = MatMul (layer_norm_12, val_40)
+   linear_37 = Add (val_113, "text.transformer.encoder.layer.6.attention.self.key.bias")
+   val_114 = MatMul (layer_norm_12, val_41)
+   scaled_dot_product_attention_6 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_36, linear_37, val_114, val_52_f_mask)
+   val_115 = MatMul (scaled_dot_product_attention_6, val_42)
+   linear_39 = Add (val_115, "text.transformer.encoder.layer.6.attention.output.dense.bias")
+   add_756 = Add (linear_39, layer_norm_12)
+   layer_norm_13 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_756, "text.transformer.encoder.layer.6.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.6.attention.output.LayerNorm.bias")
+   val_116 = MatMul (layer_norm_13, val_43)
+   linear_40 = Add (val_116, "text.transformer.encoder.layer.6.intermediate.dense.bias")
+   gelu_6 = Gelu <approximate: string = "none"> (linear_40)
+   val_117 = MatMul (gelu_6, val_44)
+   linear_41 = Add (val_117, "text.transformer.encoder.layer.6.output.dense.bias")
+   add_781 = Add (linear_41, layer_norm_13)
+   layer_norm_14 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_781, "text.transformer.encoder.layer.6.output.LayerNorm.weight", "text.transformer.encoder.layer.6.output.LayerNorm.bias")
+   val_118 = MatMul (layer_norm_14, val_45)
+   linear_42 = Add (val_118, "text.transformer.encoder.layer.7.attention.self.query.bias")
+   val_119 = MatMul (layer_norm_14, val_46)
+   linear_43 = Add (val_119, "text.transformer.encoder.layer.7.attention.self.key.bias")
+   val_120 = MatMul (layer_norm_14, val_47)
+   scaled_dot_product_attention_7 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_42, linear_43, val_120, val_52_f_mask)
+   val_121 = MatMul (scaled_dot_product_attention_7, val_48)
+   linear_45 = Add (val_121, "text.transformer.encoder.layer.7.attention.output.dense.bias")
+   add_854 = Add (linear_45, layer_norm_14)
+   layer_norm_15 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_854, "text.transformer.encoder.layer.7.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.7.attention.output.LayerNorm.bias")
+   val_122 = MatMul (layer_norm_15, val_49)
+   linear_46 = Add (val_122, "text.transformer.encoder.layer.7.intermediate.dense.bias")
+   gelu_7 = Gelu <approximate: string = "none"> (linear_46)
+   val_123 = MatMul (gelu_7, val_50)
+   linear_47 = Add (val_123, "text.transformer.encoder.layer.7.output.dense.bias")
+   add_879 = Add (linear_47, layer_norm_15)
+   layer_norm_16 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_879, "text.transformer.encoder.layer.7.output.LayerNorm.weight", "text.transformer.encoder.layer.7.output.LayerNorm.bias")
+   val_124 = MatMul (layer_norm_16, val_51)
+   linear_48 = Add (val_124, "text.transformer.encoder.layer.8.attention.self.query.bias")
+   val_125 = MatMul (layer_norm_16, val_52)
+   linear_49 = Add (val_125, "text.transformer.encoder.layer.8.attention.self.key.bias")
+   val_126 = MatMul (layer_norm_16, val_53)
+   scaled_dot_product_attention_8 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_48, linear_49, val_126, val_52_f_mask)
+   val_127 = MatMul (scaled_dot_product_attention_8, val_54)
+   linear_51 = Add (val_127, "text.transformer.encoder.layer.8.attention.output.dense.bias")
+   add_952 = Add (linear_51, layer_norm_16)
+   layer_norm_17 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_952, "text.transformer.encoder.layer.8.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.8.attention.output.LayerNorm.bias")
+   val_128 = MatMul (layer_norm_17, val_55)
+   linear_52 = Add (val_128, "text.transformer.encoder.layer.8.intermediate.dense.bias")
+   gelu_8 = Gelu <approximate: string = "none"> (linear_52)
+   val_129 = MatMul (gelu_8, val_56)
+   linear_53 = Add (val_129, "text.transformer.encoder.layer.8.output.dense.bias")
+   add_977 = Add (linear_53, layer_norm_17)
+   layer_norm_18 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_977, "text.transformer.encoder.layer.8.output.LayerNorm.weight", "text.transformer.encoder.layer.8.output.LayerNorm.bias")
+   val_130 = MatMul (layer_norm_18, val_57)
+   linear_54 = Add (val_130, "text.transformer.encoder.layer.9.attention.self.query.bias")
+   val_131 = MatMul (layer_norm_18, val_58)
+   linear_55 = Add (val_131, "text.transformer.encoder.layer.9.attention.self.key.bias")
+   val_132 = MatMul (layer_norm_18, val_59)
+   scaled_dot_product_attention_9 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_54, linear_55, val_132, val_52_f_mask)
+   val_133 = MatMul (scaled_dot_product_attention_9, val_60)
+   linear_57 = Add (val_133, "text.transformer.encoder.layer.9.attention.output.dense.bias")
+   add_1050 = Add (linear_57, layer_norm_18)
+   layer_norm_19 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1050, "text.transformer.encoder.layer.9.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.9.attention.output.LayerNorm.bias")
+   val_134 = MatMul (layer_norm_19, val_61)
+   linear_58 = Add (val_134, "text.transformer.encoder.layer.9.intermediate.dense.bias")
+   gelu_9 = Gelu <approximate: string = "none"> (linear_58)
+   val_135 = MatMul (gelu_9, val_62)
+   linear_59 = Add (val_135, "text.transformer.encoder.layer.9.output.dense.bias")
+   add_1075 = Add (linear_59, layer_norm_19)
+   layer_norm_20 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1075, "text.transformer.encoder.layer.9.output.LayerNorm.weight", "text.transformer.encoder.layer.9.output.LayerNorm.bias")
+   val_136 = MatMul (layer_norm_20, val_63)
+   linear_60 = Add (val_136, "text.transformer.encoder.layer.10.attention.self.query.bias")
+   val_137 = MatMul (layer_norm_20, val_64)
+   linear_61 = Add (val_137, "text.transformer.encoder.layer.10.attention.self.key.bias")
+   val_138 = MatMul (layer_norm_20, val_65)
+   scaled_dot_product_attention_10 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_60, linear_61, val_138, val_52_f_mask)
+   val_139 = MatMul (scaled_dot_product_attention_10, val_66)
+   linear_63 = Add (val_139, "text.transformer.encoder.layer.10.attention.output.dense.bias")
+   add_1148 = Add (linear_63, layer_norm_20)
+   layer_norm_21 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1148, "text.transformer.encoder.layer.10.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.10.attention.output.LayerNorm.bias")
+   val_140 = MatMul (layer_norm_21, val_67)
+   linear_64 = Add (val_140, "text.transformer.encoder.layer.10.intermediate.dense.bias")
+   gelu_10 = Gelu <approximate: string = "none"> (linear_64)
+   val_141 = MatMul (gelu_10, val_68)
+   linear_65 = Add (val_141, "text.transformer.encoder.layer.10.output.dense.bias")
+   add_1173 = Add (linear_65, layer_norm_21)
+   layer_norm_22 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1173, "text.transformer.encoder.layer.10.output.LayerNorm.weight", "text.transformer.encoder.layer.10.output.LayerNorm.bias")
+   val_142 = MatMul (layer_norm_22, val_69)
+   linear_66 = Add (val_142, "text.transformer.encoder.layer.11.attention.self.query.bias")
+   val_143 = MatMul (layer_norm_22, val_70)
+   linear_67 = Add (val_143, "text.transformer.encoder.layer.11.attention.self.key.bias")
+   val_144 = MatMul (layer_norm_22, val_71)
+   scaled_dot_product_attention_11 = Attention <is_causal: int = 0, kv_num_heads: int = 12, q_num_heads: int = 12, qk_matmul_output_mode: int = 0, scale: float = 0.125, softcap: float = 0> (linear_66, linear_67, val_144, val_52_f_mask)
+   val_145 = MatMul (scaled_dot_product_attention_11, val_72)
+   linear_69 = Add (val_145, "text.transformer.encoder.layer.11.attention.output.dense.bias")
+   add_1246 = Add (linear_69, layer_norm_22)
+   layer_norm_23 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1246, "text.transformer.encoder.layer.11.attention.output.LayerNorm.weight", "text.transformer.encoder.layer.11.attention.output.LayerNorm.bias")
+   val_146 = MatMul (layer_norm_23, val_73)
+   linear_70 = Add (val_146, "text.transformer.encoder.layer.11.intermediate.dense.bias")
+   gelu_11 = Gelu <approximate: string = "none"> (linear_70)
+   val_147 = MatMul (gelu_11, val_74)
+   linear_71 = Add (val_147, "text.transformer.encoder.layer.11.output.dense.bias")
+   add_1271 = Add (linear_71, layer_norm_23)
+   layer_norm_24 = LayerNormalization <axis: int = -1, epsilon: float = 1e-05, stash_type: int = 1> (add_1271, "text.transformer.encoder.layer.11.output.LayerNorm.weight", "text.transformer.encoder.layer.11.output.LayerNorm.bias")
+   [unsqueeze_12_f] unsqueeze_12_f = Unsqueeze (text_keep, val_0)
+   mul_637 = Mul (layer_norm_24, unsqueeze_12_f)
+   sum_1 = ReduceSum <keepdims: int = 0, noop_with_empty_axes: int = 0> (mul_637, val_2)
+   [sum_2_f] sum_2_f = ReduceSum <keepdims: int = 1, noop_with_empty_axes: int = 0> (text_keep, val_0)
+   [node_div] div = Div (sum_1, sum_2_f)
+   linear_72 = Gemm <alpha: float = 1, beta: float = 1, transA: int = 0, transB: int = 1> (div, "text.proj.0.weight")
+   gelu_12 = Gelu <approximate: string = "none"> (linear_72)
+   linear_73 = Gemm <alpha: float = 1, beta: float = 1, transA: int = 0, transB: int = 1> (gelu_12, "text.proj.2.weight")
+   [node_linalg_vector_norm] linalg_vector_norm = ReduceL2 <keepdims: int = 1, noop_with_empty_axes: int = 0> (linear_73, val_0)
+   [node_clamp_min] clamp_min = Clip (linalg_vector_norm, val_1)
+   text_embedding = Div (linear_73, clamp_min)
+}
+
+weights:
+embedding_1 FLOAT[1,1,768] 8d5002bda41b
+embedding_2 FLOAT[1,77,768] 1b573ff43046
+text.proj.0.weight FLOAT[640,768] cabe040773ae
+text.proj.2.weight FLOAT[512,640] b8c96d7b7594
+text.transformer.embeddings.LayerNorm.bias FLOAT[768] 7aa8493f5748
+text.transformer.embeddings.LayerNorm.weight FLOAT[768] e3484ddfbe97
+text.transformer.embeddings.word_embeddings.weight_fp16 FLOAT16[250002,768] ce7361b2bb3b
+text.transformer.encoder.layer.0.attention.output.LayerNorm.bias FLOAT[768] 6c1f00023e78
+text.transformer.encoder.layer.0.attention.output.LayerNorm.weight FLOAT[768] 3c49bb0f3c9d
+text.transformer.encoder.layer.0.attention.output.dense.bias FLOAT[768] 7137778e0978
+text.transformer.encoder.layer.0.attention.self.key.bias FLOAT[768] 4aab87f22564
+text.transformer.encoder.layer.0.attention.self.query.bias FLOAT[768] a84445d8480a
+text.transformer.encoder.layer.0.intermediate.dense.bias FLOAT[3072] 9da3e3649daf
+text.transformer.encoder.layer.0.output.LayerNorm.bias FLOAT[768] cafae2962776
+text.transformer.encoder.layer.0.output.LayerNorm.weight FLOAT[768] d11a0fb1b847
+text.transformer.encoder.layer.0.output.dense.bias FLOAT[768] 370414783792
+text.transformer.encoder.layer.1.attention.output.LayerNorm.bias FLOAT[768] c8f6589bc230
+text.transformer.encoder.layer.1.attention.output.LayerNorm.weight FLOAT[768] 98f73b4376fa
+text.transformer.encoder.layer.1.attention.output.dense.bias FLOAT[768] 9bc46d7712e9
+text.transformer.encoder.layer.1.attention.self.key.bias FLOAT[768] 05b2c6e3fd08
+text.transformer.encoder.layer.1.attention.self.query.bias FLOAT[768] ab94ec1480f6
+text.transformer.encoder.layer.1.intermediate.dense.bias FLOAT[3072] c0d5ad96864c
+text.transformer.encoder.layer.1.output.LayerNorm.bias FLOAT[768] b60f9aa22f29
+text.transformer.encoder.layer.1.output.LayerNorm.weight FLOAT[768] b25073b524f7
+text.transformer.encoder.layer.1.output.dense.bias FLOAT[768] e8e07c8af046
+text.transformer.encoder.layer.10.attention.output.LayerNorm.bias FLOAT[768] 8f89637cf6e1
+text.transformer.encoder.layer.10.attention.output.LayerNorm.weight FLOAT[768] 776dc70f43e6
+text.transformer.encoder.layer.10.attention.output.dense.bias FLOAT[768] 090e55256bbc
+text.transformer.encoder.layer.10.attention.self.key.bias FLOAT[768] afe030c0f3a9
+text.transformer.encoder.layer.10.attention.self.query.bias FLOAT[768] 545e40447392
+text.transformer.encoder.layer.10.intermediate.dense.bias FLOAT[3072] 5de3ac86f28d
+text.transformer.encoder.layer.10.output.LayerNorm.bias FLOAT[768] 71e94af262a5
+text.transformer.encoder.layer.10.output.LayerNorm.weight FLOAT[768] 59024590e285
+text.transformer.encoder.layer.10.output.dense.bias FLOAT[768] 4d6ad6470a1a
+text.transformer.encoder.layer.11.attention.output.LayerNorm.bias FLOAT[768] 65e4dd579910
+text.transformer.encoder.layer.11.attention.output.LayerNorm.weight FLOAT[768] bad4ce47ea71
+text.transformer.encoder.layer.11.attention.output.dense.bias FLOAT[768] 0d6727468544
+text.transformer.encoder.layer.11.attention.self.key.bias FLOAT[768] cb3fb3b1c0a4
+text.transformer.encoder.layer.11.attention.self.query.bias FLOAT[768] f08fd1cd3a9e
+text.transformer.encoder.layer.11.intermediate.dense.bias FLOAT[3072] c873f405cd66
+text.transformer.encoder.layer.11.output.LayerNorm.bias FLOAT[768] f7c8f3a2efcc
+text.transformer.encoder.layer.11.output.LayerNorm.weight FLOAT[768] 7d3090c89078
+text.transformer.encoder.layer.11.output.dense.bias FLOAT[768] 5590257d4d6b
+text.transformer.encoder.layer.2.attention.output.LayerNorm.bias FLOAT[768] ec40c2442a71
+text.transformer.encoder.layer.2.attention.output.LayerNorm.weight FLOAT[768] c47c930884df
+text.transformer.encoder.layer.2.attention.output.dense.bias FLOAT[768] dd779340e558
+text.transformer.encoder.layer.2.attention.self.key.bias FLOAT[768] be955fdd7c85
+text.transformer.encoder.layer.2.attention.self.query.bias FLOAT[768] 75cc659162d5
+text.transformer.encoder.layer.2.intermediate.dense.bias FLOAT[3072] c0cbdc4f2f85
+text.transformer.encoder.layer.2.output.LayerNorm.bias FLOAT[768] 8eb221d9d763
+text.transformer.encoder.layer.2.output.LayerNorm.weight FLOAT[768] 6cd1fa2fc5c3
+text.transformer.encoder.layer.2.output.dense.bias FLOAT[768] aa361f166bc5
+text.transformer.encoder.layer.3.attention.output.LayerNorm.bias FLOAT[768] c83e9bb65bb8
+text.transformer.encoder.layer.3.attention.output.LayerNorm.weight FLOAT[768] 69bed4061c8b
+text.transformer.encoder.layer.3.attention.output.dense.bias FLOAT[768] aa5bc3f3c9b3
+text.transformer.encoder.layer.3.attention.self.key.bias FLOAT[768] 035b3000332e
+text.transformer.encoder.layer.3.attention.self.query.bias FLOAT[768] 50e7e1494ec3
+text.transformer.encoder.layer.3.intermediate.dense.bias FLOAT[3072] 10882267f05d
+text.transformer.encoder.layer.3.output.LayerNorm.bias FLOAT[768] bfceef57a5b3
+text.transformer.encoder.layer.3.output.LayerNorm.weight FLOAT[768] f1f0a1c5f2ef
+text.transformer.encoder.layer.3.output.dense.bias FLOAT[768] 5a302929a3ec
+text.transformer.encoder.layer.4.attention.output.LayerNorm.bias FLOAT[768] 02b207b22480
+text.transformer.encoder.layer.4.attention.output.LayerNorm.weight FLOAT[768] 4288594a89a1
+text.transformer.encoder.layer.4.attention.output.dense.bias FLOAT[768] 9c79c7980611
+text.transformer.encoder.layer.4.attention.self.key.bias FLOAT[768] f929db9f24cc
+text.transformer.encoder.layer.4.attention.self.query.bias FLOAT[768] a8de239c2401
+text.transformer.encoder.layer.4.intermediate.dense.bias FLOAT[3072] 1d7bc6ec7ab1
+text.transformer.encoder.layer.4.output.LayerNorm.bias FLOAT[768] 459cb136d13d
+text.transformer.encoder.layer.4.output.LayerNorm.weight FLOAT[768] dac9a63d705c
+text.transformer.encoder.layer.4.output.dense.bias FLOAT[768] 811ba744b6c7
+text.transformer.encoder.layer.5.attention.output.LayerNorm.bias FLOAT[768] ddd4748dc0ee
+text.transformer.encoder.layer.5.attention.output.LayerNorm.weight FLOAT[768] 0c21e80a6b58
+text.transformer.encoder.layer.5.attention.output.dense.bias FLOAT[768] 375ab2ee4cde
+text.transformer.encoder.layer.5.attention.self.key.bias FLOAT[768] 2b98c15b312b
+text.transformer.encoder.layer.5.attention.self.query.bias FLOAT[768] c4b4d9045b9c
+text.transformer.encoder.layer.5.intermediate.dense.bias FLOAT[3072] e7aee3d0e16c
+text.transformer.encoder.layer.5.output.LayerNorm.bias FLOAT[768] 40fc45127563
+text.transformer.encoder.layer.5.output.LayerNorm.weight FLOAT[768] 9880d54b5faa
+text.transformer.encoder.layer.5.output.dense.bias FLOAT[768] 6d99a2a9fc14
+text.transformer.encoder.layer.6.attention.output.LayerNorm.bias FLOAT[768] 367cbd53d47c
+text.transformer.encoder.layer.6.attention.output.LayerNorm.weight FLOAT[768] 2d9785024c40
+text.transformer.encoder.layer.6.attention.output.dense.bias FLOAT[768] 023a68354a0e
+text.transformer.encoder.layer.6.attention.self.key.bias FLOAT[768] 09a4bac9bc14
+text.transformer.encoder.layer.6.attention.self.query.bias FLOAT[768] b68d21bf5ddf
+text.transformer.encoder.layer.6.intermediate.dense.bias FLOAT[3072] 600325056fdb
+text.transformer.encoder.layer.6.output.LayerNorm.bias FLOAT[768] 87d62b9cf464
+text.transformer.encoder.layer.6.output.LayerNorm.weight FLOAT[768] d4616eeea87a
+text.transformer.encoder.layer.6.output.dense.bias FLOAT[768] f45170dfd703
+text.transformer.encoder.layer.7.attention.output.LayerNorm.bias FLOAT[768] 6ba320f96f66
+text.transformer.encoder.layer.7.attention.output.LayerNorm.weight FLOAT[768] fb690f92342c
+text.transformer.encoder.layer.7.attention.output.dense.bias FLOAT[768] 9d702df037e5
+text.transformer.encoder.layer.7.attention.self.key.bias FLOAT[768] fb822c00902a
+text.transformer.encoder.layer.7.attention.self.query.bias FLOAT[768] 0df762875df0
+text.transformer.encoder.layer.7.intermediate.dense.bias FLOAT[3072] b3c8411f9ea3
+text.transformer.encoder.layer.7.output.LayerNorm.bias FLOAT[768] a5c4cd9518c6
+text.transformer.encoder.layer.7.output.LayerNorm.weight FLOAT[768] 131c61d4b01b
+text.transformer.encoder.layer.7.output.dense.bias FLOAT[768] 0b397f6b3bae
+text.transformer.encoder.layer.8.attention.output.LayerNorm.bias FLOAT[768] da1cbd70f856
+text.transformer.encoder.layer.8.attention.output.LayerNorm.weight FLOAT[768] 8e3cbcfd8b56
+text.transformer.encoder.layer.8.attention.output.dense.bias FLOAT[768] 3832a331b31b
+text.transformer.encoder.layer.8.attention.self.key.bias FLOAT[768] c8fff53f8dcf
+text.transformer.encoder.layer.8.attention.self.query.bias FLOAT[768] a4cfddf09554
+text.transformer.encoder.layer.8.intermediate.dense.bias FLOAT[3072] 4fe654ece5eb
+text.transformer.encoder.layer.8.output.LayerNorm.bias FLOAT[768] 53156abb2cfd
+text.transformer.encoder.layer.8.output.LayerNorm.weight FLOAT[768] 4052f9b546c2
+text.transformer.encoder.layer.8.output.dense.bias FLOAT[768] 6211f5abc057
+text.transformer.encoder.layer.9.attention.output.LayerNorm.bias FLOAT[768] 8174a587744e
+text.transformer.encoder.layer.9.attention.output.LayerNorm.weight FLOAT[768] 42d9d92b2ec0
+text.transformer.encoder.layer.9.attention.output.dense.bias FLOAT[768] ef25a80da8e3
+text.transformer.encoder.layer.9.attention.self.key.bias FLOAT[768] 8f56fc49b517
+text.transformer.encoder.layer.9.attention.self.query.bias FLOAT[768] 27efb4f714f0
+text.transformer.encoder.layer.9.intermediate.dense.bias FLOAT[3072] 62de7ce02087
+text.transformer.encoder.layer.9.output.LayerNorm.bias FLOAT[768] 97a5eb8bcad6
+text.transformer.encoder.layer.9.output.LayerNorm.weight FLOAT[768] 7b75e0262bc3
+text.transformer.encoder.layer.9.output.dense.bias FLOAT[768] 9024e9a0ce61
+text_one FLOAT[] e00e5eb94441
+text_pad_keep FLOAT[250002] 49e563d9ce8a
+text_q_axis FLOAT[77,1] 9575b2125169
+text_row_axes INT64[2] 0c730b69905c
+text_scale FLOAT[] e401200e5808
+val_0 INT64[1] 12a3ae445661
+val_1 FLOAT[] 6708d9be4956
+val_10 FLOAT[768,768] a881056d920e
+val_11 FLOAT[768,768] 19648d0de9eb
+val_12 FLOAT[768,768] fd2f77290d15
+val_13 FLOAT[768,3072] dc9e18ebf02a
+val_14 FLOAT[3072,768] 21b2102f0346
+val_15 FLOAT[768,768] 59e8873c77e4
+val_16 FLOAT[768,768] 0eca54d3ed73
+val_17 FLOAT[768,768] 0bc637305c62
+val_18 FLOAT[768,768] 4b4d14a3f6ea
+val_19 FLOAT[768,3072] 23f14d958106
+val_2 INT64[1] 7c9fa136d441
+val_20 FLOAT[3072,768] 62217f4d9783
+val_21 FLOAT[768,768] 70824d0e9301
+val_22 FLOAT[768,768] 1cb9d4e51d2c
+val_23 FLOAT[768,768] 4043dc77aa35
+val_24 FLOAT[768,768] 2b74dccbbef5
+val_25 FLOAT[768,3072] 115fe386137b
+val_26 FLOAT[3072,768] 668db0c65e17
+val_27 FLOAT[768,768] bc66c7cbd9f2
+val_28 FLOAT[768,768] dd307b797e1d
+val_29 FLOAT[768,768] a51138e2e1ca
+val_3 FLOAT[768,768] b366b138bbfc
+val_30 FLOAT[768,768] 3994c406b567
+val_31 FLOAT[768,3072] 75507184a551
+val_32 FLOAT[3072,768] 6f2414180f29
+val_33 FLOAT[768,768] 9965dd6e147c
+val_34 FLOAT[768,768] 507bcb26c2cd
+val_35 FLOAT[768,768] 6be317e85110
+val_36 FLOAT[768,768] 6ae2c2e5e683
+val_37 FLOAT[768,3072] 02a001ab85c9
+val_38 FLOAT[3072,768] dc5ea195208b
+val_39 FLOAT[768,768] d8b4a07d0a13
+val_4 FLOAT[768,768] 1c7bb0056b53
+val_40 FLOAT[768,768] 92a414478730
+val_41 FLOAT[768,768] 4c234172c95c
+val_42 FLOAT[768,768] 3e20a78d0fa8
+val_43 FLOAT[768,3072] 53eaba22626e
+val_44 FLOAT[3072,768] 345f9d28486d
+val_45 FLOAT[768,768] d6947760864d
+val_46 FLOAT[768,768] d4f7ee8edf6d
+val_47 FLOAT[768,768] 81b298669224
+val_48 FLOAT[768,768] 64d066280455
+val_49 FLOAT[768,3072] 9d4838b4be0d
+val_5 FLOAT[768,768] 0499d18928bd
+val_50 FLOAT[3072,768] 8d67c15fff90
+val_51 FLOAT[768,768] 5d823994ecf8
+val_52 FLOAT[768,768] f3a7800a14f8
+val_53 FLOAT[768,768] 180452512c9a
+val_54 FLOAT[768,768] f990d2ceb56a
+val_55 FLOAT[768,3072] 18df0e76c7b2
+val_56 FLOAT[3072,768] 89a8ea842010
+val_57 FLOAT[768,768] 375ef6f06012
+val_58 FLOAT[768,768] ebf8d1f71808
+val_59 FLOAT[768,768] 14880546f5cd
+val_6 FLOAT[768,768] 32e5450083e2
+val_60 FLOAT[768,768] 21e4ef59b66d
+val_61 FLOAT[768,3072] 833bd4b8a8f2
+val_62 FLOAT[3072,768] f497a6e0fec3
+val_63 FLOAT[768,768] d8ba4c69d5fa
+val_64 FLOAT[768,768] 6d1b73d4ac1c
+val_65 FLOAT[768,768] 9016db6af709
+val_66 FLOAT[768,768] 88c7672c021b
+val_67 FLOAT[768,3072] ab8360e18e6d
+val_68 FLOAT[3072,768] 8df7b310f434
+val_69 FLOAT[768,768] 021e70290d4d
+val_7 FLOAT[768,3072] ee66876ca4ce
+val_70 FLOAT[768,768] 17b82a587a81
+val_71 FLOAT[768,768] 390cf747b494
+val_72 FLOAT[768,768] b7a5a157978d
+val_73 FLOAT[768,3072] cc44925c2ab8
+val_74 FLOAT[3072,768] 96fcd5afcc67
+val_8 FLOAT[3072,768] 629a9ae04512
+val_9 FLOAT[768,768] 5c4e6a2832af

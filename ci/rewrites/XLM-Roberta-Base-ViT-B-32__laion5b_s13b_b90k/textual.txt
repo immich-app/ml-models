@@ -1,0 +1,123 @@
+CPUExecutionProvider
+    -25 Add
+    -25 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +25 SkipLayerNormalization epsilon=9.999999747378752e-06
+    200 nodes, weights 01143cf6114a
+    FuseSkipLayerNorm x25 815c3e4f
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x173 08def56e
+
+CUDAExecutionProvider
+    -25 Add
+    -25 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +25 SkipLayerNormalization epsilon=9.999999747378752e-06
+    200 nodes, weights 01143cf6114a
+    FuseSkipLayerNorm x25 815c3e4f
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x173 08def56e
+
+CoreMLExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +13 Mul
+    +12 Add
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    383 nodes, weights 08a7d1e12d0d
+    DecomposeAttention x168 2c9d3f06
+    DecomposeReduceL2 x3 2cb421eb
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x210 63c9931c
+
+MIGraphXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    +11 Add
+    -1 ReduceSum keepdims=0 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1 noop_with_empty_axes=0
+    +1 Squeeze
+    +1 Unsqueeze
+    382 nodes, weights a1b75ec2d395
+    DecomposeAttention x156 33fadf3c
+    ElideMaskQueryAxis, DecomposeAttention, DecomposeAttention x12 95ec0977
+    KeepdimsMeanPool x5 b2882cba
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x207 eccbe561
+
+NvTensorRTRTXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    381 nodes, weights 08a7d1e12d0d
+    DecomposeAttention x168 2c9d3f06
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x211 0bbbaabf
+
+OpenVINOExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    381 nodes, weights 08a7d1e12d0d
+    DecomposeAttention x168 2c9d3f06
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x211 0bbbaabf
+
+RKNPU static
+    +85 Add
+    +84 MatMul
+    +72 Slice
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +38 Mul
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    +1 Abs
+    +1 Cast to=1
+    +1 Clip
+    -1 Gather axis=0
+    +1 Sub
+    628 nodes, weights 2870d69c40bd
+    DecomposeAttention x168 2c9d3f06
+    DecomposeGelu x65 e9a2402d
+    FloatifyPadKeep x4 1087ed68
+    SplitLargeReduction x204 cf3960a5
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x185 55f325b7
+
+TensorrtExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=0 kv_num_heads=12 q_num_heads=12 qk_matmul_output_mode=0 scale=0.125 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    381 nodes, weights 08a7d1e12d0d
+    DecomposeAttention x168 2c9d3f06
+    _Fp16TokenEmbedding x2 1482f3ef
+    unstamped x211 0bbbaabf

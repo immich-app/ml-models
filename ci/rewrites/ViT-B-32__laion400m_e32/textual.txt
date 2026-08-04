@@ -1,0 +1,129 @@
+CPUExecutionProvider
+    -24 Add
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    170 nodes, weights b75061684688
+    FuseSkipLayerNorm x23 43fd47b1
+    FuseSkipLayerNorm, _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 cec5f0c2
+    _EotOneHotSelect x3 5dd15e84
+    _FlipCausalAttention x12 bf5bc373
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x129 36592ea1
+
+CUDAExecutionProvider
+    -24 Add
+    -24 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +24 SkipLayerNormalization epsilon=9.999999747378752e-06
+    170 nodes, weights b75061684688
+    FuseSkipLayerNorm x23 43fd47b1
+    FuseSkipLayerNorm, _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 cec5f0c2
+    _EotOneHotSelect x3 5dd15e84
+    _FlipCausalAttention x12 bf5bc373
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x129 36592ea1
+
+CoreMLExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +13 Mul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
+    +1 ReduceSum keepdims=1
+    +1 Sqrt
+    352 nodes, weights 987802cd348f
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    DecomposeReduceL2 x3 f3571c6d
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x175 7054727f
+
+MIGraphXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    350 nodes, weights 987802cd348f
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x176 ed882776
+
+NvTensorRTRTXExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    350 nodes, weights 987802cd348f
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x176 ed882776
+
+OpenVINOExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    350 nodes, weights 987802cd348f
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x176 ed882776
+
+RKNPU static
+    +60 Add
+    +60 MatMul
+    +48 Reshape
+    +48 Slice
+    +48 Transpose perm=(0, 2, 1, 3)
+    +36 Mul
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Div
+    +12 Erf
+    -12 Gelu approximate=none
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    518 nodes, weights 03cab1f43c50
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    DecomposeGelu x60 55e0b8fd
+    SplitLargeReduction x132 8d307a1d
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x152 112ed7cc
+
+TensorrtExecutionProvider
+    +48 Reshape
+    +48 Transpose perm=(0, 2, 1, 3)
+    +24 MatMul
+    +12 Add
+    -12 Attention is_causal=1 kv_num_heads=8 q_num_heads=8 qk_matmul_output_mode=0 softcap=0.0
+    +12 Mul
+    +12 Softmax axis=-1
+    +12 Transpose perm=(0, 1, 3, 2)
+    350 nodes, weights 987802cd348f
+    DecomposeAttention, _FlipCausalAttention x168 06d4787f
+    _EotOneHotSelect x3 b8d02656
+    _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
+    _Fp16TokenEmbedding x2 777a3503
+    unstamped x176 ed882776
