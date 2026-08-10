@@ -134,8 +134,34 @@ class SplitLargeReduction(RewriteRuleClassBase):
             return result.fail("reduction input has no static rank")
         return result
 
+    @staticmethod
+    def _rows(tensor: ir.TensorProtocol, lo: int, hi: int, name: str) -> ir.TensorProtocol:
+        """Rows [lo, hi) of a 2-D weight: a VIEW of the parent's own bytes where the parent provably
+        stores exactly its own elements contiguously on disk, and a copy otherwise. Every condition is
+        read off this tensor rather than assumed of the graph -- a sub-byte dtype has no whole-byte row,
+        and a parent whose extent is not its element count is storing something this cannot address."""
+        columns = int(tensor.shape[1])
+        itemsize = tensor.dtype.itemsize
+        stride = columns * int(itemsize)
+        if (
+            isinstance(tensor, ir.ExternalTensor)
+            and tensor.offset is not None
+            and float(itemsize).is_integer()
+            and tensor.length == int(tensor.shape[0]) * stride
+        ):
+            return ir.ExternalTensor(
+                location=tensor.location,
+                offset=tensor.offset + lo * stride,
+                length=(hi - lo) * stride,
+                dtype=tensor.dtype,
+                shape=ir.Shape((hi - lo, columns)),
+                name=name,
+                base_dir=tensor.base_dir,
+            )
+        return ir.tensor(np.ascontiguousarray(tensor.numpy()[lo:hi]), name=name)
+
     def rewrite(self, op: Any, x: Any, w: Any, reduction: Any) -> Any:
-        weight = w.const_value.numpy()
+        weight = w.const_value
         c_in = int(weight.shape[0])
         splits = -(-c_in * self._elem // self._subtile)
         axis = len(x.shape) - 1
@@ -151,7 +177,7 @@ class SplitLargeReduction(RewriteRuleClassBase):
                     op.Constant(value=ir.tensor(np.array([hi], np.int64))),
                     op.Constant(value=ir.tensor(np.array([axis], np.int64))),
                 ),
-                op.initializer(ir.tensor(np.ascontiguousarray(weight[lo:hi])), name=f"{base}_split{i}"),
+                op.initializer(self._rows(weight, lo, hi, f"{base}_split{i}"), name=f"{base}_split{i}"),
             )
             total = piece if total is None else op.Add(total, piece)
         return total
@@ -161,7 +187,8 @@ class RawCtcLogitsPass(ir.passes.InPlacePass):
     """Retire the greedy-CTC head and emit raw logits in the NPU's own ``[batch, classes, seq]`` layout,
     leaving the argmax to the host: `Exp` has no NPU kernel, and `convert_exmatmul_to_conv` emits that
     layout, so ``[batch, seq, classes]`` would add a de-tiling transpose the runtime runs on the CPU too.
-    No `Softmax` goes back: RKNPU's `exSoftmax13` flips characters over a charset-wide class axis."""
+    No `Softmax` goes back: `exSoftmax13` is exact to 8192 classes on C and wrong beyond, and the toolkit
+    puts it on the NPU at any size."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         graph = model.graph

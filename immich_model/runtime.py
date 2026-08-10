@@ -26,6 +26,7 @@ from .onnx.lowering import (
     NchwImageInputPass,
     PatchEmbedToMatMulPass,
     SymmetrizeConvPadsPass,
+    UnpackScrfdHeads,
 )
 from .rknn._onnx import (
     FloatifyNotEqual,
@@ -132,6 +133,17 @@ REGISTRY = (
         transform=SymmetrizeConvPadsPass(),
     ),
     Rewrite(
+        # never the NVIDIA backends, where it is 2.6-11.4% worse: a middle-axis Split costs 2.3x a last-axis one
+        # at the same element count, and the 15 extra dispatches are not free either
+        name="unpack_scrfd_heads",
+        gates={
+            "CoreMLExecutionProvider": "a CoreML transpose lowering that costs the same over the packed head "
+            "channels as over three narrow branches",
+            RKNPU: "an RKNPU that places the head's row flatten on the NPU rather than the host",
+        },
+        transform=RewritePass([UnpackScrfdHeads.rule()]),
+    ),
+    Rewrite(
         name="greedy_ctc_topk",
         gates={
             "CUDAExecutionProvider": "a cuDNN bump that fixes reduce_tensor occupancy",
@@ -228,7 +240,7 @@ REGISTRY = (
     Rewrite(
         name="raw_ctc_logits",
         gates={
-            RKNPU: "an RKNPU Exp kernel, which is the whole reason the softmax denominator cannot stay",
+            RKNPU: "an exSoftmax13 correct past 8192 classes on C, where the toolkit places it at any size",
         },
         transform=RawCtcLogitsPass(),
     ),
@@ -274,6 +286,18 @@ REGISTRY = (
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 1536-byte weight tile",
         },
         transform=RewritePass([SplitLargeReduction.rule()]),
+    ),
+    Rewrite(
+        # Its own row rather than a target added above: the two thresholds are independently derived and a
+        # shared one would read as canonical. 7168 is the ANE's band top MEASURED on real towers -- fc2 at
+        # K=3584 loses 5.7% split, K=4096 gains 17.1% -- and 4096 lands on the 1024-wide chunk the GEMM
+        # sweep peaks at. Only the MLP's fc2 is deep enough to qualify; every projection sits at the width.
+        name="split_deep_reduction",
+        gates={
+            "CoreMLExecutionProvider": "an ANE whose matmul throughput stops falling away past a 3584-deep "
+            "contraction, or a shipped tower whose fc2 is narrower than that",
+        },
+        transform=RewritePass([SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]),
     ),
     Rewrite(
         name="pin_opset",

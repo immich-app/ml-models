@@ -15,6 +15,10 @@ _MIN_PATCH_STRIDE = 8
 _CTC_CLASS_AXIS = 2
 _POOL_SEQ_AXIS = 1
 
+# the exporter's merged SCRFD head, restated: it packs the channel axis anchor-major, 2 anchors of (cls, box, kps)
+_SCRFD_ANCHORS_PER_CELL = 2
+_SCRFD_HEAD_CHANNELS = (1, 4, 10)
+
 
 class FoldConstantGatherElements(RewriteRuleClassBase):
     """GatherElements(broadcast(const_row), const_indices) -> the gathered constant. Retires the XLM-R token-type
@@ -958,3 +962,37 @@ def _asymmetric_pad_count(model: ir.Model) -> int:
         pads = list(node.attributes.get_ints("pads", [0] * 2 * len(kernel)))
         stuck += pads[: len(pads) // 2] != pads[len(pads) // 2 :]
     return stuck
+
+
+class UnpackScrfdHeads(RewriteRuleClassBase):
+    """Cut the merged SCRFD head's three branches apart while the channels are still an axis: [B,A*C,H,W] ->
+    [B,A,C,HW] is a free view of the exporter's anchor-major pack, and each branch flattens itself to rows. Exact,
+    the row index staying (h*W+w)*A+a. Gated rather than exported because it trades one wide Transpose for three
+    narrow ones plus 15 dispatches, which the accelerators it ships to do not charge for and the GPUs do."""
+
+    def pattern(self, op: Any, x: Any, flat: Any, sizes: Any) -> Any:
+        rows = op.Reshape(op.Transpose(x, perm=[0, 2, 3, 1]), flat)
+        return op.Split(rows, sizes, axis=2, _outputs=3)
+
+    def check(self, context: Any, x: Any, flat: Any, sizes: Any) -> MatchResult:
+        result = MatchResult()
+        cell = sum(_SCRFD_HEAD_CHANNELS)
+        if _const_ints(sizes) != list(_SCRFD_HEAD_CHANNELS):
+            return result.fail("the Split does not cut a SCRFD head's cls/box/kps channels")
+        if _const_ints(flat) != [0, -1, cell]:
+            return result.fail("the Reshape does not flatten the head to per-anchor rows")
+        dims = x.shape
+        if dims is None or len(dims) != 4 or dims[1] != _SCRFD_ANCHORS_PER_CELL * cell:
+            return result.fail("the head conv does not emit a whole cell of anchor-major head channels")
+        return result
+
+    def rewrite(self, op: Any, x: Any, flat: Any, sizes: Any) -> Any:
+        cell = np.array([0, _SCRFD_ANCHORS_PER_CELL, sum(_SCRFD_HEAD_CHANNELS), -1], np.int64)
+        branches = op.Split(op.Reshape(x, op.Constant(value=ir.tensor(cell))), sizes, axis=2, _outputs=3)
+        return tuple(
+            op.Reshape(
+                op.Transpose(branch, perm=[0, 3, 1, 2]),
+                op.Constant(value=ir.tensor(np.array([0, -1, channels], np.int64))),
+            )
+            for branch, channels in zip(branches, _SCRFD_HEAD_CHANNELS)
+        )
