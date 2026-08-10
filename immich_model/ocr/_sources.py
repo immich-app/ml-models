@@ -15,6 +15,8 @@ class DetSource(NamedTuple):
     se_merges: int
     gelus: int
     head_scale: int = 1  # 1 = leave the head's scale split alone; see _rescale_det_head
+    asym_folds: int = 0  # LKPAN's KxK+Kx1+1xK reparameterization; the RSE-FPN necks carry none
+    affine_scales: int = 0  # affine blocks the pass above leaves behind, scale-only; see _FoldAffineScalePass
 
     @property
     def url(self) -> str:
@@ -29,6 +31,8 @@ class RecSource(NamedTuple):
     shape_domains: int
     qkv_unpacks: int
     gelus: int
+    affine_scales: int = 0
+    pool_affines: int = 0  # affine blocks that commute with an average pool; see _MoveAffinePastPool
 
     @property
     def url(self) -> str:
@@ -43,6 +47,7 @@ DET_MODELS = {
         se_residuals=8,
         se_merges=2,
         gelus=0,
+        affine_scales=13,
     ),
     ("PP-OCRv5", "server"): DetSource(
         "onnx/PP-OCRv5/det/ch_PP-OCRv5_det_server.onnx",
@@ -53,6 +58,7 @@ DET_MODELS = {
         gelus=0,
         # this neck overflows fp16 while its BN-folded head weights go subnormal; 256 splits the difference
         head_scale=256,
+        asym_folds=12,
     ),
     ("PP-OCRv6", "tiny"): DetSource(
         "onnx/PP-OCRv6/det/PP-OCRv6_det_tiny.onnx",
@@ -77,6 +83,7 @@ DET_MODELS = {
         se_residuals=0,  # its five SE gates are plain LCNet backbone gates, with no residual to fold
         se_merges=0,  # and they sit at five different widths, so there are no siblings to merge
         gelus=13,
+        asym_folds=12,
     ),
 }
 
@@ -89,6 +96,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "ch", "server"): RecSource(
         "onnx/PP-OCRv5/rec/ch_PP-OCRv5_rec_server.onnx",
@@ -107,6 +116,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "latin", "mobile"): RecSource(
         "onnx/PP-OCRv5/rec/latin_PP-OCRv5_rec_mobile.onnx",
@@ -116,6 +127,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "eslav", "mobile"): RecSource(
         "onnx/PP-OCRv5/rec/eslav_PP-OCRv5_rec_mobile.onnx",
@@ -125,6 +138,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "en", "mobile"): RecSource(
         "onnx/PP-OCRv5/rec/en_PP-OCRv5_rec_mobile.onnx",
@@ -134,6 +149,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "th", "mobile"): RecSource(
         "onnx/PP-OCRv5/rec/th_PP-OCRv5_rec_mobile.onnx",
@@ -143,6 +160,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv5", "el", "mobile"): RecSource(
         "onnx/PP-OCRv5/rec/el_PP-OCRv5_rec_mobile.onnx",
@@ -152,6 +171,8 @@ REC_MODELS = {
         shape_domains=1,
         qkv_unpacks=2,
         gelus=0,
+        affine_scales=13,
+        pool_affines=1,
     ),
     ("PP-OCRv6", "ch", "tiny"): RecSource(
         "onnx/PP-OCRv6/rec/PP-OCRv6_rec_tiny.onnx",

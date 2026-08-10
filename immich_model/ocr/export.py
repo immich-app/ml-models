@@ -34,6 +34,8 @@ def export(model_name: str, output_dir: Path, cache: bool = True) -> None:
         det_source.se_merges,
         det_source.gelus,
         det_source.head_scale,
+        det_source.asym_folds,
+        det_source.affine_scales,
     )
     det_path.parent.mkdir(parents=True, exist_ok=True)
     save_with_external_data(det, det_path)
@@ -49,6 +51,8 @@ def export(model_name: str, output_dir: Path, cache: bool = True) -> None:
         rec_source.shape_domains,
         rec_source.qkv_unpacks,
         rec_source.gelus,
+        rec_source.affine_scales,
+        rec_source.pool_affines,
     )
     save_with_external_data(rec, rec_path)
 

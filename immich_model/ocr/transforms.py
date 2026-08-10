@@ -42,7 +42,14 @@ log = logging.getLogger(__name__)
 
 
 def transform_detection(
-    model: ir.Model, affine_folds: int, se_residuals: int, se_merges: int, gelus: int, head_scale: int = 1
+    model: ir.Model,
+    affine_folds: int,
+    se_residuals: int,
+    se_merges: int,
+    gelus: int,
+    head_scale: int = 1,
+    asym_folds: int = 0,
+    affine_scales: int = 0,
 ) -> ir.Model:
     return ir.passes.Sequential(
         ConvertOpsetPass(_dsl.OPSET),
@@ -59,9 +66,11 @@ def transform_detection(
         ReinferPass(),
         _FuseGeluPass(gelus),
         _FoldLearnableAffinePass(affine_folds),
+        _FoldAffineScalePass(affine_scales),
         _RescaleDetHeadPass(head_scale),
         _FoldSeResidualPass(se_residuals),
         _MergeSeBranchesPass(se_merges),
+        _FoldAsymmetricConvsPass(asym_folds),
         WrapPass(_dsl.det_preprocess, _dsl.det_postprocess),
         ReinferPass(),
         NameOutputDimsPass({"probs": [_dsl.Batch, _dsl.Height, _dsl.Width]}),
@@ -71,7 +80,14 @@ def transform_detection(
 
 
 def transform_recognition(
-    model: ir.Model, affine_folds: int, layernorms: int, shape_domains: int, qkv_unpacks: int, gelus: int
+    model: ir.Model,
+    affine_folds: int,
+    layernorms: int,
+    shape_domains: int,
+    qkv_unpacks: int,
+    gelus: int,
+    affine_scales: int = 0,
+    pool_affines: int = 0,
 ) -> ir.Model:
     return ir.passes.Sequential(
         ConvertOpsetPass(_dsl.OPSET),
@@ -88,7 +104,11 @@ def transform_recognition(
         FoldPointwiseConvsPass(),
         ReinferPass(),
         _FuseGeluPass(gelus),
+        # eliminate, then relocate, then partially fold: moving an affine changes what it neighbours, so
+        # it goes after the folds that would retire it outright and before the one that only halves it
         _FoldLearnableAffinePass(affine_folds),
+        _MoveAffinePastPoolPass(pool_affines),
+        _FoldAffineScalePass(affine_scales),
         # before the two passes below: they key on attributes the stock graph leaves implicit
         common_passes.AddDefaultAttributesPass(),
         _FuseLayerNormPass(layernorms),
@@ -302,6 +322,131 @@ class _MergeSeBranchesPass(ir.passes.InPlacePass):
             )
 
 
+class _AsymBlock(NamedTuple):
+    square: ir.Node
+    strips: list[ir.Node]
+    adds: list[ir.Node]  # the binary Add tree summing the branches, root last
+
+
+def _same_conv_geometry(a: ir.Node, b: ir.Node) -> bool:
+    return all(
+        list(a.attributes.get_ints(name, default)) == list(b.attributes.get_ints(name, default))
+        for name, default in (("strides", [1, 1]), ("dilations", [1, 1]))
+    ) and a.attributes.get_int("group", 1) == b.attributes.get_int("group", 1)
+
+
+def _centered_pads(conv: ir.Node, kernel: list[int]) -> bool:
+    """SAME padding for this kernel, so every branch of the group agrees on output extent."""
+    pads = list(conv.attributes.get_ints("pads", [0, 0, 0, 0]))
+    return pads == [(kernel[0] - 1) // 2, (kernel[1] - 1) // 2] * 2
+
+
+def _sum_tree(branches: list[ir.Node]) -> list[ir.Node] | None:
+    """The binary Add tree summing exactly these outputs, or None if any of them goes anywhere else."""
+    pending = {branch.outputs[0] for branch in branches}
+    if any(not single_use(value) for value in pending):
+        return None
+    adds: list[ir.Node] = []
+    while len(pending) > 1:
+        found = next(
+            (
+                use.node
+                for value in pending
+                for use in value.uses()
+                if use.node.op_type == "Add"
+                and len(use.node.inputs) == 2
+                and all(operand in pending for operand in use.node.inputs)
+            ),
+            None,
+        )
+        if found is None:
+            return None
+        pending.difference_update(found.inputs)
+        pending.add(found.outputs[0])
+        adds.append(found)
+        if len(pending) > 1 and not single_use(found.outputs[0]):
+            return None
+    return adds
+
+
+def _asym_blocks(graph: ir.Graph) -> list[_AsymBlock]:
+    by_source: dict[ir.Value, list[ir.Node]] = {}
+    for node in graph:
+        if node.op_type == "Conv" and node.inputs and node.inputs[0] is not None:
+            by_source.setdefault(node.inputs[0], []).append(node)
+
+    blocks = []
+    for siblings in by_source.values():
+        kernels = {node: list(node.attributes.get_ints("kernel_shape", [])) for node in siblings}
+        square = [node for node in siblings if len(kernels[node]) == 2 and kernels[node][0] == kernels[node][1] > 1]
+        if len(square) != 1:
+            continue
+        size = kernels[square[0]][0]
+        strips = [node for node in siblings if kernels[node] in ([size, 1], [1, size])]
+        members = [square[0], *strips]
+        if len(strips) != 2 or kernels[strips[0]] == kernels[strips[1]]:
+            continue
+        if not all(_same_conv_geometry(square[0], node) and _centered_pads(node, kernels[node]) for node in members):
+            continue
+        if any(const_array(node.inputs[1]) is None for node in members):
+            continue
+        adds = _sum_tree(members)
+        if adds is not None:
+            blocks.append(_AsymBlock(square[0], strips, adds))
+    return blocks
+
+
+class _FoldAsymmetricConvsPass(ir.passes.InPlacePass):
+    """Fold each KxK + Kx1 + 1xK branch group into one KxK conv -- the asymmetric-convolution
+    reparameterization PP-OCR's LKPAN neck ships, summed with no activation between. Nothing collapses
+    it for us: horizontal conv fusion wants identical kernels. Their SAME padding is exactly what
+    aligns each strip to the square kernel's centre row or column. Accumulated in float64 so the three
+    branches round once instead of three times."""
+
+    def __init__(self, expected: int) -> None:
+        self.expected, self.folded = expected, 0
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        for block in _asym_blocks(graph):
+            size = list(block.square.attributes.get_ints("kernel_shape", []))[0]
+            original = const_array(block.square.inputs[1])
+            weight = original.astype(np.float64).copy()
+            square_bias = const_array(block.square.inputs[2]) if len(block.square.inputs) > 2 else None
+            bias = np.zeros(weight.shape[0], np.float64) if square_bias is None else square_bias.astype(np.float64)
+            centre = (size - 1) // 2
+            for strip in block.strips:
+                strip_weight = const_array(strip.inputs[1]).astype(np.float64)
+                if strip_weight.shape[-1] == 1:
+                    weight[:, :, :, centre] += strip_weight[:, :, :, 0]
+                else:
+                    weight[:, :, centre, :] += strip_weight[:, :, 0, :]
+                strip_bias = const_array(strip.inputs[2]) if len(strip.inputs) > 2 else None
+                if strip_bias is not None:
+                    bias = bias + strip_bias.astype(np.float64)
+
+            name = block.square.name or block.square.outputs[0].name
+            block.square.replace_input_with(1, make_init(graph, f"{name}_asym_w", weight.astype(original.dtype)))
+            folded_bias = make_init(graph, f"{name}_asym_b", bias.astype(original.dtype))
+            if len(block.square.inputs) > 2:
+                block.square.replace_input_with(2, folded_bias)
+            else:
+                block.square.append_input(folded_bias)
+
+            root = block.adds[-1].outputs[0]
+            ir.convenience.replace_all_uses_with(root, block.square.outputs[0])
+            for index, output in enumerate(graph.outputs):
+                if output is root:
+                    graph.outputs[index] = block.square.outputs[0]
+            self.folded += 1
+
+        if self.folded != self.expected:
+            raise ir.passes.PostconditionError(f"Folded {self.folded} asymmetric conv groups, expected {self.expected}")
+        if self.folded:
+            common_passes.RemoveUnusedNodesPass()(model)  # the strips and their Add tree are now dead
+        return ir.passes.PassResult(model, self.folded > 0)
+
+
 class _RelaxPoolCeilModePass(ir.passes.InPlacePass):
     """Zero the redundant ceil_mode on SAME-padded pooling: CoreML rejects the pair and demotes the graph.
     A loop rather than a rule: a pattern cannot leave the op type open, and two pooling spellings qualify."""
@@ -447,6 +592,116 @@ class _FoldAffineBeforeConv(RewriteRuleClassBase):
         return op.Conv(x, w_init, b_init, **conv.producer().attributes)
 
 
+class _MoveAffinePastPool(RewriteRuleClassBase):
+    """`AveragePool(a*x + b) == a*AveragePool(x) + b`: the mean of an affine is the affine of the mean, so
+    the pair can run on the pooled tensor instead of the full one. Holds while every window averages real
+    elements only, which zero pads and `count_include_pad=0` give together -- with either absent, a window
+    that reaches past the edge averages in a 0 that is not `a*0+b`."""
+
+    def pattern(self, op: Any, x: Any, a: Any, b: Any) -> Any:
+        affine = op.Add(op.Mul(x, a, _outputs=["mul"]), b, _outputs=["affine"])
+        return op.AveragePool(affine, _allow_other_attributes=True, _outputs=["pool"])
+
+    def check(self, context: Any, a: Any, b: Any, mul: Any, affine: Any, pool: Any, **_: Any) -> MatchResult:
+        result = MatchResult()
+        if _scalar(a) is None or _scalar(b) is None:
+            return result.fail("affine scale/shift is not a scalar constant")
+        if len(list(affine.uses())) != 1 or len(list(mul.uses())) != 1:
+            return result.fail("affine feeds consumers besides the pool, so moving it would duplicate it")
+        node = pool.producer()
+        if not _explicit_zero_pads(node) or node.attributes.get_int("count_include_pad", 0):
+            return result.fail("pool averages over padded positions")
+        return result
+
+    def rewrite(self, op: Any, x: Any, a: Any, b: Any, pool: Any, **_: Any) -> Any:
+        return op.Add(op.Mul(op.AveragePool(x, **pool.producer().attributes), a), b)
+
+
+class _MoveAffinePastPoolPass(PinnedRewritePass):
+    """Relocation is worth less than elimination, so this runs on what the conv folds have already left."""
+
+    def __init__(self, expected: int) -> None:
+        rules = RewriteRuleSet([_MoveAffinePastPool.rule()], commute=True)
+        super().__init__(rules, expected, "affine blocks past an average pool")
+
+
+class _AffineSite(NamedTuple):
+    add: ir.Node
+    mul: ir.Node
+    source: ir.Value  # the tensor the affine scales
+    scale: float
+    shift: float
+    consumers: list[ir.Node]
+
+
+def _affine_scale_sites(graph: ir.Graph) -> list[_AffineSite]:
+    """Scalar `Mul(a)->Add(b)` blocks feeding convs only, that `_FoldAffineBeforeConv` will not take.
+
+    It declines two shapes, and both are here: a PADDED consumer (its zero border does not carry the
+    shift), and MULTIPLE consumers (a rewrite rule sees one). PP-OCRv5_mobile's remaining blocks are
+    exactly these -- three of them fan out to a padded 3x3 and an unpadded 1x1 at once. The SE gate's
+    block stays: its GlobalAveragePool consumer is not a conv, so there are no weights to carry."""
+    sites = []
+    for add in graph:
+        if add.op_type != "Add" or len(add.inputs) < 2:
+            continue
+        mul = next((producer_of(operand, "Mul") for operand in add.inputs[:2] if producer_of(operand, "Mul")), None)
+        shift = next((_scalar(operand) for operand in add.inputs[:2] if _scalar(operand) is not None), None)
+        if mul is None or shift is None or not single_use(mul.outputs[0]):
+            continue
+        scale_value = next((operand for operand in mul.inputs[:2] if _scalar(operand) is not None), None)
+        source = next((operand for operand in mul.inputs[:2] if operand is not scale_value), None)
+        scale = _scalar(scale_value)
+        if scale is None or source is None or scale == 0.0:
+            continue
+        consumers = [use.node for use in add.outputs[0].uses()]
+        # every consumer has to be a conv with its own weight: a shared one would be scaled twice
+        if not consumers or any(node.op_type != "Conv" for node in consumers):
+            continue
+        if any(len(node.inputs) < 2 or not _single_use_const(node.inputs[1]) for node in consumers):
+            continue
+        if len(consumers) == 1 and _explicit_zero_pads(consumers[0]):
+            continue
+        sites.append(_AffineSite(add, mul, source, scale, shift, consumers))
+    return sites
+
+
+class _FoldAffineScalePass(ir.passes.InPlacePass):
+    """Move a leftover affine's SCALE into every consumer conv's weights, leaving the shift as an Add.
+
+    `Conv(a*x + b, W) == Conv(x + b/a, a*W)` at ANY padding: both spellings zero-pad in the same
+    places, and at a border tap `sum a*W*(x + b/a) == sum W*(a*x + b)`. The shift rides the weights it
+    is actually multiplied by instead of a bias the pad never sees, which is why this holds where
+    folding into the bias does not. Retires the Mul; the Add stays."""
+
+    def __init__(self, expected: int) -> None:
+        self.expected, self.folded = expected, 0
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        graph = model.graph
+        for site in _affine_scale_sites(graph):
+            dtype = const_array(site.consumers[0].inputs[1]).dtype
+            for conv in site.consumers:
+                weight = conv.inputs[1]
+                array = const_array(weight)
+                scaled = (array.astype(np.float64) * site.scale).astype(array.dtype)
+                conv.replace_input_with(1, make_init(graph, f"{weight.name}_labscale", scaled))
+
+            name = site.add.outputs[0].name
+            offset = make_init(graph, f"{name}_laboffset", np.array(site.shift / site.scale, dtype))
+            shift = make_node("Add", [site.source, offset], out=f"{name}_shifted")
+            graph.insert_before(site.mul, shift)
+            for conv in site.consumers:
+                conv.replace_input_with(0, shift.outputs[0])
+            self.folded += 1
+
+        if self.folded != self.expected:
+            raise ir.passes.PostconditionError(f"Folded {self.folded} leftover affine scales, expected {self.expected}")
+        if self.folded:
+            common_passes.RemoveUnusedNodesPass()(model)
+        return ir.passes.PassResult(model, self.folded > 0)
+
+
 class _FoldLearnableAffinePass(PinnedRewritePass):
     """Fold the foldable scalar affine-block pairs into adjacent convs; SE-boundary and padded pairs stay."""
 
@@ -497,8 +752,8 @@ def _count_foldable_lab(graph: ir.Graph) -> int:
     return count
 
 
-def _explicit_zero_pads(conv: ir.Node) -> bool:
-    attributes = conv.attributes
+def _explicit_zero_pads(node: ir.Node) -> bool:
+    attributes = node.attributes
     return (
         "pads" in attributes
         and list(attributes.get_ints("pads")) == [0, 0, 0, 0]
