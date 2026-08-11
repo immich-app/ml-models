@@ -25,7 +25,7 @@ export = [
   "ml-dtypes>=0.5.0",
   "open-clip-torch>=2.31.0",
   "multilingual-clip>=1.0.10",
-  "safetensors>=0.7,<0.8", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
+  "safetensors>=0.8,<0.9", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
   "transformers>=4.49.0",
   "clip-benchmark",
   "numpy>=2.1.0",
@@ -35,7 +35,7 @@ export = [
 rknn = [
   "rknn-toolkit2>=2.3.0",
   "pyyaml>=6",
-  "safetensors>=0.7,<0.8",
+  "safetensors>=0.8,<0.9",
   "setuptools<81",
   "torch",
   "typer>=0.15.2",
