@@ -9,7 +9,7 @@ from pathlib import Path
 
 import onnx_ir as ir
 
-from .constants import canvases_of
+from .constants import canvas_sets_of, max_canvas
 from .rknn._onnx import rknn_config
 from .rknn.compile import _pin
 from .runtime import (
@@ -142,7 +142,8 @@ def _sources(target: str, path: Path, work: Path) -> Iterator[tuple[str, Path, P
     if target != RKNPU:
         yield target, path, work
         return
-    for index, canvas in enumerate(canvases_of(path)):
+    for index, group in enumerate(canvas_sets_of(path)):
+        canvas = max_canvas(group.canvases)
         out_dir = work / f"rknn{index}"
         out_dir.mkdir(parents=True, exist_ok=True)
         pinned = _pin(path, out_dir, canvas) if canvas else path

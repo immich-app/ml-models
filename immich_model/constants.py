@@ -1,3 +1,4 @@
+import math
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from functools import cache
@@ -109,51 +110,84 @@ def task_of(model: str) -> ModelTask:
 
 BATCH = "batch"
 
-# RKNPU compiles one static graph, so the exporter -- not the runtime -- picks the canvases, and one canvas is
-# one binary. These mirror the shape grid immich_ml already snaps its inputs to.
-CANVASES: dict[tuple[ModelTask, Submodel], tuple[dict[str, int], ...]] = {
-    (ModelTask.OCR, Submodel.DETECTION): (
-        {"height": 736, "width": 736},
-        {"height": 736, "width": 1472},
-        {"height": 1472, "width": 736},
-    ),
-    (ModelTask.OCR, Submodel.RECOGNITION): ({"width": 160}, {"width": 320}, {"width": 640}, {"width": 1280}),
-    (ModelTask.FACIAL_RECOGNITION, Submodel.DETECTION): ({"height": 640, "width": 640},),
-}
+
+class CanvasSet(NamedTuple):
+    """One binary's shapes. `label` names the subdirectory it compiles into, and is only carried where a
+    submodel ships more than one set."""
+
+    canvases: list[dict[str, int]]
+    label: str = ""
 
 
 class UncoveredDims(RuntimeError):
     """A graph leaves a non-batch dim free that no declared canvas names."""
 
 
-def declared_canvases(task: ModelTask, submodel: Submodel) -> tuple[dict[str, int], ...]:
-    """The grid this (task, submodel) deploys at, without opening any graph: a planner that had to read
-    every artifact to decide which cells exist would die on the first absent one."""
-    return CANVASES.get((task, submodel), ({},))
+def declared_canvases(task: ModelTask, submodel: Submodel) -> list[CanvasSet]:
+    """The sets this (task, submodel) deploys at, without opening any graph: a planner that had to read
+    every artifact to decide which cells exist would die on the first absent one.
+    RKNPU fixes its shapes at compile time, with one set being one binary."""
+    match task, submodel:
+        case ModelTask.OCR, Submodel.DETECTION:
+            return [
+                CanvasSet(
+                    [
+                        {"height": size, "width": size},
+                        {"height": size, "width": 2 * size},
+                        {"height": 2 * size, "width": size},
+                    ],
+                    f"res{size}",
+                )
+                for size in (736, 1088, 1440)
+            ]
+        case ModelTask.OCR, Submodel.RECOGNITION:
+            return [CanvasSet([{"width": size} for size in (224, 320, 448, 640, 1280, 2048)])]
+        case ModelTask.FACIAL_RECOGNITION, Submodel.DETECTION:
+            return [CanvasSet([{"height": 640, "width": 640}])]
+        case _:
+            return [CanvasSet([{}])]
 
 
-def canvases_of(onnx_path: Path) -> list[dict[str, int]]:
-    """The grid for a graph in the exporter's own `<model>/<submodel>/model.onnx` layout, the one layout
+def canvas_sets_of(onnx_path: Path) -> list[CanvasSet]:
+    """The sets for a graph in the exporter's own `<model>/<submodel>/model.onnx` layout, the one layout
     that carries its identity in its path because this repo writes it."""
-    return canvases(task_of(onnx_path.parents[1].name), Submodel(onnx_path.parent.name), onnx_path)
+    return canvas_sets(task_of(onnx_path.parents[1].name), Submodel(onnx_path.parent.name), onnx_path)
 
 
-def canvases(task: ModelTask, submodel: Submodel, onnx_path: Path) -> list[dict[str, int]]:
-    """The declared grid restricted to the dims the graph actually leaves free, deduplicated. A free
-    non-batch dim no canvas covers raises: any default for it is a silent failure with a plausible
-    number."""
+def canvas_sets(task: ModelTask, submodel: Submodel, onnx_path: Path) -> list[CanvasSet]:
+    """The declared sets restricted to the dims the graph actually leaves free, deduplicated within and
+    across sets. A free non-batch dim no canvas covers raises: any default for it is a silent failure with
+    a plausible number. Sets that restrict to the same shapes collapse, so a graph that pins away what
+    distinguished two tiers compiles once rather than twice under different names."""
     import onnx_ir as ir
 
     inputs = ir.load(onnx_path).graph.inputs
     free = {str(dim) for inp in inputs for dim in (inp.shape or []) if not isinstance(dim, int)} - {BATCH}
-    grid: list[dict[str, int]] = []
-    for canvas in declared_canvases(task, submodel):
-        pinned = {name: size for name, size in canvas.items() if name in free}
-        if pinned not in grid:
-            grid.append(pinned)
-    if missing := free - set(grid[0]):
+    sets: list[CanvasSet] = []
+    for declared in declared_canvases(task, submodel):
+        group: list[dict[str, int]] = []
+        for canvas in declared.canvases:
+            pinned = {name: size for name, size in canvas.items() if name in free}
+            if pinned not in group:
+                group.append(pinned)
+        if all(group != existing.canvases for existing in sets):
+            sets.append(CanvasSet(group, declared.label))
+    if missing := free - set(sets[0].canvases[0]):
         raise UncoveredDims(f"{task}/{submodel}: no canvas for free dim(s) {sorted(missing)}")
+    return sets
+
+
+def canvases(task: ModelTask, submodel: Submodel, onnx_path: Path) -> list[dict[str, int]]:
+    """Every canvas the sets cover, flattened: a bench cell runs one shape, whichever binary serves it."""
+    grid: list[dict[str, int]] = []
+    for group in canvas_sets(task, submodel, onnx_path):
+        grid += [canvas for canvas in group.canvases if canvas not in grid]
     return grid
+
+
+def canvases_of(onnx_path: Path) -> list[dict[str, int]]:
+    """`canvases` for a graph in the exporter's own layout."""
+    return canvases(task_of(onnx_path.parents[1].name), Submodel(onnx_path.parent.name), onnx_path)
 
 
 def canvas_label(canvas: Mapping[str, int]) -> str:
@@ -161,10 +195,18 @@ def canvas_label(canvas: Mapping[str, int]) -> str:
     return "_".join(f"{name}{size}" for name, size in sorted(canvas.items()))
 
 
-def variant_dir(grid: Sequence[Mapping[str, int]], canvas: Mapping[str, int]) -> str:
-    """The per-binary subdirectory a canvas compiles into; a lone canvas stays unnamed, and immich_ml
-    opens only that flat path."""
-    return canvas_label(canvas) if len(grid) > 1 else ""
+def max_canvas(group: Sequence[Mapping[str, int]]) -> dict[str, int]:
+    """The canvas a set is sized against. Every other shape in the binary is declared relative to it, and
+    it is the only one `eval_perf` and `eval_memory` ever report, so it is also the one worth rendering."""
+    return dict(max(group, key=lambda canvas: (math.prod(canvas.values()), sorted(canvas.items()))))
+
+
+def variant_dir(sets: Sequence[CanvasSet], canvas: Mapping[str, int]) -> str:
+    """The per-binary subdirectory a canvas compiles into, named for the set that serves it; a lone set
+    stays unnamed, and immich_ml opens only that flat path."""
+    if len(sets) == 1:
+        return ""
+    return next(group.label for group in sets if canvas in group.canvases)
 
 
 # glob to delete old UUID blobs when reuploading models
