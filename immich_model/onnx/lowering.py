@@ -631,7 +631,8 @@ class HostCtcDecodePass(ir.passes.InPlacePass):
         if len(graph.outputs) != 2:
             return declined
         indices, probs = graph.outputs
-        if indices.dtype != ir.DataType.INT32 or probs.dtype != ir.DataType.FLOAT:
+        # fp16 too: the derived artifact's `probs` IS fp16, and gating on fp32 would decline it in silence
+        if indices.dtype != ir.DataType.INT32 or probs.dtype not in (ir.DataType.FLOAT, ir.DataType.FLOAT16):
             return declined
 
         prob_producer = probs.producer()
@@ -666,16 +667,12 @@ class HostCtcDecodePass(ir.passes.InPlacePass):
         ):
             return declined
 
+        # the output keeps the logits' own dtype: an fp16 graph hands back fp16, like every other output
         softmax = ir.node("Softmax", inputs=[logits], attributes={"axis": _CTC_CLASS_AXIS}, num_outputs=1)
         softmax.outputs[0].shape, softmax.outputs[0].type = logits.shape, logits.type
-        tail = [softmax]
-        if logits.dtype != ir.DataType.FLOAT:  # fp16 graph, float IO: put keep_io_types' cast back
-            cast = ir.node("Cast", inputs=softmax.outputs, attributes={"to": ir.DataType.FLOAT}, num_outputs=1)
-            cast.outputs[0].shape, cast.outputs[0].type = logits.shape, ir.TensorType(ir.DataType.FLOAT)
-            tail.append(cast)
-        output = tail[-1].outputs[0]
+        output = softmax.outputs[0]
         output.name = "logits_softmax"
-        graph.extend(tail)
+        graph.append(softmax)
         graph.outputs.clear()
         graph.outputs.append(output)
         for node in (*index_nodes, *prob_nodes, reduce_max):

@@ -195,8 +195,6 @@ class RawCtcLogitsPass(ir.passes.InPlacePass):
         if not HostCtcDecodePass()(model).modified:
             return ir.passes.PassResult(model, False)
         softmax = graph.outputs[0].producer()
-        if softmax is not None and softmax.op_type == "Cast":  # fp16 artifacts carry keep_io_types' cast
-            softmax = softmax.inputs[0].producer() if softmax.inputs[0] is not None else None
         logits = softmax.inputs[0] if softmax is not None else None
         if logits is None:
             return ir.passes.PassResult(model, False)
