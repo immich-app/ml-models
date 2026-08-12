@@ -2,6 +2,7 @@ import math
 from collections.abc import Mapping, Sequence
 from enum import Enum
 from functools import cache
+from itertools import chain
 from pathlib import Path
 from typing import NamedTuple
 
@@ -130,9 +131,13 @@ def declared_canvases(task: ModelTask, submodel: Submodel) -> list[CanvasSet]:
             return [
                 CanvasSet(
                     [
-                        {"height": size, "width": size},
-                        {"height": size, "width": 2 * size},
-                        {"height": 2 * size, "width": size},
+                        {"height": height, "width": width}
+                        for height, width in dict.fromkeys(
+                            chain.from_iterable(
+                                ((math.ceil(ratio * size / 32) * 32, size), (size, math.ceil(ratio * size / 32) * 32))
+                                for ratio in (1, 4 / 3, 3 / 2, 2)
+                            )
+                        )
                     ],
                     f"res{size}",
                 )
