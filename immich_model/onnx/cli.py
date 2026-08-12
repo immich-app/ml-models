@@ -23,6 +23,8 @@ def generate_readme(model_name: str, model_source: ModelSource) -> str:
                 tags.append("multilingual")
         case ModelSource.INSIGHTFACE:
             tags = ["immich", "facial-recognition"]
+        case ModelSource.PADDLE:
+            tags = ["immich", "ocr"]
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
@@ -63,6 +65,10 @@ def export(
             from .. import insightface
 
             insightface.export(model_name, output_dir, cache=cache)
+        case ModelSource.PADDLE:
+            from .. import ocr
+
+            ocr.export(model_name, output_dir, cache=cache)
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
