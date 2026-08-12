@@ -47,8 +47,7 @@ def _export_platform(
     check(rknn.build(do_quantization=False), "build")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     check(rknn.export_rknn(output_path.as_posix()), "export")
-    # what was actually compiled: the .rknn carries none of it, the source .onnx disagrees, and rknn
-    # reports the input shape back permuted
+    # what was actually compiled: the .rknn carries none of it and the source .onnx disagrees
     import onnx_ir as ir
 
     prepared = ir.load(onnx_path)
@@ -91,11 +90,9 @@ def _export_canvas(
     source: Path, output_dir: Path, socs: list[str], canvases: Sequence[Mapping[str, int]], variant: str
 ) -> None:
     with tempfile.TemporaryDirectory() as work_dir:
-        # normalise once for all SoCs; spec and DMA config come off the PREPARED graph, since a source-read
-        # config could claim a shift the rows had not in fact retired
+        # spec and DMA config come off the PREPARED graph, which is the one that retired the shift
         work = Path(work_dir)
-        # every canvas is prepared, but only MaxShape's graph is compiled: the rows retype the input, so the
-        # shape a canvas becomes is what the rows produce for it and not something derivable from the source
+        # every canvas is prepared, but only MaxShape's graph is compiled
         widest = max_canvas(canvases)
         onnx_path = _prepare(source, work / "max", widest)
         config_extras = rknn_config(onnx_path)

@@ -100,9 +100,8 @@ def catalog() -> dict[str, ModelTask]:
 
 
 def task_of(model: str) -> ModelTask:
-    """Which family a model belongs to, from the catalog that declares it and never sniffed off a name:
-    `detection` is SCRFD in one family and DBNet in the other, and a name rule would answer confidently
-    for a model it has never seen, picking a wrong stimulus and a canvas the tower never serves."""
+    """The family a model belongs to, from the catalog and never sniffed off a name: `detection` is SCRFD
+    in one family and DBNet in the other."""
     if (task := catalog().get(model)) is None:
         raise KeyError(f"{model} is not in {CATALOG.name}, so its task is undeclared")
     return task
@@ -124,9 +123,8 @@ class UncoveredDims(RuntimeError):
 
 
 def declared_canvases(task: ModelTask, submodel: Submodel) -> list[CanvasSet]:
-    """The sets this (task, submodel) deploys at, without opening any graph: a planner that had to read
-    every artifact to decide which cells exist would die on the first absent one.
-    RKNPU fixes its shapes at compile time, with one set being one binary."""
+    """The sets this (task, submodel) deploys at, without opening any graph. RKNPU fixes its shapes at
+    compile time, one set being one binary."""
     match task, submodel:
         case ModelTask.OCR, Submodel.DETECTION:
             return [
@@ -155,10 +153,8 @@ def canvas_sets_of(onnx_path: Path) -> list[CanvasSet]:
 
 
 def canvas_sets(task: ModelTask, submodel: Submodel, onnx_path: Path) -> list[CanvasSet]:
-    """The declared sets restricted to the dims the graph actually leaves free, deduplicated within and
-    across sets. A free non-batch dim no canvas covers raises: any default for it is a silent failure with
-    a plausible number. Sets that restrict to the same shapes collapse, so a graph that pins away what
-    distinguished two tiers compiles once rather than twice under different names."""
+    """The declared sets restricted to the dims the graph leaves free, deduplicated. A free non-batch dim
+    no canvas covers raises: any default for it is a silent failure with a plausible number."""
     import onnx_ir as ir
 
     inputs = ir.load(onnx_path).graph.inputs

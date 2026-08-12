@@ -177,16 +177,8 @@ def _symbol(shape: _Shape | None, axis: int) -> str:
 
 
 def _window_axis_ratios(node: ir.Node) -> dict[int, Fraction]:
-    """Per spatial axis, `out == ratio * in` where a windowed op carries the extent.
-
-    Per-axis because an all-or-nothing verdict throws away real equalities: PP-OCR recognition
-    downsamples with `strides=(2,1)`, so height halves while width is preserved exactly.
-
-    Downsampling is `floor` arithmetic, so `out == in/s` needs `s | in`. Every spatial input we serve
-    is 32-aligned (the detectors require it -- an odd canvas fails shape inference outright at the
-    decoder's skip Add), which is knowledge the graph does not carry and inference cannot recover.
-    Asserting it here is what lets the stem's downsample and the decoder's ConvTranspose be recognised
-    as the one extent they are. `ratio == 1` reduces to the exact, alignment-free case."""
+    """Per spatial axis, `out == ratio * in` where a windowed op carries the extent. Downsampling floors,
+    so `out == in/s` assumes `s | in` -- true of every canvas we serve, and not knowledge the graph holds."""
     attributes = node.attributes
     kernel = attributes.get_ints("kernel_shape", [])  # the Global* pools carry none
     if not kernel or attributes.get_ints("output_shape", []) or attributes.get_int("ceil_mode", 0):

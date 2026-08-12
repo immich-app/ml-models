@@ -301,10 +301,8 @@ class DecomposeAttentionPass(RewritePass):
 
 
 class ElideMaskQueryAxis(RewriteRuleClassBase):
-    """Drop the zero-Add that materializes a padding mask's query axis, feeding the [b,1,1,S] key row straight to
-    the decomposed score Add, which broadcasts it itself; exact because the mask is square. The Add exists only
-    for the fused op, whose ORT CPU kernel enforces mask.shape[-2] == q_len. `remove_nodes=False`: layers share it.
-    Separate from `DecomposeAttention` on purpose: that row ships to targets whose plans must not move for this."""
+    """Drop the zero-Add materializing a padding mask's query axis and feed [b,1,1,S] to the decomposed score Add,
+    which broadcasts it itself; exact because the mask is square. Its own row: DecomposeAttention ships wider."""
 
     def pattern(self, op: Any, q: Any, k: Any, mask: Any, zeros: Any) -> Any:
         return op.Add(op.MatMul(q, k, _outputs=["scores"]), op.Add(mask, zeros))
@@ -535,16 +533,15 @@ def _channel_shift(value: ir.Value, channels: int) -> ir.Node | None:
         return None
     const = node.inputs[1]
     tensor = const.const_value if const is not None else None
-    # rank>1 would need a real permutation; rank<=1 only ever broadcasts over the last (channel) axis
+    # rank<=1 only ever broadcasts over the last (channel) axis
     if tensor is None or tensor.shape.rank() > 1 or len(list(const.uses())) != 1:  # type: ignore[union-attr]
         return None
     return node if tensor.size in (1, channels) else None
 
 
 class NchwImageInputPass(ir.passes.InPlacePass):
-    """Retype the uint8 NHWC image input to NCHW and delete the contract's layout Transpose, handing the backend the
-    layout its first conv wants. Mutates graph IO: the caller must feed NCHW. Failing closed on the adjacency is the
-    safety argument -- only elementwise nodes stand in the NHWC domain, so the rest already computes in NCHW."""
+    """Retype the uint8 NHWC image input to NCHW and delete the layout Transpose, handing the backend what its
+    first conv wants. Mutates graph IO: the caller must feed NCHW."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         declined = ir.passes.PassResult(model, False)
@@ -580,7 +577,6 @@ class NchwImageInputPass(ir.passes.InPlacePass):
             node.outputs[0].shape = ir.Shape(nchw)
         if shift is not None:
             const = shift.inputs[1]
-            # per-channel, so the layout flip moves it
             array = const.const_value.numpy().reshape(-1, 1, 1)  # type: ignore[union-attr]
             const.const_value = ir.tensor(array, name=const.name)
             const.shape = ir.Shape(array.shape)
@@ -685,11 +681,8 @@ _FUSED_SKIP_DTYPES = (ir.DataType.FLOAT, ir.DataType.FLOAT16)
 
 
 class FuseSkipLayerNorm(RewriteRuleClassBase):
-    """Residual `Add` + `LayerNormalization` -> `com.microsoft::SkipLayerNormalization`, with the residual sum handed
-    back off the fused op's 4th output. ORT's own fusion requires the Add to have one output edge -- true of a
-    post-norm tower, never of a pre-norm one -- so emitting the node ourselves reaches the sites it skips. Both arms
-    read that count rather than leaning on `remove_nodes`, a two-output pattern anchoring on its FIRST output node so
-    rule order cannot arbitrate. Below the ORT floor in pyproject an fp16 residual saturates `mean(x^2)` (#28682)."""
+    """Residual `Add` + `LayerNormalization` -> `com.microsoft::SkipLayerNormalization`, the sum coming back off the
+    4th output. ORT's own fusion wants the Add single-use, true of post-norm towers and never of pre-norm ones."""
 
     def __init__(self, shared: bool, name: str | None = None) -> None:
         super().__init__(name)
@@ -746,10 +739,8 @@ class FuseSkipLayerNormPass(RewritePass):
 
 
 class KeepdimsMeanPool(RewriteRuleClassBase):
-    """Keep the reduced axis on the masked mean-pool's two ReduceSums and Squeeze it off after the Div, so no shape
-    transform stands between a reduction and its consumer: MIGraphX lowers keepdims=0 as reduce-then-squeeze and
-    `simplify_reshapes` then rewrites it across the Div unchecked. `keepdims` is checked, not pinned in the pattern:
-    its default is 1, so a literal there silently declines the omitted spelling."""
+    """Keep the reduced axis on the masked mean-pool's ReduceSums and Squeeze after the Div, so no shape transform
+    stands between a reduction and its consumer for MIGraphX's `simplify_reshapes` to rewrite across."""
 
     def pattern(self, op: Any, weighted: Any, mask: Any, sum_axes: Any, count_axes: Any, unsq_axes: Any) -> Any:
         summed = op.ReduceSum(weighted, sum_axes, _allow_other_attributes=True, _outputs=["summed"])
@@ -892,9 +883,8 @@ def _live_zero_mask_add_count(model: ir.Model) -> int:
 
 
 class SymmetrizeConvPads(RewriteRuleClassBase):
-    """Widen an even-kernel stride-1 SAME_UPPER conv to the next odd kernel with symmetric padding, zero-extending its
-    weights at the top-left: MIGraphX's `insert_pad` splits an asymmetrically-padded convolution into a standalone
-    `pad` plus a zero-padded conv. Exact, the added terms being identically zero; deleting `auto_pad` terminates it."""
+    """Widen an even-kernel stride-1 SAME_UPPER conv to the next odd kernel with symmetric pads, zero-extending the
+    weights: MIGraphX splits an asymmetrically-padded conv into a standalone `pad` plus a zero-padded conv."""
 
     def pattern(self, op: Any, x: Any, weight: Any) -> Any:
         return op.Conv(x, weight, _allow_other_inputs=True, _allow_other_attributes=True, _outputs=["conv"])
@@ -962,10 +952,8 @@ def _asymmetric_pad_count(model: ir.Model) -> int:
 
 
 class UnpackScrfdHeads(RewriteRuleClassBase):
-    """Cut the merged SCRFD head's three branches apart while the channels are still an axis: [B,A*C,H,W] ->
-    [B,A,C,HW] is a free view of the exporter's anchor-major pack, and each branch flattens itself to rows. Exact,
-    the row index staying (h*W+w)*A+a. Gated rather than exported because it trades one wide Transpose for three
-    narrow ones plus 15 dispatches, which the accelerators it ships to do not charge for and the GPUs do."""
+    """Cut the merged SCRFD head's branches apart while the channels are still an axis: [B,A*C,H,W] -> [B,A,C,HW]
+    is a free view of the anchor-major pack. Gated, not exported: it trades one wide Transpose for three narrow."""
 
     def pattern(self, op: Any, x: Any, flat: Any, sizes: Any) -> Any:
         rows = op.Reshape(op.Transpose(x, perm=[0, 2, 3, 1]), flat)

@@ -1,6 +1,5 @@
-"""Pinned PP-OCR source artifacts. DET_MODELS keys on (generation, variant), REC_MODELS on (generation,
-lang, variant). Entries pin the fold counts the transforms must reproduce, so an upstream restructure
-fails closed."""
+"""Pinned PP-OCR sources. The declared fold counts are what the transforms must reproduce, so an
+upstream restructure fails closed."""
 
 from typing import NamedTuple
 
@@ -14,9 +13,9 @@ class DetSource(NamedTuple):
     se_residuals: int
     se_merges: int
     gelus: int
-    head_scale: int = 1  # 1 = leave the head's scale split alone; see _rescale_det_head
-    asym_folds: int = 0  # LKPAN's KxK+Kx1+1xK reparameterization; the RSE-FPN necks carry none
-    affine_scales: int = 0  # affine blocks the pass above leaves behind, scale-only; see _FoldAffineScalePass
+    head_scale: int = 1  # 1 leaves the head's scale split alone
+    asym_folds: int = 0
+    affine_scales: int = 0
 
     @property
     def url(self) -> str:
@@ -47,7 +46,7 @@ DET_MODELS = {
         se_residuals=8,
         se_merges=2,
         gelus=0,
-        affine_scales=13,
+        affine_scales=16,
     ),
     ("PP-OCRv5", "server"): DetSource(
         "onnx/PP-OCRv5/det/ch_PP-OCRv5_det_server.onnx",
@@ -80,8 +79,8 @@ DET_MODELS = {
         "onnx/PP-OCRv6/det/PP-OCRv6_det_medium.onnx",
         "92078b7355007ccfffcd4c8cd441a3afd4538904d06881b29a155e1e679907c2",
         affine_folds=0,
-        se_residuals=0,  # its five SE gates are plain LCNet backbone gates, with no residual to fold
-        se_merges=0,  # and they sit at five different widths, so there are no siblings to merge
+        se_residuals=0,  # plain LCNet gates at five widths: no residual to fold, no siblings to merge
+        se_merges=0,
         gelus=13,
         asym_folds=12,
     ),

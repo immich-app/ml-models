@@ -9,7 +9,6 @@ import onnx_ir as ir
 from onnxscript.rewriter.pattern import MatchResult, RewriteRuleClassBase
 
 from ..onnx._ir import make_init, make_node, sole_consumer
-from ..onnx.lowering import HostCtcDecodePass
 
 # the mean the DMA now owes the graph, carried on the graph so the compiler reads both off one file
 _DMA_MEAN = "rknn_input_mean"
@@ -52,9 +51,8 @@ def _dma_shift(graph: ir.Graph) -> tuple[ir.Node, list[float]] | None:
 
 
 class Uint8ImageInputPass(ir.passes.InPlacePass):
-    """Retire a scalar-shift image preprocess into the NPU's native uint8 input path, which applies the
-    shift in the input DMA instead of transferring floats. The ONNX is retyped float NCHW here only because
-    rknn.load_onnx rejects a uint8 graph input -- the compiled binary's own input is uint8 NHWC again."""
+    """Retire a scalar-shift image preprocess into the NPU's uint8 input DMA. The ONNX is retyped float NCHW
+    only because rknn.load_onnx rejects a uint8 input; the compiled binary's own input is uint8 NHWC again."""
 
     def requires(self, model: ir.Model) -> None:
         """A symbolic dim here is not a decline: `_input_spec` resolves it to a working-looking 1x1 binary."""
@@ -136,10 +134,8 @@ class SplitLargeReduction(RewriteRuleClassBase):
 
     @staticmethod
     def _rows(tensor: ir.TensorProtocol, lo: int, hi: int, name: str) -> ir.TensorProtocol:
-        """Rows [lo, hi) of a 2-D weight: a VIEW of the parent's own bytes where the parent provably
-        stores exactly its own elements contiguously on disk, and a copy otherwise. Every condition is
-        read off this tensor rather than assumed of the graph -- a sub-byte dtype has no whole-byte row,
-        and a parent whose extent is not its element count is storing something this cannot address."""
+        """Rows [lo, hi) of a 2-D weight: a view of the parent's bytes where it provably stores exactly its own
+        elements contiguously on disk, and a copy otherwise."""
         columns = int(tensor.shape[1])
         itemsize = tensor.dtype.itemsize
         stride = columns * int(itemsize)
@@ -186,32 +182,24 @@ class SplitLargeReduction(RewriteRuleClassBase):
 CLASS_TILE = 2048
 
 
-class RawCtcLogitsPass(ir.passes.InPlacePass):
-    """Retire the greedy-CTC head and hand the host raw logits, seq-major, a class tile at a time.
-
-    No `Softmax` goes back: `exSoftmax13` is exact to 8192 classes on C and wrong beyond, and the toolkit
-    puts it on the NPU at any size. The layout is the interesting part. `convert_exmatmul_to_conv` emits
-    ``[batch, classes, seq]``, so that transpose is free, but handing it over class-major makes the HOST
-    walk 18k-class strides to decode. Moving it back in ONE `Transpose` is worse than either -- the class
-    axis trips "channel is too large, may produce thousands of regtask, fallback to cpu!" and the binary
-    runs ~2x slower. Tiling the class axis at 2048 and transposing each ``[b,tile,1,seq]`` separately
-    stays on the NPU, so the device pays a little and the host is handed what it wanted. The trailing
-    singleton stays: squeezing it costs a device op the host is happy to ignore."""
+class SeqMajorLogitsPass(ir.passes.InPlacePass):
+    """A lone `Softmax` output -> its raw logits, seq-major, a class tile at a time. No Softmax goes back, being
+    wrong past 8192 classes; the tiles the toolkit merges back are what keep the transpose off the CPU."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         graph = model.graph
-        if not HostCtcDecodePass()(model).modified:
+        if len(graph.outputs) != 1:
             return ir.passes.PassResult(model, False)
         softmax = graph.outputs[0].producer()
-        logits = softmax.inputs[0] if softmax is not None else None
-        if logits is None or logits.shape is None or len(logits.shape) != 3:
+        if softmax is None or softmax.op_type != "Softmax":
             return ir.passes.PassResult(model, False)
-        classes = logits.shape[2]
+        logits = softmax.inputs[0]
+        classes = logits.shape[2] if logits is not None and logits.shape is not None else None
         if not isinstance(classes, int):
             return ir.passes.PassResult(model, False)
 
         native = make_node("Transpose", [logits], out="logits_class_major", perm=[0, 2, 1])
-        axes = make_init(graph, "ctc_tile_axes", np.array([2], np.int64))
+        axes = make_init(graph, "ctc_seq_axes", np.array([2], np.int64))
         widened = make_node("Unsqueeze", [native.outputs[0], axes], out="logits_4d")
         sizes = [CLASS_TILE] * (classes // CLASS_TILE) + ([classes % CLASS_TILE] if classes % CLASS_TILE else [])
         split = ir.node(
@@ -260,9 +248,8 @@ class FloatifyNotEqual(RewriteRuleClassBase):
 
 
 class FloatifyPadKeep(RewriteRuleClassBase):
-    """Compute the pad indicator instead of reading it out of the table `FoldPadMaskPass` builds:
-    rknn-toolkit2's `fold_constant` merges Gathers sharing an index without comparing their tables, so the
-    keep lookup aliases the token-embedding lookup and the build dies inside the toolkit."""
+    """Compute the pad indicator rather than look it up: rknn-toolkit2 merges Gathers sharing an index without
+    comparing their tables, aliasing the keep lookup onto the token embedding."""
 
     def pattern(self, op: Any, table: Any, ids: Any) -> Any:
         return op.Gather(table, ids, _outputs=["keep"])
