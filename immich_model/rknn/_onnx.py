@@ -183,12 +183,20 @@ class SplitLargeReduction(RewriteRuleClassBase):
         return total
 
 
+CLASS_TILE = 2048
+
+
 class RawCtcLogitsPass(ir.passes.InPlacePass):
-    """Retire the greedy-CTC head and emit raw logits in the NPU's own ``[batch, classes, seq]`` layout,
-    leaving the argmax to the host: `Exp` has no NPU kernel, and `convert_exmatmul_to_conv` emits that
-    layout, so ``[batch, seq, classes]`` would add a de-tiling transpose the runtime runs on the CPU too.
+    """Retire the greedy-CTC head and hand the host raw logits, seq-major, a class tile at a time.
+
     No `Softmax` goes back: `exSoftmax13` is exact to 8192 classes on C and wrong beyond, and the toolkit
-    puts it on the NPU at any size."""
+    puts it on the NPU at any size. The layout is the interesting part. `convert_exmatmul_to_conv` emits
+    ``[batch, classes, seq]``, so that transpose is free, but handing it over class-major makes the HOST
+    walk 18k-class strides to decode. Moving it back in ONE `Transpose` is worse than either -- the class
+    axis trips "channel is too large, may produce thousands of regtask, fallback to cpu!" and the binary
+    runs ~2x slower. Tiling the class axis at 2048 and transposing each ``[b,tile,1,seq]`` separately
+    stays on the NPU, so the device pays a little and the host is handed what it wanted. The trailing
+    singleton stays: squeezing it costs a device op the host is happy to ignore."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         graph = model.graph
@@ -196,12 +204,32 @@ class RawCtcLogitsPass(ir.passes.InPlacePass):
             return ir.passes.PassResult(model, False)
         softmax = graph.outputs[0].producer()
         logits = softmax.inputs[0] if softmax is not None else None
-        if logits is None:
+        if logits is None or logits.shape is None or len(logits.shape) != 3:
             return ir.passes.PassResult(model, False)
-        transpose = make_node("Transpose", [logits], out="logits", perm=[0, 2, 1])
-        graph.extend([transpose])
+        classes = logits.shape[2]
+        if not isinstance(classes, int):
+            return ir.passes.PassResult(model, False)
+
+        native = make_node("Transpose", [logits], out="logits_class_major", perm=[0, 2, 1])
+        axes = make_init(graph, "ctc_tile_axes", np.array([2], np.int64))
+        widened = make_node("Unsqueeze", [native.outputs[0], axes], out="logits_4d")
+        sizes = [CLASS_TILE] * (classes // CLASS_TILE) + ([classes % CLASS_TILE] if classes % CLASS_TILE else [])
+        split = ir.node(
+            "Split",
+            inputs=[widened.outputs[0], make_init(graph, "ctc_tile_sizes", np.array(sizes, np.int64))],
+            attributes={"axis": 1},
+            num_outputs=len(sizes),
+        )
+        moved = [
+            make_node("Transpose", [tile], out=f"logits_tile{i}", perm=[0, 3, 2, 1])
+            for i, tile in enumerate(split.outputs)
+        ]
+        joined = ir.node("Concat", inputs=[node.outputs[0] for node in moved], attributes={"axis": 3}, num_outputs=1)
+        joined.outputs[0].name = "logits"
+
+        graph.extend([native, widened, split, *moved, joined])
         graph.outputs.clear()
-        graph.outputs.append(transpose.outputs[0])
+        graph.outputs.append(joined.outputs[0])
         return ir.passes.PassResult(model, True)
 
 
