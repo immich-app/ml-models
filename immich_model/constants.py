@@ -135,7 +135,7 @@ def declared_canvases(task: ModelTask, submodel: Submodel) -> list[CanvasSet]:
                         for height, width in dict.fromkeys(
                             chain.from_iterable(
                                 ((math.ceil(ratio * size / 32) * 32, size), (size, math.ceil(ratio * size / 32) * 32))
-                                for ratio in (1, 4 / 3, 3 / 2, 2)
+                                for ratio in (1, 4 / 3, 3 / 2, 16 / 9, 2)
                             )
                         )
                     ],
