@@ -1,0 +1,67 @@
+name: Fix fixtures
+
+# The label applied AFTER a run finished; applied before or during, that run's own `commit-fixtures` job
+# takes it instead, so nothing here ever waits.
+on:
+  pull_request:
+    types: ['labeled']
+
+permissions: {}
+
+jobs:
+  find:
+    if: ${{ github.event.label.name == 'fix:fixtures' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      run-id: ${{ steps.source.outputs.run-id }}
+    steps:
+      - id: source
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const head = process.env.HEAD_SHA
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner, repo, workflow_id: 'push.yaml', head_sha: head, per_page: 100,
+            })
+            // Defer only while that run can still see the label. Once its `labelled` job has read the
+            // PR, a label applied after would be seen by neither side, so take it here instead.
+            const pending = runs.find((run) => run.status !== 'completed')
+            if (pending) {
+              const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                owner, repo, run_id: pending.id, per_page: 100,
+              })
+              const gate = jobs.find((job) => job.name === 'labelled')
+              if (!gate || gate.status !== 'completed') {
+                return core.info(`run ${pending.id} is ${pending.status} and will commit these itself`)
+              }
+              core.info(`run ${pending.id} already read the labels, so this one is ours`)
+            }
+            for (const run of runs) {
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                owner, repo, run_id: run.id, per_page: 100,
+              })
+              const blessed = artifacts.filter((artifact) => artifact.name.startsWith('renderings-'))
+              if (blessed.length) {
+                core.info(`taking ${blessed.length} rendering artifact(s) from run ${run.id}`)
+                return core.setOutput('run-id', run.id)
+              }
+            }
+            core.info(`no run for ${head.slice(0, 7)} blessed a fixture, so they are already current`)
+
+  commit:
+    needs: find
+    if: ${{ needs.find.outputs.run-id }}
+    uses: ./.github/workflows/commit-fixtures.yaml
+    secrets:
+      client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+    with:
+      run-id: ${{ needs.find.outputs.run-id }}
+      branch: ${{ github.event.pull_request.head.ref }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      pull-number: ${{ github.event.pull_request.number }}
