@@ -141,7 +141,7 @@ jobs:
 
   commit-fixtures:
     needs: labelled
-    if: ${{ needs.labelled.outputs.wanted }}
+    if: ${{ !cancelled() && needs.labelled.outputs.wanted }}
     uses: ./.github/workflows/commit-fixtures.yaml
     secrets:
       client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
