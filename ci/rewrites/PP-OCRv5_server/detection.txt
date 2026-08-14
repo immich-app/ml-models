@@ -1,0 +1,75 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    216 nodes, weights 9baeda5351d0
+    FuseBatchNormIntoConv x82 e269b1c6
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
+    _FoldBiasAdd x6 fff058bc
+    unstamped x111 714b42e5
+
+MIGraphXExecutionProvider
+    -2 Conv auto_pad=SAME_UPPER dilations=(1, 1) group=1 kernel_shape=(2, 2) strides=(1, 1)
+    +2 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    217 nodes, weights 76826f1f1013
+    FuseBatchNormIntoConv x80 f811511a
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
+    SymmetrizeConvPads, FuseBatchNormIntoConv x2 0681b679
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
+    _FoldBiasAdd x6 fff058bc
+    unstamped x112 823f9e9e
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    unchanged
+
+RKNPU height=1472 width=736
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    214 nodes, weights 14a30a306a05
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x82 ddec07e5
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
+    _FoldBiasAdd x6 fff058bc
+    unstamped x109 525f6d51
+
+RKNPU height=2176 width=1088
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    214 nodes, weights 14a30a306a05
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x82 ddec07e5
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
+    _FoldBiasAdd x6 fff058bc
+    unstamped x109 525f6d51
+
+RKNPU height=2880 width=1440
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    214 nodes, weights 14a30a306a05
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x82 ddec07e5
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
+    _FoldBiasAdd x6 fff058bc
+    unstamped x109 525f6d51
+
+TensorrtExecutionProvider
+    unchanged

@@ -1,0 +1,508 @@
+<
+   ir_version: 10,
+   opset_import: ["" : 20]
+>
+"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] probs) 
+   <
+      float[batch,16,unk__0,unk__1] "Add.1"
+      float[batch,16,1,1] "Add.101"
+      float[batch,64,1,1] "Add.103"
+      float[batch,128,unk__50,unk__51] "Add.105"
+      float[batch,64,unk__50,unk__51] "Add.109"
+      float[batch,32,unk__8,unk__9] "Add.11"
+      float[batch,64,unk__50,unk__51] "Add.111"
+      float[batch,64,unk__50,unk__51] "Add.113"
+      float[batch,128,unk__50,unk__51] "Add.115"
+      float[batch,64,unk__50,unk__51] "Add.119"
+      float[batch,64,unk__50,unk__51] "Add.121"
+      float[batch,64,unk__88,unk__89] "Add.123"
+      float[batch,128,unk__88,unk__89] "Add.125"
+      float[batch,160,unk__88,unk__89] "Add.129"
+      float[batch,8,1,1] "Add.13"
+      float[batch,160,unk__88,unk__89] "Add.131"
+      float[batch,40,1,1] "Add.133"
+      float[batch,160,1,1] "Add.135"
+      float[batch,320,unk__88,unk__89] "Add.137"
+      float[batch,160,unk__88,unk__89] "Add.141"
+      float[batch,160,unk__88,unk__89] "Add.143"
+      float[batch,160,unk__88,unk__89] "Add.145"
+      float[batch,320,unk__88,unk__89] "Add.147"
+      float[batch,32,1,1] "Add.15"
+      float[batch,160,unk__88,unk__89] "Add.151"
+      float[batch,160,unk__88,unk__89] "Add.153"
+      float[batch,64,unk__88,unk__89] "Add.159"
+      float[batch,64,unk__50,unk__51] "Add.165"
+      float[batch,64,unk__8,unk__9] "Add.17"
+      float[batch,64,unk__28,unk__29] "Add.171"
+      float[batch,64,unk__8,unk__9] "Add.177"
+      float[batch,64,unk__50,unk__51] "Add.179"
+      float[batch,64,unk__28,unk__29] "Add.181"
+      float[batch,64,unk__8,unk__9] "Add.183"
+      float[batch,64,unk__88,unk__89] "Add.185"
+      float[batch,16,unk__88,unk__89] "Add.191"
+      float[batch,64,unk__50,unk__51] "Add.193"
+      float[batch,16,unk__50,unk__51] "Add.199"
+      float[batch,64,unk__28,unk__29] "Add.201"
+      float[batch,16,unk__28,unk__29] "Add.207"
+      float[batch,64,unk__8,unk__9] "Add.209"
+      float[batch,32,unk__8,unk__9] "Add.21"
+      float[batch,16,unk__8,unk__9] "Add.215"
+      float[batch,16,unk__8,unk__9] "Add.217"
+      float[batch,16,unk__0,unk__1] "Add.219"
+      float[batch,1,height,width] "Add.221"
+      float[batch,32,unk__8,unk__9] "Add.23"
+      float[batch,32,unk__8,unk__9] "Add.25"
+      float[batch,64,unk__8,unk__9] "Add.27"
+      float[batch,8,unk__0,unk__1] "Add.3"
+      float[batch,32,unk__8,unk__9] "Add.31"
+      float[batch,32,unk__8,unk__9] "Add.33"
+      float[batch,32,unk__28,unk__29] "Add.35"
+      float[batch,64,unk__28,unk__29] "Add.37"
+      float[batch,48,unk__28,unk__29] "Add.41"
+      float[batch,48,unk__28,unk__29] "Add.43"
+      float[batch,12,1,1] "Add.45"
+      float[batch,48,1,1] "Add.47"
+      float[batch,96,unk__28,unk__29] "Add.49"
+      float[batch,16,unk__0,unk__1] "Add.5"
+      float[batch,48,unk__28,unk__29] "Add.53"
+      float[batch,48,unk__28,unk__29] "Add.55"
+      float[batch,48,unk__28,unk__29] "Add.57"
+      float[batch,96,unk__28,unk__29] "Add.59"
+      float[batch,48,unk__28,unk__29] "Add.63"
+      float[batch,48,unk__28,unk__29] "Add.65"
+      float[batch,48,unk__50,unk__51] "Add.67"
+      float[batch,96,unk__50,unk__51] "Add.69"
+      float[batch,16,unk__8,unk__9] "Add.7"
+      float[batch,64,unk__50,unk__51] "Add.73"
+      float[batch,64,unk__50,unk__51] "Add.75"
+      float[batch,16,1,1] "Add.77"
+      float[batch,64,1,1] "Add.79"
+      float[batch,128,unk__50,unk__51] "Add.81"
+      float[batch,64,unk__50,unk__51] "Add.85"
+      float[batch,64,unk__50,unk__51] "Add.87"
+      float[batch,64,unk__50,unk__51] "Add.89"
+      float[batch,32,unk__8,unk__9] "Add.9"
+      float[batch,128,unk__50,unk__51] "Add.91"
+      float[batch,64,unk__50,unk__51] "Add.95"
+      float[batch,64,unk__50,unk__51] "Add.97"
+      float[batch,64,unk__50,unk__51] "Add.99"
+      float[batch,32,unk__0,unk__1] "Concat.1"
+      float[batch,64,unk__8,unk__9] "Concat.3"
+      float[batch,32,unk__8,unk__9] "Mul.1"
+      float[batch,48,unk__28,unk__29] "Mul.12"
+      float[batch,64,unk__50,unk__51] "Mul.23"
+      float[batch,64,unk__50,unk__51] "Mul.31"
+      float[batch,160,unk__88,unk__89] "Mul.42"
+      float[batch,32,1,1] "ReduceMean.1"
+      float[batch,48,1,1] "ReduceMean.3"
+      float[batch,64,1,1] "ReduceMean.5"
+      float[batch,64,1,1] "ReduceMean.7"
+      float[batch,160,1,1] "ReduceMean.9"
+      float[batch,64,unk__88,unk__89] "p2o.pd_op.conv2d.41.0"
+      float[batch,64,unk__50,unk__51] "p2o.pd_op.conv2d.44.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.conv2d.47.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.conv2d.50.0"
+      float[batch,16,unk__88,unk__89] "p2o.pd_op.conv2d.53.0"
+      float[batch,16,unk__50,unk__51] "p2o.pd_op.conv2d.56.0"
+      float[batch,16,unk__28,unk__29] "p2o.pd_op.conv2d.59.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.conv2d.62.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.gelu.0.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.gelu.1.0"
+      float[batch,128,unk__88,unk__89] "p2o.pd_op.gelu.10.0"
+      float[batch,320,unk__88,unk__89] "p2o.pd_op.gelu.11.0"
+      float[batch,320,unk__88,unk__89] "p2o.pd_op.gelu.12.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.gelu.2.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.gelu.3.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.gelu.4.0"
+      float[batch,96,unk__50,unk__51] "p2o.pd_op.gelu.5.0"
+      float[batch,128,unk__50,unk__51] "p2o.pd_op.gelu.6.0"
+      float[batch,128,unk__50,unk__51] "p2o.pd_op.gelu.7.0"
+      float[batch,128,unk__50,unk__51] "p2o.pd_op.gelu.8.0"
+      float[batch,128,unk__50,unk__51] "p2o.pd_op.gelu.9.0"
+      float[batch,32,1,1] "p2o.pd_op.hardsigmoid.0.0"
+      float[batch,48,1,1] "p2o.pd_op.hardsigmoid.1.0"
+      float[batch,64,1,1] "p2o.pd_op.hardsigmoid.2.0"
+      float[batch,64,1,1] "p2o.pd_op.hardsigmoid.3.0"
+      float[batch,160,1,1] "p2o.pd_op.hardsigmoid.4.0"
+      float[batch,64,unk__50,unk__51] "p2o.pd_op.nearest_interp.0.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.nearest_interp.1.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.nearest_interp.2.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.nearest_interp.3.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.nearest_interp.4.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.nearest_interp.5.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.pool2d.0.0"
+      float[batch,64,1,1] "p2o.pd_op.pool2d.1.0"
+      float[batch,64,1,1] "p2o.pd_op.pool2d.2.0"
+      float[batch,64,1,1] "p2o.pd_op.pool2d.3.0"
+      float[batch,64,1,1] "p2o.pd_op.pool2d.4.0"
+      float[batch,16,1,1] "p2o.pd_op.pool2d.5.0"
+      float[batch,16,1,1] "p2o.pd_op.pool2d.6.0"
+      float[batch,16,1,1] "p2o.pd_op.pool2d.7.0"
+      float[batch,16,1,1] "p2o.pd_op.pool2d.8.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.relu.0.0"
+      float[batch,8,unk__0,unk__1] "p2o.pd_op.relu.1.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.relu.18.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.relu.19.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.relu.2.0"
+      float[batch,16,unk__8,unk__9] "p2o.pd_op.relu.3.0"
+      float[batch,32,unk__8,unk__9] "p2o.pd_op.relu.4.0"
+      float[batch,8,1,1] "p2o.pd_op.relu.5.0"
+      float[batch,12,1,1] "p2o.pd_op.relu.6.0"
+      float[batch,16,1,1] "p2o.pd_op.relu.7.0"
+      float[batch,16,1,1] "p2o.pd_op.relu.8.0"
+      float[batch,40,1,1] "p2o.pd_op.relu.9.0"
+      float[batch,64,1,1] "se_group0_p2o.pd_op.hardsigmoid.5.0"
+      float[batch,64,1,1] "se_group0_p2o.pd_op.hardsigmoid.6.0"
+      float[batch,64,1,1] "se_group0_p2o.pd_op.hardsigmoid.7.0"
+      float[batch,64,1,1] "se_group0_p2o.pd_op.hardsigmoid.8.0"
+      float[batch,16,1,1] "se_group1_p2o.pd_op.hardsigmoid.10.0"
+      float[batch,16,1,1] "se_group1_p2o.pd_op.hardsigmoid.11.0"
+      float[batch,16,1,1] "se_group1_p2o.pd_op.hardsigmoid.12.0"
+      float[batch,16,1,1] "se_group1_p2o.pd_op.hardsigmoid.9.0"
+      float[batch,1,height,width] fetch_name_0
+      float[batch,64,1,1] se_group0_down
+      float[batch,256,1,1] se_group0_gates
+      float[batch,256,1,1] se_group0_pooled
+      float[batch,64,1,1] se_group0_relu
+      float[batch,256,1,1] se_group0_up
+      float[batch,16,1,1] se_group1_down
+      float[batch,64,1,1] se_group1_gates
+      float[batch,64,1,1] se_group1_pooled
+      float[batch,16,1,1] se_group1_relu
+      float[batch,64,1,1] se_group1_up
+      float[batch,height,width,3] tmp
+      float[batch,3,height,width] tmp_0
+      float[batch,64,1,1] val_0
+      float[batch,64,1,1] val_1
+      float[batch,64,1,1] val_2
+      float[batch,64,1,1] val_3
+      float[batch,16,1,1] val_4
+      float[batch,16,1,1] val_5
+      float[batch,16,1,1] val_6
+      float[batch,16,1,1] val_7
+      float[batch,3,height,width] x
+   >
+{
+   [n0] tmp = Cast <to: int = 1> (image)
+   [n1] tmp_0 = Transpose <perm: ints = [0, 3, 1, 2]> (tmp)
+   [n4] x = Sub (tmp_0, const_cast)
+   "Add.1" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> (x, "conv2d_108.w_0", "p2o.pd_op.conv2d.0.0_bias")
+   ["Relu.0"] "p2o.pd_op.relu.0.0" = Relu ("Add.1")
+   "Add.3" = Conv <auto_pad: string = "SAME_UPPER", dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.0.0", "conv2d_109.w_0", "p2o.pd_op.conv2d.1.0_bias")
+   ["Relu.1"] "p2o.pd_op.relu.1.0" = Relu ("Add.3")
+   "Add.5" = Conv <auto_pad: string = "SAME_UPPER", dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.1.0", "conv2d_110.w_0", "p2o.pd_op.conv2d.2.0_bias")
+   ["Relu.2"] "p2o.pd_op.relu.2.0" = Relu ("Add.5")
+   ["MaxPool.0"] "p2o.pd_op.pool2d.0.0" = MaxPool <auto_pad: string = "SAME_UPPER", ceil_mode: int = 0, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.0.0")
+   ["Concat.0"] "Concat.1" = Concat <axis: int = 1> ("p2o.pd_op.pool2d.0.0", "p2o.pd_op.relu.2.0")
+   "Add.7" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Concat.1", "conv2d_111.w_0", "p2o.pd_op.conv2d.3.0_bias")
+   ["Relu.3"] "p2o.pd_op.relu.3.0" = Relu ("Add.7")
+   "Add.9" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.3.0", "conv2d_112.w_0", "p2o.pd_op.conv2d.4.0_bias")
+   ["Relu.4"] "p2o.pd_op.relu.4.0" = Relu ("Add.9")
+   "Add.11" = Conv <dilations: ints = [1, 1], group: int = 32, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.4.0", "conv2d_114.w_0", "p2o.pd_op.depthwise_conv2d.0.0_bias")
+   ["ReduceMean.0"] "ReduceMean.1" = ReduceMean <keepdims: int = 1> ("Add.11", _v_680)
+   "Add.13" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("ReduceMean.1", "conv2d_7.w_0", "p2o.pd_op.conv2d.5.0_bias")
+   ["Relu.5"] "p2o.pd_op.relu.5.0" = Relu ("Add.13")
+   "Add.15" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.5.0", "conv2d_8.w_0", "p2o.pd_op.conv2d.6.0_bias")
+   ["HardSigmoid.0"] "p2o.pd_op.hardsigmoid.0.0" = HardSigmoid <alpha: float = 0.166667, beta: float = 0.5> ("Add.15")
+   ["Mul.0"] "Mul.1" = Mul ("Add.11", "p2o.pd_op.hardsigmoid.0.0")
+   "Add.17" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Mul.1", "conv2d_115.w_0", "p2o.pd_op.conv2d.7.0_bias")
+   "p2o.pd_op.gelu.0.0" = Gelu <approximate: string = "none"> ("Add.17")
+   "Add.21" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.0.0", "conv2d_116.w_0", "p2o.pd_op.conv2d.8.0_bias")
+   ["Add.22"] "Add.23" = Add ("Mul.1", "Add.21")
+   "Add.25" = Conv <dilations: ints = [1, 1], group: int = 32, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.23", "conv2d_118.w_0", "p2o.pd_op.depthwise_conv2d.1.0_bias")
+   "Add.27" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.25", "conv2d_119.w_0", "p2o.pd_op.conv2d.9.0_bias")
+   "p2o.pd_op.gelu.1.0" = Gelu <approximate: string = "none"> ("Add.27")
+   "Add.31" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.1.0", "conv2d_120.w_0", "p2o.pd_op.conv2d.10.0_bias")
+   ["Add.32"] "Add.33" = Add ("Add.25", "Add.31")
+   "Add.35" = Conv <dilations: ints = [1, 1], group: int = 32, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.33", "conv2d_121.w_0", "p2o.pd_op.depthwise_conv2d.2.0_bias")
+   "Add.37" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.35", "conv2d_122.w_0", "p2o.pd_op.conv2d.11.0_bias")
+   "p2o.pd_op.gelu.2.0" = Gelu <approximate: string = "none"> ("Add.37")
+   "Add.41" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.2.0", "conv2d_123.w_0", "p2o.pd_op.conv2d.12.0_bias")
+   "Add.43" = Conv <dilations: ints = [1, 1], group: int = 48, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.41", "conv2d_125.w_0", "p2o.pd_op.depthwise_conv2d.3.0_bias")
+   ["ReduceMean.2"] "ReduceMean.3" = ReduceMean <keepdims: int = 1> ("Add.43", _v_680)
+   "Add.45" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("ReduceMean.3", "conv2d_20.w_0", "p2o.pd_op.conv2d.13.0_bias")
+   ["Relu.6"] "p2o.pd_op.relu.6.0" = Relu ("Add.45")
+   "Add.47" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.6.0", "conv2d_21.w_0", "p2o.pd_op.conv2d.14.0_bias")
+   ["HardSigmoid.1"] "p2o.pd_op.hardsigmoid.1.0" = HardSigmoid <alpha: float = 0.166667, beta: float = 0.5> ("Add.47")
+   ["Mul.11"] "Mul.12" = Mul ("Add.43", "p2o.pd_op.hardsigmoid.1.0")
+   "Add.49" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Mul.12", "conv2d_126.w_0", "p2o.pd_op.conv2d.15.0_bias")
+   "p2o.pd_op.gelu.3.0" = Gelu <approximate: string = "none"> ("Add.49")
+   "Add.53" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.3.0", "conv2d_127.w_0", "p2o.pd_op.conv2d.16.0_bias")
+   ["Add.54"] "Add.55" = Add ("Mul.12", "Add.53")
+   "Add.57" = Conv <dilations: ints = [1, 1], group: int = 48, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.55", "conv2d_129.w_0", "p2o.pd_op.depthwise_conv2d.4.0_bias")
+   "Add.59" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.57", "conv2d_130.w_0", "p2o.pd_op.conv2d.17.0_bias")
+   "p2o.pd_op.gelu.4.0" = Gelu <approximate: string = "none"> ("Add.59")
+   "Add.63" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.4.0", "conv2d_131.w_0", "p2o.pd_op.conv2d.18.0_bias")
+   ["Add.64"] "Add.65" = Add ("Add.57", "Add.63")
+   "Add.67" = Conv <dilations: ints = [1, 1], group: int = 48, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.65", "conv2d_132.w_0", "p2o.pd_op.depthwise_conv2d.5.0_bias")
+   "Add.69" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.67", "conv2d_133.w_0", "p2o.pd_op.conv2d.19.0_bias")
+   "p2o.pd_op.gelu.5.0" = Gelu <approximate: string = "none"> ("Add.69")
+   "Add.73" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.5.0", "conv2d_134.w_0", "p2o.pd_op.conv2d.20.0_bias")
+   "Add.75" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.73", "conv2d_136.w_0", "p2o.pd_op.depthwise_conv2d.6.0_bias")
+   ["ReduceMean.4"] "ReduceMean.5" = ReduceMean <keepdims: int = 1> ("Add.75", _v_680)
+   "Add.77" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("ReduceMean.5", "conv2d_33.w_0", "p2o.pd_op.conv2d.21.0_bias")
+   ["Relu.7"] "p2o.pd_op.relu.7.0" = Relu ("Add.77")
+   "Add.79" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.7.0", "conv2d_34.w_0", "p2o.pd_op.conv2d.22.0_bias")
+   ["HardSigmoid.2"] "p2o.pd_op.hardsigmoid.2.0" = HardSigmoid <alpha: float = 0.166667, beta: float = 0.5> ("Add.79")
+   ["Mul.22"] "Mul.23" = Mul ("Add.75", "p2o.pd_op.hardsigmoid.2.0")
+   "Add.81" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Mul.23", "conv2d_137.w_0", "p2o.pd_op.conv2d.23.0_bias")
+   "p2o.pd_op.gelu.6.0" = Gelu <approximate: string = "none"> ("Add.81")
+   "Add.85" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.6.0", "conv2d_138.w_0", "p2o.pd_op.conv2d.24.0_bias")
+   ["Add.86"] "Add.87" = Add ("Mul.23", "Add.85")
+   "Add.89" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.87", "conv2d_140.w_0", "p2o.pd_op.depthwise_conv2d.7.0_bias")
+   "Add.91" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.89", "conv2d_141.w_0", "p2o.pd_op.conv2d.25.0_bias")
+   "p2o.pd_op.gelu.7.0" = Gelu <approximate: string = "none"> ("Add.91")
+   "Add.95" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.7.0", "conv2d_142.w_0", "p2o.pd_op.conv2d.26.0_bias")
+   ["Add.96"] "Add.97" = Add ("Add.89", "Add.95")
+   "Add.99" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.97", "conv2d_144.w_0", "p2o.pd_op.depthwise_conv2d.8.0_bias")
+   ["ReduceMean.6"] "ReduceMean.7" = ReduceMean <keepdims: int = 1> ("Add.99", _v_680)
+   "Add.101" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("ReduceMean.7", "conv2d_43.w_0", "p2o.pd_op.conv2d.27.0_bias")
+   ["Relu.8"] "p2o.pd_op.relu.8.0" = Relu ("Add.101")
+   "Add.103" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.8.0", "conv2d_44.w_0", "p2o.pd_op.conv2d.28.0_bias")
+   ["HardSigmoid.3"] "p2o.pd_op.hardsigmoid.3.0" = HardSigmoid <alpha: float = 0.166667, beta: float = 0.5> ("Add.103")
+   ["Mul.30"] "Mul.31" = Mul ("Add.99", "p2o.pd_op.hardsigmoid.3.0")
+   "Add.105" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Mul.31", "conv2d_145.w_0", "p2o.pd_op.conv2d.29.0_bias")
+   "p2o.pd_op.gelu.8.0" = Gelu <approximate: string = "none"> ("Add.105")
+   "Add.109" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.8.0", "conv2d_146.w_0", "p2o.pd_op.conv2d.30.0_bias")
+   ["Add.110"] "Add.111" = Add ("Mul.31", "Add.109")
+   "Add.113" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.111", "conv2d_148.w_0", "p2o.pd_op.depthwise_conv2d.9.0_bias")
+   "Add.115" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.113", "conv2d_149.w_0", "p2o.pd_op.conv2d.31.0_bias")
+   "p2o.pd_op.gelu.9.0" = Gelu <approximate: string = "none"> ("Add.115")
+   "Add.119" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.9.0", "conv2d_150.w_0", "p2o.pd_op.conv2d.32.0_bias")
+   ["Add.120"] "Add.121" = Add ("Add.113", "Add.119")
+   "Add.123" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.121", "conv2d_151.w_0", "p2o.pd_op.depthwise_conv2d.10.0_bias")
+   "Add.125" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.123", "conv2d_152.w_0", "p2o.pd_op.conv2d.33.0_bias")
+   "p2o.pd_op.gelu.10.0" = Gelu <approximate: string = "none"> ("Add.125")
+   "Add.129" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.10.0", "conv2d_153.w_0", "p2o.pd_op.conv2d.34.0_bias")
+   "Add.131" = Conv <dilations: ints = [1, 1], group: int = 160, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.129", "conv2d_155.w_0", "p2o.pd_op.depthwise_conv2d.11.0_bias")
+   ["ReduceMean.8"] "ReduceMean.9" = ReduceMean <keepdims: int = 1> ("Add.131", _v_680)
+   "Add.133" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("ReduceMean.9", "conv2d_56.w_0", "p2o.pd_op.conv2d.35.0_bias")
+   ["Relu.9"] "p2o.pd_op.relu.9.0" = Relu ("Add.133")
+   "Add.135" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.9.0", "conv2d_57.w_0", "p2o.pd_op.conv2d.36.0_bias")
+   ["HardSigmoid.4"] "p2o.pd_op.hardsigmoid.4.0" = HardSigmoid <alpha: float = 0.166667, beta: float = 0.5> ("Add.135")
+   ["Mul.41"] "Mul.42" = Mul ("Add.131", "p2o.pd_op.hardsigmoid.4.0")
+   "Add.137" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Mul.42", "conv2d_156.w_0", "p2o.pd_op.conv2d.37.0_bias")
+   "p2o.pd_op.gelu.11.0" = Gelu <approximate: string = "none"> ("Add.137")
+   "Add.141" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.11.0", "conv2d_157.w_0", "p2o.pd_op.conv2d.38.0_bias")
+   ["Add.142"] "Add.143" = Add ("Mul.42", "Add.141")
+   "Add.145" = Conv <dilations: ints = [1, 1], group: int = 160, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.143", "conv2d_159.w_0", "p2o.pd_op.depthwise_conv2d.12.0_bias")
+   "Add.147" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.145", "conv2d_160.w_0", "p2o.pd_op.conv2d.39.0_bias")
+   "p2o.pd_op.gelu.12.0" = Gelu <approximate: string = "none"> ("Add.147")
+   "Add.151" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.gelu.12.0", "conv2d_161.w_0", "p2o.pd_op.conv2d.40.0_bias")
+   ["Add.152"] "Add.153" = Add ("Add.145", "Add.151")
+   ["Conv.54"] "p2o.pd_op.conv2d.41.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.153", "conv2d_91.w_0")
+   ["GlobalAveragePool.0"] "p2o.pd_op.pool2d.1.0" = GlobalAveragePool ("p2o.pd_op.conv2d.41.0")
+   ["Conv.57"] "p2o.pd_op.conv2d.44.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.121", "conv2d_82.w_0")
+   ["GlobalAveragePool.1"] "p2o.pd_op.pool2d.2.0" = GlobalAveragePool ("p2o.pd_op.conv2d.44.0")
+   ["Conv.60"] "p2o.pd_op.conv2d.47.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.65", "conv2d_73.w_0")
+   ["GlobalAveragePool.2"] "p2o.pd_op.pool2d.3.0" = GlobalAveragePool ("p2o.pd_op.conv2d.47.0")
+   ["Conv.63"] "p2o.pd_op.conv2d.50.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.33", "conv2d_64.w_0")
+   ["GlobalAveragePool.3"] "p2o.pd_op.pool2d.4.0" = GlobalAveragePool ("p2o.pd_op.conv2d.50.0")
+   se_group0_pooled = Concat <axis: int = 1> ("p2o.pd_op.pool2d.1.0", "p2o.pd_op.pool2d.2.0", "p2o.pd_op.pool2d.3.0", "p2o.pd_op.pool2d.4.0")
+   se_group0_down = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group0_pooled, se_group0_down1, se_group0_down2)
+   se_group0_relu = Relu (se_group0_down)
+   se_group0_up = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group0_relu, se_group0_up1, se_group0_up2)
+   se_group0_gates = HardSigmoid <alpha: float = 0.2, beta: float = 0.5> (se_group0_up)
+   "se_group0_p2o.pd_op.hardsigmoid.5.0", "se_group0_p2o.pd_op.hardsigmoid.6.0", "se_group0_p2o.pd_op.hardsigmoid.7.0", "se_group0_p2o.pd_op.hardsigmoid.8.0" = Split <axis: int = 1> (se_group0_gates, se_group0_sizes)
+   val_0 = Add ("se_group0_p2o.pd_op.hardsigmoid.5.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.159" = Mul ("p2o.pd_op.conv2d.41.0", val_0)
+   val_1 = Add ("se_group0_p2o.pd_op.hardsigmoid.6.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.165" = Mul ("p2o.pd_op.conv2d.44.0", val_1)
+   val_2 = Add ("se_group0_p2o.pd_op.hardsigmoid.7.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.171" = Mul ("p2o.pd_op.conv2d.47.0", val_2)
+   val_3 = Add ("se_group0_p2o.pd_op.hardsigmoid.8.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.177" = Mul ("p2o.pd_op.conv2d.50.0", val_3)
+   ["Resize.0"] "p2o.pd_op.nearest_interp.0.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.159", "helper.constant.40", "helper.constant.39")
+   ["Add.178"] "Add.179" = Add ("Add.165", "p2o.pd_op.nearest_interp.0.0")
+   ["Resize.1"] "p2o.pd_op.nearest_interp.1.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.179", "helper.constant.40", "helper.constant.39")
+   ["Add.180"] "Add.181" = Add ("Add.171", "p2o.pd_op.nearest_interp.1.0")
+   ["Resize.2"] "p2o.pd_op.nearest_interp.2.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.181", "helper.constant.40", "helper.constant.39")
+   ["Add.182"] "Add.183" = Add ("Add.177", "p2o.pd_op.nearest_interp.2.0")
+   "Add.185" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.159", "conv2d_165.w_0", "p2o.pd_op.depthwise_conv2d.13.0_bias")
+   ["Conv.67"] "p2o.pd_op.conv2d.53.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.185", "conv2d_97.w_0")
+   ["GlobalAveragePool.4"] "p2o.pd_op.pool2d.5.0" = GlobalAveragePool ("p2o.pd_op.conv2d.53.0")
+   "Add.193" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.179", "conv2d_164.w_0", "p2o.pd_op.depthwise_conv2d.14.0_bias")
+   ["Conv.71"] "p2o.pd_op.conv2d.56.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.193", "conv2d_88.w_0")
+   ["GlobalAveragePool.5"] "p2o.pd_op.pool2d.6.0" = GlobalAveragePool ("p2o.pd_op.conv2d.56.0")
+   "Add.201" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.181", "conv2d_163.w_0", "p2o.pd_op.depthwise_conv2d.15.0_bias")
+   ["Conv.75"] "p2o.pd_op.conv2d.59.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.201", "conv2d_79.w_0")
+   ["GlobalAveragePool.6"] "p2o.pd_op.pool2d.7.0" = GlobalAveragePool ("p2o.pd_op.conv2d.59.0")
+   "Add.209" = Conv <dilations: ints = [1, 1], group: int = 64, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.183", "conv2d_162.w_0", "p2o.pd_op.depthwise_conv2d.16.0_bias")
+   ["Conv.79"] "p2o.pd_op.conv2d.62.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.209", "conv2d_70.w_0")
+   ["GlobalAveragePool.7"] "p2o.pd_op.pool2d.8.0" = GlobalAveragePool ("p2o.pd_op.conv2d.62.0")
+   se_group1_pooled = Concat <axis: int = 1> ("p2o.pd_op.pool2d.5.0", "p2o.pd_op.pool2d.6.0", "p2o.pd_op.pool2d.7.0", "p2o.pd_op.pool2d.8.0")
+   se_group1_down = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group1_pooled, se_group1_down1, se_group1_down2)
+   se_group1_relu = Relu (se_group1_down)
+   se_group1_up = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group1_relu, se_group1_up1, se_group1_up2)
+   se_group1_gates = HardSigmoid <alpha: float = 0.2, beta: float = 0.5> (se_group1_up)
+   "se_group1_p2o.pd_op.hardsigmoid.9.0", "se_group1_p2o.pd_op.hardsigmoid.10.0", "se_group1_p2o.pd_op.hardsigmoid.11.0", "se_group1_p2o.pd_op.hardsigmoid.12.0" = Split <axis: int = 1> (se_group1_gates, se_group1_sizes)
+   val_4 = Add ("se_group1_p2o.pd_op.hardsigmoid.9.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.191" = Mul ("p2o.pd_op.conv2d.53.0", val_4)
+   val_5 = Add ("se_group1_p2o.pd_op.hardsigmoid.10.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.199" = Mul ("p2o.pd_op.conv2d.56.0", val_5)
+   val_6 = Add ("se_group1_p2o.pd_op.hardsigmoid.11.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.207" = Mul ("p2o.pd_op.conv2d.59.0", val_6)
+   val_7 = Add ("se_group1_p2o.pd_op.hardsigmoid.12.0", "p2o.pd_op.hardsigmoid.5.0_one")
+   "Add.215" = Mul ("p2o.pd_op.conv2d.62.0", val_7)
+   ["Resize.3"] "p2o.pd_op.nearest_interp.3.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.191", "helper.constant.40", "helper.constant.45")
+   ["Resize.4"] "p2o.pd_op.nearest_interp.4.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.199", "helper.constant.40", "helper.constant.47")
+   ["Resize.5"] "p2o.pd_op.nearest_interp.5.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.207", "helper.constant.40", "helper.constant.39")
+   ["Concat.2"] "Concat.3" = Concat <axis: int = 1> ("p2o.pd_op.nearest_interp.3.0", "p2o.pd_op.nearest_interp.4.0", "p2o.pd_op.nearest_interp.5.0", "Add.215")
+   "Add.217" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Concat.3", "conv2d_166.w_0", "p2o.pd_op.conv2d.65.0_bias")
+   ["Relu.18"] "p2o.pd_op.relu.18.0" = Relu ("Add.217")
+   "Add.219" = ConvTranspose <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("p2o.pd_op.relu.18.0", "auto.cast.95", "ConvTranspose.1_bias")
+   ["Relu.19"] "p2o.pd_op.relu.19.0" = Relu ("Add.219")
+   "Add.221" = ConvTranspose <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("p2o.pd_op.relu.19.0", "auto.cast.98", "ConvTranspose.3_bias")
+   ["Sigmoid.0"] fetch_name_0 = Sigmoid ("Add.221")
+   [n1_2] probs = Squeeze (fetch_name_0, int64_1_1d)
+}
+
+weights:
+ConvTranspose.1_bias FLOAT[16] fa6f4fb2ec85
+ConvTranspose.3_bias FLOAT[1] 6edac2444100
+_v_680 INT64[2] fe6d3d3bb5dd
+auto.cast.95 FLOAT[16,16,2,2] c97358cda6e5
+auto.cast.98 FLOAT[16,1,2,2] e18e857e713d
+const_cast FLOAT[] 9fd754fbfd83
+conv2d_108.w_0 FLOAT[16,3,3,3] eca6bf608f40
+conv2d_109.w_0 FLOAT[8,16,2,2] 2083cd36be60
+conv2d_110.w_0 FLOAT[16,8,2,2] db900c44ceba
+conv2d_111.w_0 FLOAT[16,32,3,3] eb38ba84477d
+conv2d_112.w_0 FLOAT[32,16,1,1] d480b6f88844
+conv2d_114.w_0 FLOAT[32,1,3,3] ab6e48db4ebf
+conv2d_115.w_0 FLOAT[64,32,1,1] 0b5d48d6b13c
+conv2d_116.w_0 FLOAT[32,64,1,1] 9ee3037a3cd0
+conv2d_118.w_0 FLOAT[32,1,3,3] 0b88520f422e
+conv2d_119.w_0 FLOAT[64,32,1,1] a46019199a8f
+conv2d_120.w_0 FLOAT[32,64,1,1] bfd7f158744f
+conv2d_121.w_0 FLOAT[32,1,3,3] 52d5bdf97624
+conv2d_122.w_0 FLOAT[64,32,1,1] 1cb27d4764f2
+conv2d_123.w_0 FLOAT[48,64,1,1] ccae30d997cd
+conv2d_125.w_0 FLOAT[48,1,3,3] a05b9d30e5b4
+conv2d_126.w_0 FLOAT[96,48,1,1] ddde9cd2543f
+conv2d_127.w_0 FLOAT[48,96,1,1] de849d67ba5d
+conv2d_129.w_0 FLOAT[48,1,3,3] ffc69f35fd87
+conv2d_130.w_0 FLOAT[96,48,1,1] 8a86771fff04
+conv2d_131.w_0 FLOAT[48,96,1,1] 300fab1cad2f
+conv2d_132.w_0 FLOAT[48,1,3,3] fc43247061b4
+conv2d_133.w_0 FLOAT[96,48,1,1] 4ecc016ed32b
+conv2d_134.w_0 FLOAT[64,96,1,1] 93aa8e5ba8c8
+conv2d_136.w_0 FLOAT[64,1,3,3] d14dba93abf4
+conv2d_137.w_0 FLOAT[128,64,1,1] dc90436c2a58
+conv2d_138.w_0 FLOAT[64,128,1,1] f92b801f5a9f
+conv2d_140.w_0 FLOAT[64,1,3,3] e91cac584bb8
+conv2d_141.w_0 FLOAT[128,64,1,1] db52fdef4928
+conv2d_142.w_0 FLOAT[64,128,1,1] 679df347ff7c
+conv2d_144.w_0 FLOAT[64,1,3,3] 4173e18958e7
+conv2d_145.w_0 FLOAT[128,64,1,1] 181e051139cd
+conv2d_146.w_0 FLOAT[64,128,1,1] 1bd501bc333e
+conv2d_148.w_0 FLOAT[64,1,3,3] 2861c6252910
+conv2d_149.w_0 FLOAT[128,64,1,1] 46f13d0783d8
+conv2d_150.w_0 FLOAT[64,128,1,1] 715c7efba840
+conv2d_151.w_0 FLOAT[64,1,3,3] 22aa996618f5
+conv2d_152.w_0 FLOAT[128,64,1,1] b97536d07185
+conv2d_153.w_0 FLOAT[160,128,1,1] 03c443c4ca69
+conv2d_155.w_0 FLOAT[160,1,3,3] d355bd60d3bc
+conv2d_156.w_0 FLOAT[320,160,1,1] 4509f7bc858f
+conv2d_157.w_0 FLOAT[160,320,1,1] 9a078e80d99a
+conv2d_159.w_0 FLOAT[160,1,3,3] d65c9cf29ebc
+conv2d_160.w_0 FLOAT[320,160,1,1] f20e93714a3d
+conv2d_161.w_0 FLOAT[160,320,1,1] d4c175ef2c46
+conv2d_162.w_0 FLOAT[64,1,5,5] 419ff221d3ff
+conv2d_163.w_0 FLOAT[64,1,5,5] 8551dfd1125e
+conv2d_164.w_0 FLOAT[64,1,5,5] aa87a36a2bc9
+conv2d_165.w_0 FLOAT[64,1,5,5] 683f86e55d75
+conv2d_166.w_0 FLOAT[16,64,3,3] eba0e2b06e25
+conv2d_20.w_0 FLOAT[12,48,1,1] c172ef315b52
+conv2d_21.w_0 FLOAT[48,12,1,1] 0bec50c81a7d
+conv2d_33.w_0 FLOAT[16,64,1,1] de6f88273b1f
+conv2d_34.w_0 FLOAT[64,16,1,1] 19f7c45f3643
+conv2d_43.w_0 FLOAT[16,64,1,1] 6015deeb1470
+conv2d_44.w_0 FLOAT[64,16,1,1] 2d323e6997c3
+conv2d_56.w_0 FLOAT[40,160,1,1] ff8b4e16d2ac
+conv2d_57.w_0 FLOAT[160,40,1,1] 89be3d11a3f0
+conv2d_64.w_0 FLOAT[64,32,1,1] 3c7991e6ebf0
+conv2d_7.w_0 FLOAT[8,32,1,1] 389a0e48098c
+conv2d_70.w_0 FLOAT[16,64,1,1] 51aededda8ae
+conv2d_73.w_0 FLOAT[64,48,1,1] 29c45465492e
+conv2d_79.w_0 FLOAT[16,64,1,1] 3d08013c7b14
+conv2d_8.w_0 FLOAT[32,8,1,1] 7a82f452482e
+conv2d_82.w_0 FLOAT[64,64,1,1] 9cc6f348bcb8
+conv2d_88.w_0 FLOAT[16,64,1,1] 20cee3bcbdda
+conv2d_91.w_0 FLOAT[64,160,1,1] d3a225cd37b3
+conv2d_97.w_0 FLOAT[16,64,1,1] 079a9b743a67
+helper.constant.39 FLOAT[4] aa5b3e0ef3e8
+helper.constant.40 FLOAT[0] e3b0c44298fc
+helper.constant.45 FLOAT[4] cf5451a623be
+helper.constant.47 FLOAT[4] 1811eb557cd7
+int64_1_1d INT64[1] 7c9fa136d441
+p2o.pd_op.conv2d.0.0_bias FLOAT[16] 9bde77526852
+p2o.pd_op.conv2d.1.0_bias FLOAT[8] d272a0ec353a
+p2o.pd_op.conv2d.10.0_bias FLOAT[32] 5a7b77819f9e
+p2o.pd_op.conv2d.11.0_bias FLOAT[64] c4421e173923
+p2o.pd_op.conv2d.12.0_bias FLOAT[48] 3a389169023d
+p2o.pd_op.conv2d.13.0_bias FLOAT[12] b652db43914a
+p2o.pd_op.conv2d.14.0_bias FLOAT[48] b5cc87932810
+p2o.pd_op.conv2d.15.0_bias FLOAT[96] 291e429e0ccc
+p2o.pd_op.conv2d.16.0_bias FLOAT[48] bee04f62f122
+p2o.pd_op.conv2d.17.0_bias FLOAT[96] 3efd4e52177f
+p2o.pd_op.conv2d.18.0_bias FLOAT[48] 5806bf41085d
+p2o.pd_op.conv2d.19.0_bias FLOAT[96] 2f2d0d47ebf4
+p2o.pd_op.conv2d.2.0_bias FLOAT[16] d6fb0e93d477
+p2o.pd_op.conv2d.20.0_bias FLOAT[64] ee26db728ec7
+p2o.pd_op.conv2d.21.0_bias FLOAT[16] a51bf723c20f
+p2o.pd_op.conv2d.22.0_bias FLOAT[64] de5c18479c76
+p2o.pd_op.conv2d.23.0_bias FLOAT[128] 543b50b3fe29
+p2o.pd_op.conv2d.24.0_bias FLOAT[64] baa2b0a0d3de
+p2o.pd_op.conv2d.25.0_bias FLOAT[128] 2b762a2a7f04
+p2o.pd_op.conv2d.26.0_bias FLOAT[64] 98b33e508703
+p2o.pd_op.conv2d.27.0_bias FLOAT[16] f8c5aefd9d84
+p2o.pd_op.conv2d.28.0_bias FLOAT[64] 4632187aec2b
+p2o.pd_op.conv2d.29.0_bias FLOAT[128] fc8d030351ed
+p2o.pd_op.conv2d.3.0_bias FLOAT[16] 4b7a38f01b6f
+p2o.pd_op.conv2d.30.0_bias FLOAT[64] c3068963b57d
+p2o.pd_op.conv2d.31.0_bias FLOAT[128] a6bce21463b5
+p2o.pd_op.conv2d.32.0_bias FLOAT[64] 37e82172169d
+p2o.pd_op.conv2d.33.0_bias FLOAT[128] 50940d0a89d1
+p2o.pd_op.conv2d.34.0_bias FLOAT[160] 40c5f8f73609
+p2o.pd_op.conv2d.35.0_bias FLOAT[40] b159877e0014
+p2o.pd_op.conv2d.36.0_bias FLOAT[160] 6bfc4f77200b
+p2o.pd_op.conv2d.37.0_bias FLOAT[320] 46d815b9a626
+p2o.pd_op.conv2d.38.0_bias FLOAT[160] 1ab963606d6b
+p2o.pd_op.conv2d.39.0_bias FLOAT[320] a21e752d674b
+p2o.pd_op.conv2d.4.0_bias FLOAT[32] 75b1d940808d
+p2o.pd_op.conv2d.40.0_bias FLOAT[160] 361eb4803ed3
+p2o.pd_op.conv2d.5.0_bias FLOAT[8] cb4ff71a710c
+p2o.pd_op.conv2d.6.0_bias FLOAT[32] 85cf04200053
+p2o.pd_op.conv2d.65.0_bias FLOAT[16] 0e9d95585f8d
+p2o.pd_op.conv2d.7.0_bias FLOAT[64] 81997938d61e
+p2o.pd_op.conv2d.8.0_bias FLOAT[32] ed024219d4e3
+p2o.pd_op.conv2d.9.0_bias FLOAT[64] 86c8e9b964d3
+p2o.pd_op.depthwise_conv2d.0.0_bias FLOAT[32] 2ca546acac26
+p2o.pd_op.depthwise_conv2d.1.0_bias FLOAT[32] eedb2a36ef65
+p2o.pd_op.depthwise_conv2d.10.0_bias FLOAT[64] df8082fa8199
+p2o.pd_op.depthwise_conv2d.11.0_bias FLOAT[160] 9eeb408b79ff
+p2o.pd_op.depthwise_conv2d.12.0_bias FLOAT[160] 65a9c885e6c1
+p2o.pd_op.depthwise_conv2d.13.0_bias FLOAT[64] 8034bb3714d6
+p2o.pd_op.depthwise_conv2d.14.0_bias FLOAT[64] cf6f0cdf562e
+p2o.pd_op.depthwise_conv2d.15.0_bias FLOAT[64] e173f2e86531
+p2o.pd_op.depthwise_conv2d.16.0_bias FLOAT[64] 18c536514a78
+p2o.pd_op.depthwise_conv2d.2.0_bias FLOAT[32] 94341ce3ec68
+p2o.pd_op.depthwise_conv2d.3.0_bias FLOAT[48] 449bc5ac1e4e
+p2o.pd_op.depthwise_conv2d.4.0_bias FLOAT[48] 195d66f64a1c
+p2o.pd_op.depthwise_conv2d.5.0_bias FLOAT[48] 45799033ff4e
+p2o.pd_op.depthwise_conv2d.6.0_bias FLOAT[64] 9c450889f59c
+p2o.pd_op.depthwise_conv2d.7.0_bias FLOAT[64] 5a768734f883
+p2o.pd_op.depthwise_conv2d.8.0_bias FLOAT[64] e1bca67a058a
+p2o.pd_op.depthwise_conv2d.9.0_bias FLOAT[64] 817061d53e3f
+p2o.pd_op.hardsigmoid.5.0_one FLOAT[] e00e5eb94441
+se_group0_down1 FLOAT[64,64,1,1] 9930a75ab080
+se_group0_down2 FLOAT[64] 785e4ae48595
+se_group0_sizes INT64[4] 998b63595acf
+se_group0_up1 FLOAT[256,16,1,1] 1349cad1bd0e
+se_group0_up2 FLOAT[256] 1ac4a47e1d28
+se_group1_down1 FLOAT[16,16,1,1] 9fde90527970
+se_group1_down2 FLOAT[16] c7da74659570
+se_group1_sizes INT64[4] b8eccb1655c4
+se_group1_up1 FLOAT[64,4,1,1] b397dad6e4a9
+se_group1_up2 FLOAT[64] a021fcd66bc1

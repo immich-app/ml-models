@@ -1,0 +1,111 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    -2 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +2 HardSwish
+    -2 Mul
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    89 nodes, weights 6307b4e60881
+    FuseBatchNormIntoConv x2 a6b06e3d
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    FuseGreedyCtcTopK x2 cf2f64e5
+    FuseHardSwish x2 f424200c
+    _FoldBiasAdd x33 b2294c37
+    _FuseErfGelu x10 094e651a
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x36 1a25fd6c
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    90 nodes, weights 4dc0e0a39884
+    FuseBatchNormIntoConv x2 a6b06e3d
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    _FoldBiasAdd x33 b2294c37
+    _FuseErfGelu x10 094e651a
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x41 c18248a1
+
+MIGraphXExecutionProvider
+    unchanged
+
+NvTensorRTRTXExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    91 nodes, weights 6307b4e60881
+    FuseBatchNormIntoConv x2 a6b06e3d
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    FuseGreedyCtcTopK x2 cf2f64e5
+    _FoldBiasAdd x33 b2294c37
+    _FuseErfGelu x10 094e651a
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x40 492c5c16
+
+OpenVINOExecutionProvider
+    -2 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +2 HardSwish
+    -2 Mul
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=6
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Softmax axis=2
+    -1 Sub
+    83 nodes, weights 4dc0e0a39884
+    FuseBatchNormIntoConv x2 a6b06e3d
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    FuseHardSwish x2 f424200c
+    _FoldBiasAdd x33 b2294c37
+    _FuseErfGelu x10 094e651a
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x32 80fa2071
+
+RKNPU width=2048
+    +20 Mul
+    +10 Add
+    +10 Div
+    +10 Erf
+    -10 Gelu approximate=none
+    +4 Transpose perm=(0, 3, 2, 1)
+    -2 Sub
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=1
+    -1 Cast to=6
+    +1 Concat axis=3
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Split axis=1
+    +1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    +1 Unsqueeze
+    129 nodes, weights fac4c916c227
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    DecomposeGelu, _FuseErfGelu x50 c8c55aac
+    FuseBatchNormIntoConv x2 b8290aa0
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    _FoldBiasAdd x33 e15d452c
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x40 cd9c5258
+
+TensorrtExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    91 nodes, weights 6307b4e60881
+    FuseBatchNormIntoConv x2 a6b06e3d
+    FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
+    FuseGreedyCtcTopK x2 cf2f64e5
+    _FoldBiasAdd x33 b2294c37
+    _FuseErfGelu x10 094e651a
+    _HoistBatchNormOverSqueeze x2 34d81872
+    unstamped x40 492c5c16

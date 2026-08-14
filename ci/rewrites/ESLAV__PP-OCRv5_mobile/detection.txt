@@ -1,0 +1,114 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    -24 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +24 HardSwish
+    -24 Mul
+    144 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x24 88c59ad1
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 9586dfce
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 197fa113
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 971d4d3a
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x51 a0e04758
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    167 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x50 06530e5e
+
+MIGraphXExecutionProvider
+    unchanged
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    -24 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +24 HardSwish
+    -24 Mul
+    144 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x24 88c59ad1
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 9586dfce
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 197fa113
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 971d4d3a
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x51 a0e04758
+
+RKNPU height=1472 width=736
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    165 nodes, weights 16500ac49794
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x2 0824e00f
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x48 20d86187
+
+RKNPU height=2176 width=1088
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    165 nodes, weights 16500ac49794
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x2 0824e00f
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x48 20d86187
+
+RKNPU height=2880 width=1440
+    -1 Cast to=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    165 nodes, weights 16500ac49794
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x2 0824e00f
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x48 20d86187
+
+TensorrtExecutionProvider
+    unchanged

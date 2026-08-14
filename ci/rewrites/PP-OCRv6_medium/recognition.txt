@@ -1,0 +1,138 @@
+CPUExecutionProvider
+    -4 Add
+    -3 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +3 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -1 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +1 SkipLayerNormalization epsilon=9.999999974752427e-07
+    188 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    FuseSkipLayerNorm, LayerNormBiasFusion, LayerNormFusion x4 dfce4419
+    LayerNormBiasFusion, LayerNormFusion x1 2a80a1b2
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 1f22e914
+    unstamped x105 3c73f0d8
+
+CUDAExecutionProvider
+    -4 Add
+    -3 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +3 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -1 ArgMax axis=2 keepdims=0
+    -1 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    -1 ReduceMax keepdims=1
+    +1 SkipLayerNormalization epsilon=9.999999974752427e-07
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    188 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    FuseGreedyCtcTopK x2 cbcd7d37
+    FuseSkipLayerNorm, LayerNormBiasFusion, LayerNormFusion x4 dfce4419
+    LayerNormBiasFusion, LayerNormFusion x1 2a80a1b2
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 1f22e914
+    unstamped x103 f11e1c0f
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    191 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x108 8928ade5
+
+MIGraphXExecutionProvider
+    -2 Conv auto_pad=SAME_UPPER dilations=(1, 1) group=1 kernel_shape=(2, 2) strides=(1, 1)
+    +2 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    192 nodes, weights 352e09469662
+    FuseBatchNormIntoConv x3 f0034f99
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    SymmetrizeConvPads, _FoldBiasAdd x2 0a5187dc
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x57 c355cf96
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x109 fc4f340b
+
+NvTensorRTRTXExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    192 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    FuseGreedyCtcTopK x2 cbcd7d37
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x107 205592f8
+
+OpenVINOExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=6
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Softmax axis=2
+    -1 Sub
+    186 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x103 0232e6e3
+
+RKNPU width=2048
+    +28 Mul
+    +14 Add
+    +14 Div
+    +14 Erf
+    -14 Gelu approximate=none
+    +10 Transpose perm=(0, 3, 2, 1)
+    -2 Sub
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=1
+    -1 Cast to=6
+    +1 Concat axis=3
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Split axis=1
+    +1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    +1 Unsqueeze
+    252 nodes, weights a0809e541656
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    DecomposeGelu, _FuseErfGelu x70 a24a2b3d
+    FuseBatchNormIntoConv x3 f0034f99
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 f9bbe0fa
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x113 ba122746
+
+TensorrtExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    192 nodes, weights e7e45dd78cf8
+    FuseBatchNormIntoConv x3 f0034f99
+    FuseGreedyCtcTopK x2 cbcd7d37
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 5bba76a2
+    _FoldBiasAdd x59 cd1e1b9f
+    _FuseErfGelu x14 a1e48475
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x107 205592f8

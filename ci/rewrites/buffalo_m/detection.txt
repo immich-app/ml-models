@@ -5,10 +5,13 @@ CUDAExecutionProvider
     unchanged
 
 CoreMLExecutionProvider
-    -1 Transpose perm=(0, 3, 1, 2)
-    123 nodes, weights 69f433bcd709
+    +9 Reshape
+    +8 Transpose perm=(0, 3, 1, 2)
+    -3 Transpose perm=(0, 2, 3, 1)
+    138 nodes, weights b965adb15f88
+    UnpackScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads x24 8cf9c500
     _ConstantFpnScale x2 f10d4ff2
-    _MergeScrfdHeads x15 e49a0e68
+    _MergeScrfdHeads x6 44298101
     unstamped x106 5adf8ca3
 
 MIGraphXExecutionProvider
@@ -21,13 +24,16 @@ OpenVINOExecutionProvider
     unchanged
 
 RKNPU height=640 width=640
+    +9 Reshape
+    +8 Transpose perm=(0, 3, 1, 2)
+    -3 Transpose perm=(0, 2, 3, 1)
     -1 Cast to=1
     -1 Sub
-    -1 Transpose perm=(0, 3, 1, 2)
-    121 nodes, weights d56efc7e6da7
+    136 nodes, weights cb551c314037
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    UnpackScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads x24 8cf9c500
     _ConstantFpnScale x2 f10d4ff2
-    _MergeScrfdHeads x15 e49a0e68
+    _MergeScrfdHeads x6 44298101
     unstamped x104 b14cd109
 
 TensorrtExecutionProvider

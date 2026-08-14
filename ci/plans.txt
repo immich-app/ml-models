@@ -12,7 +12,9 @@ CUDAExecutionProvider
 CoreMLExecutionProvider
     decompose_attention
     decompose_reduce_l2
+    unpack_scrfd_heads
     nchw_image_input
+    split_deep_reduction
 
 MIGraphXExecutionProvider
     decompose_attention
@@ -35,6 +37,7 @@ OpenVINOExecutionProvider
 RKNPU
     floatify_pad_mask
     decompose_attention
+    unpack_scrfd_heads
     im2col_patchify_batch1
     uint8_image_input
     float_image_input

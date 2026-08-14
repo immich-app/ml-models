@@ -23,24 +23,26 @@ CUDAExecutionProvider
     unstamped x153 da976bc3
 
 CoreMLExecutionProvider
+    +60 MatMul
+    +48 Add
     +48 Reshape
+    +48 Slice
     +48 Transpose perm=(0, 2, 1, 3)
-    +24 MatMul
     +13 Mul
-    +12 Add
     -12 Attention is_causal=1 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
     +12 Softmax axis=-1
     +12 Transpose perm=(0, 1, 3, 2)
     -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
     +1 ReduceSum keepdims=1
     +1 Sqrt
-    376 nodes, weights d0e7a671b85c
+    496 nodes, weights 4015ad71c047
     DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
     DecomposeReduceL2 x3 919a4b2e
+    SplitLargeReduction x132 c9fd97c6
     _EotOneHotSelect x3 b5dd8d0a
     _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
     _Fp16TokenEmbedding x2 777a3503
-    unstamped x199 43397bf9
+    unstamped x187 0da410e5
 
 MIGraphXExecutionProvider
     +48 Reshape

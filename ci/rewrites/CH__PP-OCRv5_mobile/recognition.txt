@@ -1,0 +1,157 @@
+CPUExecutionProvider
+    -4 Add
+    -3 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +3 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -1 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    +1 SkipLayerNormalization epsilon=9.999999974752427e-07
+    194 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    FuseSkipLayerNorm, LayerNormBiasFusion, LayerNormFusion x4 dfce4419
+    LayerNormBiasFusion, LayerNormFusion x1 2a80a1b2
+    _DecomposeHardSwish x56 a16778d4
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 1da27dec
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 030aa498
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 96c2aa8d
+    _UnflattenToUnsqueeze x1 1f22e914
+    unstamped x77 07b210e0
+
+CUDAExecutionProvider
+    -28 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +28 HardSwish
+    -28 Mul
+    -4 Add
+    -3 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
+    +3 SkipLayerNormalization epsilon=9.999999747378752e-06
+    -1 ArgMax axis=2 keepdims=0
+    -1 LayerNormalization axis=-1 epsilon=9.999999974752427e-07 stash_type=1
+    -1 ReduceMax keepdims=1
+    +1 SkipLayerNormalization epsilon=9.999999974752427e-07
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    166 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    FuseGreedyCtcTopK x2 17e81cc8
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x28 b3760222
+    FuseSkipLayerNorm, LayerNormBiasFusion, LayerNormFusion x4 dfce4419
+    LayerNormBiasFusion, LayerNormFusion x1 2a80a1b2
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 b9316958
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 ff145bf3
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 87e9a09a
+    _UnflattenToUnsqueeze x1 1f22e914
+    unstamped x75 b10bd6c0
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    197 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _DecomposeHardSwish x56 a16778d4
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 1da27dec
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 030aa498
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 96c2aa8d
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x80 247ec9fe
+
+MIGraphXExecutionProvider
+    unchanged
+
+NvTensorRTRTXExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    198 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    FuseGreedyCtcTopK x2 17e81cc8
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _DecomposeHardSwish x56 a16778d4
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 1da27dec
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 030aa498
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 96c2aa8d
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x79 04db7477
+
+OpenVINOExecutionProvider
+    -28 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +28 HardSwish
+    -28 Mul
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=6
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Softmax axis=2
+    -1 Sub
+    164 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x28 b3760222
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 b9316958
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 ff145bf3
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 87e9a09a
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x75 5772e2e9
+
+RKNPU width=2048
+    +9 Transpose perm=(0, 3, 2, 1)
+    -2 Sub
+    -1 ArgMax axis=2 keepdims=0
+    -1 Cast to=1
+    -1 Cast to=6
+    +1 Concat axis=3
+    -1 Exp
+    -1 Reciprocal
+    -1 ReduceMax keepdims=1
+    -1 ReduceSum keepdims=0
+    +1 Split axis=1
+    +1 Transpose perm=(0, 2, 1)
+    -1 Transpose perm=(0, 3, 1, 2)
+    +1 Unsqueeze
+    201 nodes, weights 9e7218e83f18
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    FuseBatchNormIntoConv x6 070fbb4e
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _DecomposeHardSwish x56 a16778d4
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 1da27dec
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 030aa498
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 96c2aa8d
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x84 e4139f03
+
+TensorrtExecutionProvider
+    -1 ArgMax axis=2 keepdims=0
+    -1 ReduceMax keepdims=1
+    +1 Squeeze
+    +1 TopK axis=2 largest=1 sorted=1
+    198 nodes, weights c701fdf571c7
+    FuseBatchNormIntoConv x6 57c49d14
+    FuseGreedyCtcTopK x2 17e81cc8
+    LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    _DecomposeHardSwish x56 a16778d4
+    _FlattenToSqueeze x1 58119faf
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x12 1da27dec
+    _FoldAffineAfterConv, _FoldBiasAdd x3 16ed0de4
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 030aa498
+    _FoldBiasAdd x4 b3c02511
+    _MoveAffinePastPool x3 96c2aa8d
+    _UnflattenToUnsqueeze x1 ea488eee
+    unstamped x79 04db7477

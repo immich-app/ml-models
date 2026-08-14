@@ -5,7 +5,9 @@ CUDAExecutionProvider
     unchanged
 
 CoreMLExecutionProvider
-    +2 MatMul
+    +12 Slice
+    +11 MatMul
+    +9 Add
     +2 Mul
     -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
     -1 ReduceL2 keepdims=1 noop_with_empty_axes=0
@@ -14,13 +16,14 @@ CoreMLExecutionProvider
     +1 Sqrt
     +1 Transpose perm=(0, 1, 3, 2)
     -1 Transpose perm=(0, 3, 1, 2)
-    505 nodes, weights 95b5f0ed0d20
+    535 nodes, weights 92f96a725b3d
     DecomposeAttention x5 b00b8abe
     DecomposeReduceL2 x3 a689cbf8
     FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x199 323cfe83
+    SplitLargeReduction x33 46040459
     _ConstantifyReshapeTarget x9 8c4eb3c1
     _ScalarGatherToSlice x1 c2f58daf
-    unstamped x288 eda9e19b
+    unstamped x285 8079f14d
 
 MIGraphXExecutionProvider
     +2 MatMul
