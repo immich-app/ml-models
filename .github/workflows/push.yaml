@@ -3,6 +3,7 @@ on:
   push:
     branches: ['main']
   pull_request:
+    types: ['opened', 'synchronize', 'reopened', 'labeled']
   release:
     types: ['published']
   workflow_dispatch:
@@ -13,12 +14,14 @@ on:
         description: 'Force export all models'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # labelling is its own lane to avoid cancelling the export run whose renderings it is about to read
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.action == 'labeled' && 'label' || 'build' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # The plans need no model, so they gate every push instead of waiting on the export matrix
   plans:
+    if: ${{ github.event.action != 'labeled' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,12 +31,22 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
-          # this job produces no artifact for a poisoned cache to reach
+          # the rendering it hands back is of this PR's own source and is committed to this PR's own head,
+          # and a PR-scoped cache is readable by no other PR, so a poisoned one reaches nothing new
           enable-cache: true # zizmor: ignore[cache-poisoning]
           cache-dependency-glob: uv.lock
-      - run: uv run --frozen --extra export immich-model check
+      - id: check
+        run: uv run --frozen --extra export immich-model check plan
+      - if: ${{ failure() && steps.check.outcome == 'failure' }}
+        run: uv run --frozen --extra export immich-model check plan --bless
+      - if: ${{ failure() && steps.check.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: renderings-plans
+          path: ci/plans.txt
 
   configure:
+    if: ${{ github.event.action != 'labeled' }}
     runs-on: ubuntu-latest
     outputs:
       to_export: ${{ steps.scope.outputs.to_export }}
@@ -102,3 +115,78 @@ jobs:
       hf-name: ${{ matrix.hf-name }}
       runner: ${{ matrix.runner || 'ubuntu-latest'}}
       upload: ${{ inputs.force || github.event_name == 'release'}}
+
+  # Label a PR `fix:fixtures` to commit the renderings its last export already blessed
+  commit-fixtures:
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'fix:fixtures' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+          token: ${{ steps.token.outputs.token }}
+
+      # the newest run for THIS head sha that actually blessed something
+      - id: source-run
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'push.yaml',
+              head_sha: context.payload.pull_request.head.sha,
+              status: 'completed',
+              per_page: 100,
+            })
+            for (const run of runs) {
+              if (run.id === context.runId) continue
+              const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+                per_page: 100,
+              })
+              if (data.artifacts.some((artifact) => artifact.name.startsWith('renderings-'))) {
+                core.setOutput('id', run.id)
+                return
+              }
+            }
+            core.setFailed('no completed run for this commit blessed any fixture; re-run the export first')
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: renderings-*
+          merge-multiple: true
+          path: ci
+          run-id: ${{ steps.source-run.outputs.id }}
+          github-token: ${{ github.token }}
+
+      - uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
+        with:
+          default_author: github_actions
+          message: 'chore: bless ci fixtures'
+          add: ci
+
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        if: always()
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'fix:fixtures'
+            })
