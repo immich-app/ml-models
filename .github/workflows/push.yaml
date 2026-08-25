@@ -3,7 +3,7 @@ on:
   push:
     branches: ['main']
   pull_request:
-    types: ['opened', 'synchronize', 'reopened', 'labeled']
+    types: ['opened', 'synchronize', 'reopened']
   release:
     types: ['published']
   workflow_dispatch:
@@ -14,14 +14,12 @@ on:
         description: 'Force export all models'
 
 concurrency:
-  # labelling is its own lane to avoid cancelling the export run whose renderings it is about to read
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.action == 'labeled' && 'label' || 'build' }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # The plans need no model, so they gate every push instead of waiting on the export matrix
   plans:
-    if: ${{ github.event.action != 'labeled' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -46,7 +44,6 @@ jobs:
           path: ci/plans.txt
 
   configure:
-    if: ${{ github.event.action != 'labeled' }}
     runs-on: ubuntu-latest
     outputs:
       to_export: ${{ steps.scope.outputs.to_export }}
