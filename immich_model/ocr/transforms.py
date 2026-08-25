@@ -72,7 +72,7 @@ def transform_detection(
         _FoldAsymmetricConvsPass(asym_folds),
         WrapPass(_dsl.det_preprocess, _dsl.det_postprocess),
         ReinferPass(),
-        NameOutputDimsPass({"probs": [_dsl.Batch, _dsl.Height, _dsl.Width]}),
+        NameOutputDimsPass({"dbnet_probs": [_dsl.Batch, _dsl.Height, _dsl.Width]}),
         FlushDenormalsPass(),  # last: the folds above are what set the weights that ship
         common_passes.CheckerPass(),
     )(model).model
@@ -115,7 +115,7 @@ def transform_recognition(
         _ElideCtcSoftmaxPass(),
         WrapPass(_dsl.rec_preprocess, _dsl.rec_postprocess),
         ReinferPass(),
-        NameOutputDimsPass({"indices": [_dsl.Batch, _dsl.Seq], "probs": [_dsl.Batch, _dsl.Seq]}),
+        NameOutputDimsPass({"ctc_indices": [_dsl.Batch, _dsl.Seq], "ctc_confidence": [_dsl.Batch, _dsl.Seq]}),
         FlushDenormalsPass(),
         common_passes.CheckerPass(),
     )(model).model

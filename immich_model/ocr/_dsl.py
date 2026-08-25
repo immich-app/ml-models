@@ -19,7 +19,7 @@ REC_HEIGHT = 48
 
 @script(default_opset=op)
 def det_preprocess(image: UINT8[Batch, Height, Width, 3]) -> FLOAT[Batch, 3, Height, Width]:
-    # scale and BGR->RGB flip fold into the first conv; the shift stays, not commuting with its padding
+    # scale and RGB->BGR swap fold into the first conv, leaving it RGB; the shift stays, not commuting with its padding
     return op.Transpose(op.Cast(image, to=TensorProto.FLOAT), perm=[0, 3, 1, 2]) - 127.5
 
 

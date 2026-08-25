@@ -98,6 +98,7 @@ def upload(
             repo_id=repo_id,
             folder_path=model_dir,
             revision=hf_branch,
+            ignore_patterns=["**/model.json"],
             # deleted in the same commit as the upload, so it's atomic
             delete_patterns=DELETE_PATTERNS,
         )

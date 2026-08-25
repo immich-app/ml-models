@@ -213,7 +213,7 @@ class SeqMajorLogitsPass(ir.passes.InPlacePass):
             for i, tile in enumerate(split.outputs)
         ]
         joined = ir.node("Concat", inputs=[node.outputs[0] for node in moved], attributes={"axis": 3}, num_outputs=1)
-        joined.outputs[0].name = "logits"
+        joined.outputs[0].name = "ctc_logits"
 
         graph.extend([native, widened, split, *moved, joined])
         graph.outputs.clear()

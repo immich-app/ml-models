@@ -9,8 +9,12 @@ from ..onnx._ir import ReinferShapesPass
 from ..runtime import RKNPU, RewriteContext, apply_rewrites, plan_rewrites
 from ._onnx import rknn_config
 
-# what `--cache` and the bench agree "compiled" means; `nodes` is absent, a foreign binary having no graph
-SIDECAR_KEYS = ("canvases", "input")
+
+def contract(canvases: Sequence[Mapping[str, int]]) -> str:
+    """What a binary declares it serves, carried in `custom_string` and read back with `rknn_query`."""
+    widest = max_canvas(canvases)
+    ordered = [widest, *(canvas for canvas in canvases if canvas != widest)]
+    return json.dumps({"dims": [dict(canvas) for canvas in ordered]}, separators=(",", ":"))
 
 
 def _export_platform(
@@ -36,6 +40,7 @@ def _export_platform(
     rknn = RKNN(verbose=False)
     rknn.config(
         target_platform=target_platform,
+        custom_string=contract(canvases),
         disable_rules=[] if fuse_matmul_softmax_matmul_to_sdpa else ["fuse_matmul_softmax_matmul_to_sdpa"],
         enable_flash_attention=False,
         model_pruning=True,
@@ -55,7 +60,7 @@ def _export_platform(
         json.dumps(
             {
                 "nodes": len(list(ir.traversal.RecursiveGraphIterator(prepared.graph))),
-                "canvases": [dict(canvas) for canvas in canvases],
+                "contract": contract(canvases),
                 "input": {"name": inputs[0], "shapes": [shape[0] for shape in shapes]},
             }
         )
@@ -75,7 +80,7 @@ def _export_platforms(
         socs = []
         for soc in target_socs or RKNN_SOCS:
             model_path = output_dir / "rknpu" / soc / variant / "model.rknn"
-            missing = stale(model_path)
+            missing = stale(model_path, contract(group.canvases))
             if cache and not missing:
                 print(f"{model_path} already exists, skipping")
                 continue
@@ -94,12 +99,11 @@ def _export_canvas(
         work = Path(work_dir)
         # every canvas is prepared, but only MaxShape's graph is compiled
         widest = max_canvas(canvases)
+        rest = [canvas for canvas in canvases if canvas != widest]
         onnx_path = _prepare(source, work / "max", widest)
         config_extras = rknn_config(onnx_path)
         inputs, max_shape = _input_spec(onnx_path)
-        ordered = [max_shape] + [
-            _input_spec(_prepare(source, work / canvas_label(c), c))[1] for c in canvases if c != widest
-        ]
+        ordered = [max_shape] + [_input_spec(_prepare(source, work / canvas_label(c), c))[1] for c in rest]
 
         def attempt(soc: str, fuse: bool) -> None:
             _export_platform(
@@ -136,15 +140,16 @@ def _export_canvas(
             raise RuntimeError(f"RKNN export failed for {source.parent.name} on: {', '.join(failed)}")
 
 
-def stale(model_path: Path) -> list[str]:
-    """What this compiled binary is missing: the binary itself, its sidecar, or the sidecar's keys."""
+def stale(model_path: Path, expected: str) -> list[str]:
+    """What this binary is missing or disagrees with; empty means fresh. The sidecar is written last."""
     sidecar = model_path.with_suffix(".json")
     if not model_path.is_file():
         return [model_path.name]
     if not sidecar.is_file():
         return [sidecar.name]
-    recorded = json.loads(sidecar.read_text())
-    return [key for key in SIDECAR_KEYS if key not in recorded]
+    if json.loads(sidecar.read_text()).get("contract") != expected:
+        return ["contract"]
+    return []
 
 
 def _prepare(source: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
