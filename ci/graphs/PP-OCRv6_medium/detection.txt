@@ -2,7 +2,7 @@
    ir_version: 10,
    opset_import: ["" : 20]
 >
-"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] probs) 
+"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] dbnet_probs) 
    <
       float[batch,64,unk__0,unk__1] "Add.1"
       float[batch,128,1,1] "Add.101"
@@ -360,7 +360,7 @@
    ["Relu.15"] "p2o.pd_op.relu.15.0" = Relu ("Add.345")
    "Add.347" = ConvTranspose <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("p2o.pd_op.relu.15.0", "auto.cast.138", "ConvTranspose.3_bias")
    ["Sigmoid.0"] fetch_name_0 = Sigmoid ("Add.347")
-   [n1_2] probs = Squeeze (fetch_name_0, int64_1_1d)
+   [n1_2] dbnet_probs = Squeeze (fetch_name_0, int64_1_1d)
 }
 
 weights:

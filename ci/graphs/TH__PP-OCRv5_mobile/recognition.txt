@@ -527,7 +527,7 @@ z
 ๚
 "]
 >
-"PaddlePaddle Graph in PIR mode" (uint8[batch,48,width,3] image) => (int32[batch,seq] indices, float[batch,seq] probs) 
+"PaddlePaddle Graph in PIR mode" (uint8[batch,48,width,3] image) => (int32[batch,seq] ctc_indices, float[batch,seq] ctc_confidence) 
    <
       float[batch,240,12,unk__11] "Add.105"
       float[batch,240,12,unk__11] "Add.111"
@@ -923,12 +923,12 @@ z
    ["MatMul.12"] "p2o.pd_op.matmul.12.0" = MatMul ("p2o.pd_op.transpose.8.0", "linear_8.w_0")
    ["Add.222"] "Add.223" = Add ("p2o.pd_op.matmul.12.0", "linear_8.b_0")
    [n0_2] tmp_2 = ArgMax <axis: int = 2, keepdims: int = 0> ("Add.223")
-   [n1_2] indices = Cast <to: int = 6> (tmp_2)
+   [n1_2] ctc_indices = Cast <to: int = 6> (tmp_2)
    [n3_2] max_logits = ReduceMax <keepdims: int = 1> ("Add.223", "helper.constant.9")
    [n4_2] tmp_0_2 = Sub ("Add.223", max_logits)
    [n5] tmp_1 = Exp (tmp_0_2)
    [n7] tmp_3 = ReduceSum <keepdims: int = 0> (tmp_1, "helper.constant.9")
-   [n8] probs = Reciprocal (tmp_3)
+   [n8] ctc_confidence = Reciprocal (tmp_3)
 }
 
 weights:

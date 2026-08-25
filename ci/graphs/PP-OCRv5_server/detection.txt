@@ -2,7 +2,7 @@
    ir_version: 10,
    opset_import: ["" : 20]
 >
-"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] probs) 
+"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] dbnet_probs) 
    <
       float[batch,1024,unk__46,unk__47] "Add.1"
       float[batch,32,unk__28,unk__29] "Add.109"
@@ -438,7 +438,7 @@
    ["Sigmoid.1"] "p2o.pd_op.sigmoid.1.0" = Sigmoid ("Add.165")
    ["Add.166"] "Add.167" = Add ("p2o.pd_op.sigmoid.0.0", "p2o.pd_op.sigmoid.1.0")
    ["Mul.0"] fetch_name_0 = Mul ("Add.167", "auto.cast.102")
-   [n1_2] probs = Squeeze (fetch_name_0, int64_1_1d)
+   [n1_2] dbnet_probs = Squeeze (fetch_name_0, int64_1_1d)
 }
 
 weights:
