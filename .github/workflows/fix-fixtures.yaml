@@ -17,6 +17,8 @@ jobs:
     outputs:
       run-id: ${{ steps.source.outputs.run-id }}
     steps:
+      # which run to take the renderings from; whether it blessed any is `commit-fixtures`' problem, an
+      # empty download and a clean tree both being no-ops there
       - id: source
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -28,30 +30,19 @@ jobs:
             const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
               owner, repo, workflow_id: 'push.yaml', head_sha: head, per_page: 100,
             })
-            // Defer only while that run can still see the label. Once its `labelled` job has read the
-            // PR, a label applied after would be seen by neither side, so take it here instead.
+            // an in-flight run reads the label in its own `labelled` job, and committing under it would
+            // move the head that run's `commit-fixtures` verifies. Leaving the label set is the retry.
             const pending = runs.find((run) => run.status !== 'completed')
             if (pending) {
-              const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
-                owner, repo, run_id: pending.id, per_page: 100,
-              })
-              const gate = jobs.find((job) => job.name === 'labelled')
-              if (!gate || gate.status !== 'completed') {
-                return core.info(`run ${pending.id} is ${pending.status} and will commit these itself`)
-              }
-              core.info(`run ${pending.id} already read the labels, so this one is ours`)
+              return core.info(`run ${pending.id} is ${pending.status} and will commit these itself`)
             }
-            for (const run of runs) {
-              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
-                owner, repo, run_id: run.id, per_page: 100,
-              })
-              const blessed = artifacts.filter((artifact) => artifact.name.startsWith('renderings-'))
-              if (blessed.length) {
-                core.info(`taking ${blessed.length} rendering artifact(s) from run ${run.id}`)
-                return core.setOutput('run-id', run.id)
-              }
+            // a superseded run holds whichever renderings it reached before it died, which is not the set
+            const source = runs.find((run) => run.conclusion !== 'cancelled')
+            if (!source) {
+              return core.info(`no completed run for ${head.slice(0, 7)} to take renderings from`)
             }
-            core.info(`no run for ${head.slice(0, 7)} blessed a fixture, so they are already current`)
+            core.info(`taking renderings from run ${source.id}`)
+            core.setOutput('run-id', source.id)
 
   commit:
     needs: find
