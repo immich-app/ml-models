@@ -25,8 +25,8 @@ def det_preprocess(image: UINT8[Batch, Height, Width, 3]) -> FLOAT[Batch, 3, Hei
 
 @script(default_opset=op)
 def det_postprocess(probs_raw: FLOAT[Batch, 1, Height, Width]) -> FLOAT[Batch, Height, Width]:
-    probs = op.Squeeze(probs_raw, [1])
-    return probs
+    dbnet_probs = op.Squeeze(probs_raw, [1])
+    return dbnet_probs
 
 
 @script(default_opset=op)
@@ -39,7 +39,7 @@ def rec_preprocess(image: UINT8[Batch, 48, Width, 3]) -> FLOAT[Batch, 3, 48, Wid
 def rec_postprocess(logits: FLOAT[Batch, Seq, Classes]) -> tuple[INT32[Batch, Seq], FLOAT[Batch, Seq]]:
     """Greedy CTC head over raw logits: per-step argmax index and its probability, so the readback is two
     [batch, seq] tensors rather than the full class map."""
-    indices = op.Cast(op.ArgMax(logits, axis=2, keepdims=0), to=TensorProto.INT32)
+    ctc_indices = op.Cast(op.ArgMax(logits, axis=2, keepdims=0), to=TensorProto.INT32)
     max_logits = op.ReduceMax(logits, [2], keepdims=1)
-    probs = op.Reciprocal(op.ReduceSum(op.Exp(logits - max_logits), [2], keepdims=0))
-    return indices, probs
+    ctc_confidence = op.Reciprocal(op.ReduceSum(op.Exp(logits - max_logits), [2], keepdims=0))
+    return ctc_indices, ctc_confidence
