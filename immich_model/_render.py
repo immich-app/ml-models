@@ -9,7 +9,7 @@ from pathlib import Path
 
 import onnx_ir as ir
 
-from .constants import canvas_sets_of, max_canvas
+from .constants import dim_sets_of, max_dims
 from .rknn._onnx import rknn_config
 from .rknn.compile import _pin
 from .runtime import (
@@ -138,16 +138,16 @@ def rewrites(path: Path) -> str:
 
 def _sources(target: str, path: Path, work: Path) -> Iterator[tuple[str, Path, Path]]:
     """The graphs a target's plan is rendered against and where each is written: the export itself for an EP,
-    and for RKNPU one pinned canvas per binary."""
+    and for RKNPU one pinned shape per binary."""
     if target != RKNPU:
         yield target, path, work
         return
-    for index, group in enumerate(canvas_sets_of(path)):
-        canvas = max_canvas(group.canvases)
+    for index, group in enumerate(dim_sets_of(path)):
+        dims = max_dims(group.dims)
         out_dir = work / f"rknn{index}"
         out_dir.mkdir(parents=True, exist_ok=True)
-        pinned = _pin(path, out_dir, canvas) if canvas else path
-        shape = " ".join(f"{name}={size}" for name, size in sorted(canvas.items())) or "static"
+        pinned = _pin(path, out_dir, dims) if dims else path
+        shape = " ".join(f"{name}={size}" for name, size in sorted(dims.items())) or "static"
         yield f"{target} {shape}", pinned, out_dir
 
 

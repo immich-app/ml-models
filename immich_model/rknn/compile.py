@@ -4,24 +4,24 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast
 
-from ..constants import RKNN_SOCS, SUBMODELS, canvas_label, canvas_sets_of, max_canvas, variant_dir
+from ..constants import RKNN_SOCS, SUBMODELS, dim_sets_of, dims_label, max_dims, variant_dir
 from ..onnx._ir import ReinferShapesPass
 from ..runtime import RKNPU, RewriteContext, apply_rewrites, plan_rewrites
 from ._onnx import rknn_config
 
 
-def contract(canvases: Sequence[Mapping[str, int]]) -> str:
+def contract(group: Sequence[Mapping[str, int]]) -> str:
     """What a binary declares it serves, carried in `custom_string` and read back with `rknn_query`."""
-    widest = max_canvas(canvases)
-    ordered = [widest, *(canvas for canvas in canvases if canvas != widest)]
-    return json.dumps({"dims": [dict(canvas) for canvas in ordered]}, separators=(",", ":"))
+    widest = max_dims(group)
+    ordered = [widest, *(dims for dims in group if dims != widest)]
+    return json.dumps({"dims": [dict(dims) for dims in ordered]}, separators=(",", ":"))
 
 
 def _export_platform(
     onnx_path: Path,
     output_dir: Path,
     target_platform: str,
-    canvases: Sequence[Mapping[str, int]],
+    group: Sequence[Mapping[str, int]],
     inputs: list[str],
     shapes: list[list[list[int]]],
     config_extras: dict[str, Any] | None = None,
@@ -40,12 +40,13 @@ def _export_platform(
     rknn = RKNN(verbose=False)
     rknn.config(
         target_platform=target_platform,
-        custom_string=contract(canvases),
+        custom_string=contract(group),
         disable_rules=[] if fuse_matmul_softmax_matmul_to_sdpa else ["fuse_matmul_softmax_matmul_to_sdpa"],
         enable_flash_attention=False,
         model_pruning=True,
-        # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one
-        dynamic_input=shapes,
+        # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one. A single shape
+        # has nothing to be dynamic about; asking anyway drops toolkit passes and only slows the compile.
+        **({"dynamic_input": shapes} if len(shapes) > 1 else {}),
         **(config_extras or {}),  # mean/std for a native uint8 image input (else empty)
     )
     check(rknn.load_onnx(model=onnx_path.as_posix(), inputs=inputs, input_size_list=shapes[0]), "load")
@@ -60,7 +61,7 @@ def _export_platform(
         json.dumps(
             {
                 "nodes": len(list(ir.traversal.RecursiveGraphIterator(prepared.graph))),
-                "contract": contract(canvases),
+                "contract": contract(group),
                 "input": {"name": inputs[0], "shapes": [shape[0] for shape in shapes]},
             }
         )
@@ -74,13 +75,13 @@ def _export_platforms(
     target_socs: Sequence[str] | None = None,
 ) -> None:
     source = input_dir / "model.onnx"
-    sets = canvas_sets_of(source)
+    sets = dim_sets_of(source)
     for group in sets:
-        variant = variant_dir(sets, group.canvases[0])
+        variant = variant_dir(sets, group.dims[0])
         socs = []
         for soc in target_socs or RKNN_SOCS:
             model_path = output_dir / "rknpu" / soc / variant / "model.rknn"
-            missing = stale(model_path, contract(group.canvases))
+            missing = stale(model_path, contract(group.dims))
             if cache and not missing:
                 print(f"{model_path} already exists, skipping")
                 continue
@@ -88,29 +89,29 @@ def _export_platforms(
             socs.append(soc)
         if not socs:
             continue
-        _export_canvas(source, output_dir, socs, group.canvases, variant)
+        _export_set(source, output_dir, socs, group.dims, variant)
 
 
-def _export_canvas(
-    source: Path, output_dir: Path, socs: list[str], canvases: Sequence[Mapping[str, int]], variant: str
+def _export_set(
+    source: Path, output_dir: Path, socs: list[str], group: Sequence[Mapping[str, int]], variant: str
 ) -> None:
     with tempfile.TemporaryDirectory() as work_dir:
         # spec and DMA config come off the PREPARED graph, which is the one that retired the shift
         work = Path(work_dir)
-        # every canvas is prepared, but only MaxShape's graph is compiled
-        widest = max_canvas(canvases)
-        rest = [canvas for canvas in canvases if canvas != widest]
+        # every shape is prepared, but only MaxShape's graph is compiled
+        widest = max_dims(group)
+        rest = [dims for dims in group if dims != widest]
         onnx_path = _prepare(source, work / "max", widest)
         config_extras = rknn_config(onnx_path)
         inputs, max_shape = _input_spec(onnx_path)
-        ordered = [max_shape] + [_input_spec(_prepare(source, work / canvas_label(c), c))[1] for c in rest]
+        ordered = [max_shape] + [_input_spec(_prepare(source, work / dims_label(c), c))[1] for c in rest]
 
         def attempt(soc: str, fuse: bool) -> None:
             _export_platform(
                 onnx_path,
                 output_dir,
                 soc,
-                canvases,
+                group,
                 inputs,
                 ordered,
                 config_extras=config_extras,
@@ -152,17 +153,17 @@ def stale(model_path: Path, expected: str) -> list[str]:
     return []
 
 
-def _prepare(source: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
-    """The graph the rows produce for one canvas: pinned, rewritten, and carrying its own weights."""
+def _prepare(source: Path, work_dir: Path, dims: Mapping[str, int]) -> Path:
+    """The graph the rows produce for one shape: pinned, rewritten, and carrying its own weights."""
     work_dir.mkdir(parents=True, exist_ok=True)
-    pinned = _pin(source, work_dir, canvas)
+    pinned = _pin(source, work_dir, dims)
     return apply_rewrites(pinned, plan_rewrites(RewriteContext(RKNPU, ())), out_dir=work_dir, standalone=True)
 
 
-def _pin(onnx_path: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
-    """Resolve the graph's named free input dims to `canvas`, ahead of the RKNPU rows: rknn.load_onnx takes
-    the canvas as a shape list, so pinning only there leaves the rows reading a symbolic graph."""
-    if not canvas:
+def _pin(onnx_path: Path, work_dir: Path, dims: Mapping[str, int]) -> Path:
+    """Resolve the graph's named free input dims to `dims`, ahead of the RKNPU rows: rknn.load_onnx takes
+    them as a shape list, so pinning only there leaves the rows reading a symbolic graph."""
+    if not dims:
         return onnx_path
 
     import onnx_ir as ir
@@ -170,7 +171,7 @@ def _pin(onnx_path: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
     model = ir.load(onnx_path)
     for inp in model.graph.inputs:
         if inp.shape is not None:
-            inp.shape = ir.Shape([canvas.get(str(dim), dim) for dim in inp.shape])
+            inp.shape = ir.Shape([dims.get(str(dim), dim) for dim in inp.shape])
     pinned_path = work_dir / "pinned.onnx"
     ReinferShapesPass()(model)
     ir.save(model, pinned_path, external_data="pinned.onnx.data")
