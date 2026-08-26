@@ -124,7 +124,10 @@ def _export_set(
             child.start()
             tx.close()
             child.join()
-            failed = rx.recv() if rx.poll() else None
+            try:
+                failed = rx.recv()
+            except EOFError:
+                failed = None
             if failed or child.exitcode:
                 raise RuntimeError(failed or f"compiling for {soc} died with exit code {child.exitcode}")
 
