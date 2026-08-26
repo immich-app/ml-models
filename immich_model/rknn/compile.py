@@ -1,6 +1,8 @@
 import json
 import tempfile
 from collections.abc import Mapping, Sequence
+from multiprocessing import get_context
+from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Any, cast
 
@@ -43,7 +45,7 @@ def _export_platform(
         custom_string=contract(group),
         disable_rules=[] if fuse_matmul_softmax_matmul_to_sdpa else ["fuse_matmul_softmax_matmul_to_sdpa"],
         enable_flash_attention=False,
-        model_pruning=True,
+        model_pruning=False,  # this actually increases model size and has no measurable benefit
         # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one. A single shape
         # has nothing to be dynamic about; asking anyway drops toolkit passes and only slows the compile.
         **({"dynamic_input": shapes} if len(shapes) > 1 else {}),
@@ -92,6 +94,14 @@ def _export_platforms(
         _export_set(source, output_dir, socs, group.dims, variant)
 
 
+def _build(tx: Connection, args: tuple[Any, ...]) -> None:
+    try:
+        _export_platform(*args)
+    except Exception as e:
+        tx.send(str(e))
+    tx.close()
+
+
 def _export_set(
     source: Path, output_dir: Path, socs: list[str], group: Sequence[Mapping[str, int]], variant: str
 ) -> None:
@@ -107,17 +117,16 @@ def _export_set(
         ordered = [max_shape] + [_input_spec(_prepare(source, work / dims_label(c), c))[1] for c in rest]
 
         def attempt(soc: str, fuse: bool) -> None:
-            _export_platform(
-                onnx_path,
-                output_dir,
-                soc,
-                group,
-                inputs,
-                ordered,
-                config_extras=config_extras,
-                fuse_matmul_softmax_matmul_to_sdpa=fuse,
-                variant=variant,
-            )
+            ctx = get_context("fork")
+            rx, tx = ctx.Pipe(duplex=False)
+            args = (onnx_path, output_dir, soc, group, inputs, ordered, config_extras, fuse, variant)
+            child = ctx.Process(target=_build, args=(tx, args)) # ensure no residual memory usage
+            child.start()
+            tx.close()
+            child.join()
+            failed = rx.recv() if rx.poll() else None
+            if failed or child.exitcode:
+                raise RuntimeError(failed or f"compiling for {soc} died with exit code {child.exitcode}")
 
         fuse = True
         failed: list[str] = []

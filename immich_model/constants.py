@@ -215,7 +215,9 @@ _uuid_char = "[a-fA-F0-9]"
 _uuid_glob = _uuid_char * 8 + "-" + _uuid_char * 4 + "-" + _uuid_char * 4 + "-" + _uuid_char * 4 + "-" + _uuid_char * 12
 DELETE_PATTERNS = [
     "**/*onnx*",
-    "**/*.safetensors",  # the weight sidecar, which `*onnx*` does not name
+    "**/*rknpu*",
+    "**/*rknn*",
+    "**/*.safetensors",
     "**/Constant*",
     "**/*.weight",
     "**/*.bias",
