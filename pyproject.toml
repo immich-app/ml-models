@@ -36,7 +36,7 @@ rknn = [
   "rknn-toolkit2>=2.3.0",
   "pyyaml>=6",
   "safetensors>=0.7,<0.8",
-  "setuptools<81",
+  "setuptools<84",
   "torch",
   "typer>=0.15.2",
 ]
