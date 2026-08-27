@@ -48,6 +48,8 @@ jobs:
     outputs:
       to_export: ${{ steps.scope.outputs.to_export }}
       unchanged: ${{ steps.scope.outputs.unchanged }}
+      previous-ref: ${{ steps.ref.outputs.previous-ref }}
+      compile-all: ${{ steps.rknn.outputs.changed }}
     steps:
       - name: Checkout new ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -80,6 +82,11 @@ jobs:
         uses: mikefarah/yq@1b9b4ac5187171d2e5e3129be0cfa827c7f9d53d # v4.53.3
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
+      - id: rknn
+        env:
+          OLD: ${{ hashFiles('./before/immich_model/rknn/**') }}
+          NEW: ${{ hashFiles('./immich_model/rknn/**') }}
+        run: '[ "$OLD" = "$NEW" ] || echo "changed=yes" >> "$GITHUB_OUTPUT"'
       - id: scope
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -95,8 +102,8 @@ jobs:
             script({core})
 
 
-  # TODO: Explicitly skip this if nothing to do
   export:
+    if: ${{ needs.configure.outputs.to_export != '[]' }}
     uses: ./.github/workflows/export.yaml
     needs: configure
     secrets: inherit
@@ -112,6 +119,8 @@ jobs:
       hf-name: ${{ matrix.hf-name }}
       runner: ${{ matrix.runner || 'ubuntu-latest'}}
       upload: ${{ inputs.force || github.event_name == 'release'}}
+      previous-ref: ${{ needs.configure.outputs.previous-ref }}
+      compile-all: ${{ inputs.force || github.event_name == 'release' || needs.configure.outputs.compile-all == 'yes' }}
 
   # Read at the end rather than off the event payload, so labelling while the matrix runs still counts.
   labelled:

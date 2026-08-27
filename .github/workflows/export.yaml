@@ -19,6 +19,12 @@ on:
       upload:
         type: boolean
         default: false
+      compile-all:
+        type: boolean
+        default: true
+      previous-ref:
+        type: string
+        default: ''
 
 jobs:
   export:
@@ -26,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the compile scope below diffs this model's renderings against the previous ref
 
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -56,8 +64,22 @@ jobs:
             ci/graphs/${{ inputs.model-name }}
             ci/rewrites/${{ inputs.model-name }}
 
+      # Skip compilation if the ONNX graph and RKNN code is the same
+      - id: needed
+        env:
+          MODEL_NAME: ${{ inputs.model-name }}
+          COMPILE_ALL: ${{ inputs.compile-all }}
+          PREVIOUS_REF: ${{ inputs.previous-ref }}
+        run: |
+          git add -N ci # a model exported for the first time renders to a path git is not yet tracking
+          if [ "$COMPILE_ALL" = 'true' ] || ! git diff --quiet "$PREVIOUS_REF" -- \
+              "ci/graphs/$MODEL_NAME" "ci/rewrites/$MODEL_NAME"; then
+            echo "compile=yes" >> "$GITHUB_OUTPUT"
+          fi
+
       # RKNN binaries are built from the same fused ONNX every other backend uses
-      - run: uv run --frozen --extra rknn immich-model rknn compile "$MODEL_NAME"
+      - if: ${{ steps.needed.outputs.compile }}
+        run: uv run --frozen --extra rknn immich-model rknn compile "$MODEL_NAME"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
 
