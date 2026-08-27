@@ -16,9 +16,9 @@ on:
       hf-name:
         required: false
         type: string
-      upload:
-        type: boolean
-        default: false
+      organization:
+        type: string
+        default: ''
       compile-all:
         type: boolean
         default: true
@@ -29,6 +29,8 @@ on:
 jobs:
   export:
     runs-on: ${{ inputs.runner }}
+    outputs:
+      changed: ${{ steps.needed.outputs.compile }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -95,7 +97,7 @@ jobs:
   # Download the exported artifact, and upload an artifact with the benchmark result to be used below
 
   upload:
-    if: ${{ inputs.upload }}
+    if: ${{ inputs.organization && needs.export.outputs.changed }}
     runs-on: ${{ inputs.runner }}
     needs: export
     steps:
@@ -116,8 +118,9 @@ jobs:
 
       - run: |
           uv run --frozen --extra export immich-model upload "$MODEL_NAME" \
-            --hf-model-name "$HF_MODEL_NAME" --hf-organization immich-testing --hf-branch v2
+            --hf-model-name "$HF_MODEL_NAME" --hf-organization "$ORGANIZATION" --hf-branch v2
         env:
           MODEL_NAME: ${{ inputs.model-name }}
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
+          ORGANIZATION: ${{ inputs.organization }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

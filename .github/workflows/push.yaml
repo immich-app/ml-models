@@ -12,6 +12,11 @@ on:
         type: boolean
         required: false
         description: 'Force export all models'
+      organization:
+        type: choice
+        options: ['immich-testing', 'immich-app']
+        default: 'immich-testing'
+        description: 'Hugging Face organization to publish to'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -85,7 +90,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # Editor checks warn on these being "undefined", but they get passed to the script regardless.
-          force: ${{ inputs.force || 'false' }}
+          force: ${{ inputs.force || inputs.organization == 'immich-app' }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
           # rendering-only modules: hashing them would re-export the catalog for a change that cannot alter it
@@ -112,9 +117,11 @@ jobs:
       model-source: ${{ matrix.source }}
       hf-name: ${{ matrix.hf-name }}
       runner: ${{ matrix.runner || 'ubuntu-latest'}}
-      upload: ${{ inputs.force || github.event_name == 'release'}}
+      # use what the operator picked if dispatch, upload to immich-testing if push to main, else don't publish
+      organization: ${{ github.event_name == 'workflow_dispatch' && inputs.organization
+        || github.event_name == 'push' && 'immich-testing' || '' }}
       previous-ref: ${{ needs.configure.outputs.previous-ref }}
-      compile-all: ${{ inputs.force || github.event_name == 'release' }}
+      compile-all: ${{ inputs.force || inputs.organization == 'immich-app' }}
 
   # Read at the end rather than off the event payload, so labelling while the matrix runs still counts.
   labelled:
