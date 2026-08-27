@@ -1,6 +1,7 @@
 """The RKNPU-only rewrite rows and the `rknn.config` extras derived beside them; no toolkit import needed."""
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -177,6 +178,116 @@ class SplitLargeReduction(RewriteRuleClassBase):
             )
             total = piece if total is None else op.Add(total, piece)
         return total
+
+
+# the band the RKNPU keeps its MAC array busy in; either floor alone lets a partial conv fall out the bottom
+_HIGH_UTILIZATION_BYTES = 6144
+_SUBTILE_BYTES = 4096
+_SPLIT_CHANNEL_FLOOR = 32
+_BRANCH_CHANNEL_FLOOR = 16
+# a conv with nothing to reuse its weight over is weight-streaming bound, where summing partials only adds nodes
+_REUSE_POSITIONS = 64
+
+
+def _tile_bytes(shape: Any) -> int:
+    return int(shape[1]) * int(shape[2]) * int(shape[3]) * 2  # fp16 on the NPU whatever the graph declares
+
+
+def _i64(op: Any, value: int) -> Any:
+    return op.Constant(value=ir.tensor(np.array([value], np.int64)))
+
+
+def _cannot_sum(w: Any, x: Any, conv: Any) -> str | None:
+    """Why this Conv cannot be re-expressed as partial convs summed, or None if it can."""
+    weight = w.const_value
+    if weight is None or len(weight.shape) != 4:
+        return "weight is not a 4-D constant"
+    node = conv.producer()
+    if node.attributes.get_int("group", 1) != 1:
+        return "a grouped conv does not reduce over the whole channel axis"
+    dims = x.shape
+    if dims is None or len(dims) != 4 or any(not isinstance(d, int) for d in dims[2:]):
+        return "conv input has no static spatial extent"
+    strides = node.attributes.get_ints("strides", [1, 1])
+    if math.prod(int(d) // s for d, s in zip(dims[2:], strides)) < _REUSE_POSITIONS:
+        return "too few output positions to reuse the weight over"
+    return None
+
+
+def _sum_partials(op: Any, conv: Any, weight: np.ndarray, parts: Any, base: str) -> Any:
+    """One conv per (source, channel range) of the weight, summed; the bias is per-output so it rides one."""
+    node = conv.producer()
+    bias = node.inputs[2] if len(node.inputs) > 2 else None
+    total: Any = None
+    for index, (source, lo, hi) in enumerate(parts):
+        piece = op.Conv(
+            source,
+            op.initializer(
+                ir.tensor(np.ascontiguousarray(weight[:, lo:hi]), name=f"{base}_part{index}"),
+                name=f"{base}_part{index}",
+            ),
+            *([bias] if total is None and bias is not None else []),
+            **node.attributes,
+        )
+        total = piece if total is None else op.Add(total, piece)
+    return total
+
+
+class SplitLargeConvReduction(RewriteRuleClassBase):
+    """Split a dense Conv whose weight tile outgrows the high-utilization band into partial convs summed,
+    the RKNPU stalling its MAC array on the reduction otherwise."""
+
+    def pattern(self, op: Any, x: Any, w: Any) -> Any:
+        return op.Conv(x, w, _allow_other_inputs=True, _allow_other_attributes=True, _outputs=["conv"])
+
+    def check(self, context: Any, x: Any, w: Any, conv: Any) -> MatchResult:
+        result = MatchResult()
+        if reason := _cannot_sum(w, x, conv):
+            return result.fail(reason)
+        if _tile_bytes(w.const_value.shape) <= _HIGH_UTILIZATION_BYTES:
+            return result.fail("filter is inside the high-utilization band")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, conv: Any) -> Any:
+        weight = w.const_value.numpy()
+        c_in = int(weight.shape[1])
+        # a wide kernel reaches the subtile at too few channels to fill the array, so the two bounds compete
+        splits = min(-(-_tile_bytes(weight.shape) // _SUBTILE_BYTES), max(c_in // _SPLIT_CHANNEL_FLOOR, 1))
+        edges = [round(i * c_in / splits) for i in range(splits + 1)]
+        parts = [(op.Slice(x, _i64(op, lo), _i64(op, hi), _i64(op, 1)), lo, hi) for lo, hi in zip(edges, edges[1:])]
+        return _sum_partials(op, conv, weight, parts, w.name or conv.name)
+
+
+class FoldConcatIntoConv(RewriteRuleClassBase):
+    """Fold a channel-axis Concat into the Conv consuming it, as partial convs summed: the copy is not free."""
+
+    def pattern(self, op: Any, x: Any, w: Any) -> Any:
+        cat = op.Concat(x, _allow_other_inputs=True, _outputs=["cat"])
+        return op.Conv(cat, w, _allow_other_inputs=True, _allow_other_attributes=True, _outputs=["conv"])
+
+    def check(self, context: Any, x: Any, w: Any, cat: Any, conv: Any) -> MatchResult:
+        result = MatchResult()
+        if reason := _cannot_sum(w, cat, conv):
+            return result.fail(reason)
+        node = cat.producer()
+        if node.attributes.get_int("axis", 0) != 1 or len(node.inputs) < 2:
+            return result.fail("not a multi-branch concatenation on the channel axis")
+        widths = []
+        for branch in node.inputs:
+            width = branch.shape[1] if branch.shape is not None and len(branch.shape) == 4 else None
+            if not isinstance(width, int) or width < _BRANCH_CHANNEL_FLOOR:
+                return result.fail("a branch is not statically wide enough to be its own conv")
+            widths.append(width)
+        if sum(widths) != int(w.const_value.shape[1]):
+            return result.fail("the branches do not account for the conv's input channels")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, cat: Any, conv: Any) -> Any:
+        parts, offset = [], 0
+        for branch in cat.producer().inputs:
+            parts.append((branch, offset, offset + int(branch.shape[1])))
+            offset = parts[-1][2]
+        return _sum_partials(op, conv, w.const_value.numpy(), parts, w.name or conv.name)
 
 
 CLASS_TILE = 2048

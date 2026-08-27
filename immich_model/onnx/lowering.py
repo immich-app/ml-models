@@ -415,7 +415,12 @@ class PatchEmbedToMatMul(RewriteRuleClassBase):
         grid = op.Reshape(x, init(shape1, "patch_reshape1_shape"))
         grouped = op.Transpose(grid, perm=[0, 2, 1, 3])
         cols = op.Reshape(grouped, init(shape2, "patch_reshape2_shape"))
+        # split_large_reduction needs known shapes to apply
+        batch = ir.SymbolicDim(None) if self.batch_dynamic else 1
+        dtype = weight.const_value.dtype
+        cols.shape, cols.type = ir.Shape([batch, num_patches, kernel * kernel * channels]), ir.TensorType(dtype)
         proj = op.MatMul(cols, init(w_patch.astype(w.dtype), "patch_weight"))
+        proj.shape, proj.type = ir.Shape([batch, num_patches, embed]), ir.TensorType(dtype)
         return op.Add(proj, init(bias.astype(w.dtype).reshape(1, 1, embed), "patch_bias"))
 
 

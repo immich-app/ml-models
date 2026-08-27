@@ -33,9 +33,11 @@ from .rknn._onnx import (
     FloatifyPadKeep,
     FloatifyPadMaskPass,
     FloatImageInputPass,
+    FoldConcatIntoConv,
     OpaqueZeroMul,
     PinOpsetPass,
     SeqMajorLogitsPass,
+    SplitLargeConvReduction,
     SplitLargeReduction,
     Uint8ImageInputPass,
 )
@@ -274,6 +276,21 @@ REGISTRY = (
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 1536-byte weight tile",
         },
         transform=RewritePass([SplitLargeReduction.rule()]),
+    ),
+    Rewrite(
+        # before the split row, which then sees branch-sized reductions rather than the concatenated one
+        name="fold_concat_into_conv",
+        gates={
+            RKNPU: "an RKNPU whose concatenate costs less than the conv it feeds",
+        },
+        transform=RewritePass([FoldConcatIntoConv.rule()]),
+    ),
+    Rewrite(
+        name="split_large_conv_reduction",
+        gates={
+            RKNPU: "an RKNPU whose MAC utilization stops falling away above a 6144-byte conv weight tile",
+        },
+        transform=RewritePass([SplitLargeConvReduction.rule()]),
     ),
     Rewrite(
         # its own row, not a target on the RKNPU one: the two thresholds are independently derived
