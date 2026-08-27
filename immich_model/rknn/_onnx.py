@@ -15,6 +15,12 @@ from ..onnx._ir import make_init, make_node, sole_consumer
 _DMA_MEAN = "rknn_input_mean"
 
 
+# what the compiler is told for every model, rendered into the plans so a flag cannot change a binary
+# without moving a fixture. model_pruning increases model size here and has no measurable benefit.
+RKNN_CONFIG: dict[str, Any] = {"disable_rules": [], "enable_flash_attention": False, "model_pruning": False}
+DO_QUANTIZATION = False
+
+
 def rknn_config(prepared: Path) -> dict[str, Any]:
     """mean/std for `rknn.config`, read off the graph the rows PRODUCED: retiring the shift into the DMA is
     what deletes it, so a source graph that still shows the shift is no proof the rows retired it."""

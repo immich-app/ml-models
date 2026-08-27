@@ -57,3 +57,8 @@ TensorrtExecutionProvider
     decompose_attention
     greedy_ctc_topk
     im2col_patchify
+
+RKNPU compile
+    config {'disable_rules': [], 'enable_flash_attention': False, 'model_pruning': False}
+    do_quantization False
+    socs rk3566 rk3568 rk3576 rk3588

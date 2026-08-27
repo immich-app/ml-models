@@ -109,6 +109,8 @@ RKNPU static
     +24 Softmax axis=-1
     +24 Transpose perm=(0, 1, 3, 2)
     1846 nodes, weights dcf6cc633ba3
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x336 9f8ae2f6
     DecomposeGelu x120 c9ce4d2f
     SplitLargeReduction x1152 388e0f77

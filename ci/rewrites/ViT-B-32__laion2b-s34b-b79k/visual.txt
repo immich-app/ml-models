@@ -132,6 +132,8 @@ RKNPU static
     -1 Transpose perm=(0, 2, 1)
     -1 Transpose perm=(0, 3, 1, 2)
     596 nodes, weights aafa527f8365
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x156 85a31e97
     DecomposeGelu x60 8e465049
     PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x4 6fa42cac

@@ -89,6 +89,8 @@ RKNPU width=2048
     +1 Unsqueeze
     129 nodes, weights fac4c916c227
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"width":2048},{"width":224},{"width":320},{"width":448},{"width":640},{"width":1280}]}
+    opset 19
     DecomposeGelu, _FuseErfGelu x50 c8c55aac
     FuseBatchNormIntoConv x2 b8290aa0
     FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a

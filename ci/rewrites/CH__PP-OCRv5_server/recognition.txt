@@ -103,6 +103,8 @@ RKNPU width=2048
     +1 Unsqueeze
     318 nodes, weights 98aeab86de6c
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"width":2048},{"width":224},{"width":320},{"width":448},{"width":640},{"width":1280}]}
+    opset 19
     FoldConcatIntoConv, FuseBatchNormIntoConv x82 3e07422b
     FuseBatchNormIntoConv x77 8054b0d7
     LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68

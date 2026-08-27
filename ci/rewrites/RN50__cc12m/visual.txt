@@ -72,6 +72,8 @@ RKNPU static
     +1 Softmax axis=-1
     +1 Transpose perm=(0, 1, 3, 2)
     204 nodes, weights b627aace5dd8
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x5 b00b8abe
     FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x54 8f65283c
     SplitLargeConvReduction, FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x8 679b95aa

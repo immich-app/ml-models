@@ -9,7 +9,7 @@ from typing import Any, cast
 from ..constants import RKNN_SOCS, SUBMODELS, dim_sets_of, dims_label, max_dims, variant_dir
 from ..onnx._ir import ReinferShapesPass
 from ..runtime import RKNPU, RewriteContext, apply_rewrites, plan_rewrites
-from ._onnx import rknn_config
+from ._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config
 
 
 def contract(group: Sequence[Mapping[str, int]]) -> str:
@@ -27,7 +27,7 @@ def _export_platform(
     inputs: list[str],
     shapes: list[list[list[int]]],
     config_extras: dict[str, Any] | None = None,
-    fuse_matmul_softmax_matmul_to_sdpa: bool = True,
+    disable_rules: Sequence[str] = (),
     variant: str = "",
 ) -> None:
     from rknn.api import RKNN
@@ -39,20 +39,20 @@ def _export_platform(
         if ret != 0:
             raise RuntimeError(f"RKNN {step} failed for {target_platform} (code {ret})")
 
+    # recovery, so it adds to the declared row rather than standing in as a second copy of it
+    config = RKNN_CONFIG | (config_extras or {})
+    config["disable_rules"] = [*config["disable_rules"], *disable_rules]
     rknn = RKNN(verbose=False)
     rknn.config(
         target_platform=target_platform,
         custom_string=contract(group),
-        disable_rules=[] if fuse_matmul_softmax_matmul_to_sdpa else ["fuse_matmul_softmax_matmul_to_sdpa"],
-        enable_flash_attention=False,
-        model_pruning=False,  # this actually increases model size and has no measurable benefit
         # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one. A single shape
         # has nothing to be dynamic about; asking anyway drops toolkit passes and only slows the compile.
         **({"dynamic_input": shapes} if len(shapes) > 1 else {}),
-        **(config_extras or {}),  # mean/std for a native uint8 image input (else empty)
+        **config,
     )
     check(rknn.load_onnx(model=onnx_path.as_posix(), inputs=inputs, input_size_list=shapes[0]), "load")
-    check(rknn.build(do_quantization=False), "build")
+    check(rknn.build(do_quantization=DO_QUANTIZATION), "build")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     check(rknn.export_rknn(output_path.as_posix()), "export")
     # what was actually compiled: the .rknn carries none of it and the source .onnx disagrees
@@ -116,11 +116,11 @@ def _export_set(
         inputs, max_shape = _input_spec(onnx_path)
         ordered = [max_shape] + [_input_spec(_prepare(source, work / dims_label(c), c))[1] for c in rest]
 
-        def attempt(soc: str, fuse: bool) -> None:
+        def attempt(soc: str, disable_rules: Sequence[str]) -> None:
             ctx = get_context("fork")
             rx, tx = ctx.Pipe(duplex=False)
-            args = (onnx_path, output_dir, soc, group, inputs, ordered, config_extras, fuse, variant)
-            child = ctx.Process(target=_build, args=(tx, args)) # ensure no residual memory usage
+            args = (onnx_path, output_dir, soc, group, inputs, ordered, config_extras, disable_rules, variant)
+            child = ctx.Process(target=_build, args=(tx, args))  # ensure no residual memory usage
             child.start()
             tx.close()
             child.join()
@@ -131,18 +131,18 @@ def _export_set(
             if failed or child.exitcode:
                 raise RuntimeError(failed or f"compiling for {soc} died with exit code {child.exitcode}")
 
-        fuse = True
+        dropped: list[str] = []
         failed: list[str] = []
         for soc in socs:
             try:
-                attempt(soc, fuse)
+                attempt(soc, dropped)
             except Exception as e:
                 # fusion isn't valid for every model; drop for this and later SoCs, then retry
-                if fuse and "inputs or 'outputs' must be set" in str(e):
+                if not dropped and "inputs or 'outputs' must be set" in str(e):
                     print(f"Retrying {soc} without fuse_matmul_softmax_matmul_to_sdpa")
-                    fuse = False
+                    dropped = ["fuse_matmul_softmax_matmul_to_sdpa"]
                     try:
-                        attempt(soc, fuse)
+                        attempt(soc, dropped)
                         continue
                     except Exception as retry_error:
                         e = retry_error

@@ -31,6 +31,8 @@ RKNPU height=640 width=640
     -1 Sub
     136 nodes, weights cb551c314037
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":640,"width":640}]}
+    opset 19
     UnpackScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads, _MergeScrfdHeads x24 8cf9c500
     _ConstantFpnScale x2 f10d4ff2
     _MergeScrfdHeads x6 44298101

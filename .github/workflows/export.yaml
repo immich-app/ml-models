@@ -64,7 +64,7 @@ jobs:
             ci/graphs/${{ inputs.model-name }}
             ci/rewrites/${{ inputs.model-name }}
 
-      # Skip compilation if the ONNX graph and RKNN code is the same
+      # Skip compilation if the renderings are the same, being what the binary is built from
       - id: needed
         env:
           MODEL_NAME: ${{ inputs.model-name }}
@@ -72,7 +72,7 @@ jobs:
           PREVIOUS_REF: ${{ inputs.previous-ref }}
         run: |
           git add -N ci # a model exported for the first time renders to a path git is not yet tracking
-          if [ "$COMPILE_ALL" = 'true' ] || ! git diff --quiet "$PREVIOUS_REF" -- \
+          if [ "$COMPILE_ALL" = 'true' ] || ! git diff --quiet "$PREVIOUS_REF" -- ci/plans.txt \
               "ci/graphs/$MODEL_NAME" "ci/rewrites/$MODEL_NAME"; then
             echo "compile=yes" >> "$GITHUB_OUTPUT"
           fi

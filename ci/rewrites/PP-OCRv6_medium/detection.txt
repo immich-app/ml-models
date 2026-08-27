@@ -44,6 +44,8 @@ RKNPU height=1472 width=736
     -1 Transpose perm=(0, 3, 1, 2)
     233 nodes, weights 9d280467bf08
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":1472,"width":736},{"height":736,"width":736},{"height":992,"width":736},{"height":736,"width":992},{"height":1120,"width":736},{"height":736,"width":1120},{"height":736,"width":1472}]}
+    opset 19
     DecomposeGelu, _FuseErfGelu x65 806e4876
     FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
     FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
@@ -65,6 +67,8 @@ RKNPU height=2176 width=1088
     -1 Transpose perm=(0, 3, 1, 2)
     233 nodes, weights 9d280467bf08
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2176,"width":1088},{"height":1088,"width":1088},{"height":1472,"width":1088},{"height":1088,"width":1472},{"height":1632,"width":1088},{"height":1088,"width":1632},{"height":1088,"width":2176}]}
+    opset 19
     DecomposeGelu, _FuseErfGelu x65 806e4876
     FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
     FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
@@ -86,6 +90,8 @@ RKNPU height=2880 width=1440
     -1 Transpose perm=(0, 3, 1, 2)
     233 nodes, weights 9d280467bf08
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2880,"width":1440},{"height":1440,"width":1440},{"height":1920,"width":1440},{"height":1440,"width":1920},{"height":2176,"width":1440},{"height":1440,"width":2176},{"height":1440,"width":2880}]}
+    opset 19
     DecomposeGelu, _FuseErfGelu x65 806e4876
     FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
     FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
