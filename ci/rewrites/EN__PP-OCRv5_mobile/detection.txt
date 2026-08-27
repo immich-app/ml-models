@@ -57,12 +57,16 @@ OpenVINOExecutionProvider
     unstamped x51 a0e04758
 
 RKNPU height=1472 width=736
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
     -1 Cast to=1
+    -1 Concat axis=1
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    165 nodes, weights 16500ac49794
+    170 nodes, weights ef297fdbed1f
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
-    FuseBatchNormIntoConv x2 0824e00f
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
     _DecomposeHardSwish x48 03b81a7a
     _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
@@ -72,15 +76,19 @@ RKNPU height=1472 width=736
     _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
     _FoldBiasAdd x5 f89d5e54
     _FoldSeResidual x16 528c3523
-    unstamped x48 20d86187
+    unstamped x47 eda712e6
 
 RKNPU height=2176 width=1088
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
     -1 Cast to=1
+    -1 Concat axis=1
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    165 nodes, weights 16500ac49794
+    170 nodes, weights ef297fdbed1f
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
-    FuseBatchNormIntoConv x2 0824e00f
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
     _DecomposeHardSwish x48 03b81a7a
     _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
@@ -90,15 +98,19 @@ RKNPU height=2176 width=1088
     _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
     _FoldBiasAdd x5 f89d5e54
     _FoldSeResidual x16 528c3523
-    unstamped x48 20d86187
+    unstamped x47 eda712e6
 
 RKNPU height=2880 width=1440
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
     -1 Cast to=1
+    -1 Concat axis=1
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    165 nodes, weights 16500ac49794
+    170 nodes, weights ef297fdbed1f
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
-    FuseBatchNormIntoConv x2 0824e00f
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
     _DecomposeHardSwish x48 03b81a7a
     _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
@@ -108,7 +120,7 @@ RKNPU height=2880 width=1440
     _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
     _FoldBiasAdd x5 f89d5e54
     _FoldSeResidual x16 528c3523
-    unstamped x48 20d86187
+    unstamped x47 eda712e6
 
 TensorrtExecutionProvider
     unchanged

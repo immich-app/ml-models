@@ -94,7 +94,7 @@ OpenVINOExecutionProvider
 
 RKNPU width=2048
     +26 Mul
-    +13 Add
+    +14 Add
     +13 Div
     +13 Erf
     -13 Gelu approximate=none
@@ -103,7 +103,9 @@ RKNPU width=2048
     -1 ArgMax axis=2 keepdims=0
     -1 Cast to=1
     -1 Cast to=6
+    -1 Concat axis=1
     +1 Concat axis=3
+    +1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Exp
     -1 Reciprocal
     -1 ReduceMax keepdims=1
@@ -112,15 +114,16 @@ RKNPU width=2048
     +1 Transpose perm=(0, 2, 1)
     -1 Transpose perm=(0, 3, 1, 2)
     +1 Unsqueeze
-    238 nodes, weights 87f47728566c
+    239 nodes, weights d10aaa3f70ba
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     DecomposeGelu, _FuseErfGelu x65 a950e748
+    FoldConcatIntoConv, _FoldBiasAdd x3 40db084c
     FuseBatchNormIntoConv x3 cafd8b4b
     LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
     _FlattenToSqueeze x1 f6285ec7
-    _FoldBiasAdd x54 8b050676
+    _FoldBiasAdd x53 176f5c08
     _UnflattenToUnsqueeze x1 ea488eee
-    unstamped x109 0d79d5cb
+    unstamped x108 aec73a75
 
 TensorrtExecutionProvider
     -1 ArgMax axis=2 keepdims=0

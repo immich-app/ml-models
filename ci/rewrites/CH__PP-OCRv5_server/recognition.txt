@@ -81,12 +81,18 @@ OpenVINOExecutionProvider
     unstamped x127 048b915f
 
 RKNPU width=2048
+    +44 Add
+    +36 Conv auto_pad=NOTSET dilations=(1, 1) group=1 kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    +9 Slice
     +9 Transpose perm=(0, 3, 2, 1)
+    -8 Concat axis=1
+    +7 Conv auto_pad=NOTSET dilations=(1, 1) group=1 kernel_shape=(1, 3) pads=(0, 1, 0, 1) strides=(1, 1)
     -2 Sub
     -1 ArgMax axis=2 keepdims=0
     -1 Cast to=1
     -1 Cast to=6
     +1 Concat axis=3
+    +1 Conv auto_pad=NOTSET dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
     -1 Exp
     -1 Reciprocal
     -1 ReduceMax keepdims=1
@@ -95,13 +101,16 @@ RKNPU width=2048
     +1 Transpose perm=(0, 2, 1)
     -1 Transpose perm=(0, 3, 1, 2)
     +1 Unsqueeze
-    229 nodes, weights dfd71590f8a3
+    318 nodes, weights 98aeab86de6c
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
-    FuseBatchNormIntoConv x86 4e2faf95
+    FoldConcatIntoConv, FuseBatchNormIntoConv x82 3e07422b
+    FuseBatchNormIntoConv x77 8054b0d7
     LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    SplitLargeConvReduction, FoldConcatIntoConv, FuseBatchNormIntoConv x16 fc4dfb30
+    SplitLargeConvReduction, FuseBatchNormIntoConv x8 eee87394
     _FlattenToSqueeze x1 29f6d61e
     _UnflattenToUnsqueeze x1 ea488eee
-    unstamped x136 cf32ac3b
+    unstamped x128 46df0390
 
 TensorrtExecutionProvider
     -1 ArgMax axis=2 keepdims=0

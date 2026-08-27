@@ -48,6 +48,8 @@ RKNPU
     fold_gather_elements
     decompose_gelu
     split_large_reduction
+    fold_concat_into_conv
+    split_large_conv_reduction
     pin_opset
     reinfer_shapes
 

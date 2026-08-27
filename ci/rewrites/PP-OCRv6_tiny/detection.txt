@@ -30,51 +30,63 @@ OpenVINOExecutionProvider
 
 RKNPU height=1472 width=736
     +26 Mul
-    +13 Add
+    +17 Add
     +13 Div
     +13 Erf
     -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
     -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    221 nodes, weights 1c7c65269df0
+    227 nodes, weights 623ebf5b4b64
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
-    _FoldBiasAdd x61 33b5dcaf
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
     _FoldSeResidual x16 11481d1e
-    unstamped x79 94914db8
+    unstamped x77 ba854663
 
 RKNPU height=2176 width=1088
     +26 Mul
-    +13 Add
+    +17 Add
     +13 Div
     +13 Erf
     -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
     -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    221 nodes, weights 1c7c65269df0
+    227 nodes, weights 623ebf5b4b64
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
-    _FoldBiasAdd x61 33b5dcaf
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
     _FoldSeResidual x16 11481d1e
-    unstamped x79 94914db8
+    unstamped x77 ba854663
 
 RKNPU height=2880 width=1440
     +26 Mul
-    +13 Add
+    +17 Add
     +13 Div
     +13 Erf
     -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
     -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    221 nodes, weights 1c7c65269df0
+    227 nodes, weights 623ebf5b4b64
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
-    _FoldBiasAdd x61 33b5dcaf
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
     _FoldSeResidual x16 11481d1e
-    unstamped x79 94914db8
+    unstamped x77 ba854663
 
 TensorrtExecutionProvider
     unchanged
