@@ -101,6 +101,8 @@ RKNPU static
     -1 Gather axis=0
     +1 Sub
     628 nodes, weights 2870d69c40bd
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x168 2c9d3f06
     DecomposeGelu x65 e9a2402d
     FloatifyPadKeep x4 1087ed68

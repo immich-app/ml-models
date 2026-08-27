@@ -12,7 +12,9 @@ CUDAExecutionProvider
 CoreMLExecutionProvider
     decompose_attention
     decompose_reduce_l2
+    unpack_scrfd_heads
     nchw_image_input
+    split_deep_reduction
 
 MIGraphXExecutionProvider
     decompose_attention
@@ -35,6 +37,7 @@ OpenVINOExecutionProvider
 RKNPU
     floatify_pad_mask
     decompose_attention
+    unpack_scrfd_heads
     im2col_patchify_batch1
     uint8_image_input
     float_image_input
@@ -45,6 +48,8 @@ RKNPU
     fold_gather_elements
     decompose_gelu
     split_large_reduction
+    fold_concat_into_conv
+    split_large_conv_reduction
     pin_opset
     reinfer_shapes
 
@@ -52,3 +57,8 @@ TensorrtExecutionProvider
     decompose_attention
     greedy_ctc_topk
     im2col_patchify
+
+RKNPU compile
+    config {'disable_rules': [], 'enable_flash_attention': False, 'model_pruning': False}
+    do_quantization False
+    socs rk3566 rk3568 rk3576 rk3588

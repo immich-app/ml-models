@@ -9,9 +9,9 @@ from pathlib import Path
 
 import onnx_ir as ir
 
-from .constants import canvases_of
-from .rknn._onnx import rknn_config
-from .rknn.compile import _pin
+from .constants import RKNN_SOCS, dim_sets_of, max_dims
+from .rknn._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config
+from .rknn.compile import _pin, contract
 from .runtime import (
     REGISTRY,
     REWRITE_SET_VERSION,
@@ -29,11 +29,15 @@ _GENERATED_VALUE = re.compile(r"val_\d+")
 
 
 def plans() -> str:
-    """Target -> the rewrites runtime.REGISTRY plans for it, in the order they run."""
+    """Target -> the rewrites runtime.REGISTRY plans for it, in the order they run, and the settings the
+    RKNPU compiler is given for every model, which no per-model rendering is the place to report."""
     lines = [f"REWRITE_SET_VERSION {REWRITE_SET_VERSION}"]
     for target in _targets():
         # ort_version reaches the digest, never a gate, so any value renders the same plan
         lines += ["", target, *(f"    {name}" for name in plan_rewrites(RewriteContext(target, ())).names)]
+    socs = " ".join(soc.value for soc in RKNN_SOCS)
+    lines += ["", f"{RKNPU} compile", f"    config {RKNN_CONFIG}", f"    do_quantization {DO_QUANTIZATION}"]
+    lines += [f"    socs {socs}"]
     return "\n".join(lines) + "\n"
 
 
@@ -112,7 +116,7 @@ def rewrites(path: Path) -> str:
     with tempfile.TemporaryDirectory() as work:
         for target in _targets():
             plan = plan_rewrites(RewriteContext(target, (1, 26, 0)))
-            for label, source, out_dir in _sources(target, path, Path(work)):
+            for index, (label, source, out_dir) in enumerate(_sources(target, path, Path(work))):
                 # as rknn.compile writes it: its plan materializes the weights, and a tower inlined back
                 # into the proto no longer serializes
                 standalone = target == RKNPU
@@ -129,6 +133,11 @@ def rewrites(path: Path) -> str:
                 # a property of what the plan PRODUCED, so it renders beside the digest rather than the label
                 if config := rknn_config(out):
                     lines += [f"    config {config}"]
+                if target == RKNPU:
+                    # the label pins MaxShape only, so dropping a narrower canvas would move nothing else
+                    lines += [f"    contract {contract(dim_sets_of(path)[index].dims)}"]
+                    # pin_opset decides what rknn.load_onnx ingests, and the graph rendering shows the export's
+                    lines += [f"    opset {ir.load(out).opset_imports['']}"]
                 lines += [f"    {rule} x{count} {wiring[rule]}" for rule, count in sorted(stamps.items())]
                 if unclaimed := wiring.get(""):
                     lines += [f"    unstamped x{nodes - sum(stamps.values())} {unclaimed}"]
@@ -138,15 +147,16 @@ def rewrites(path: Path) -> str:
 
 def _sources(target: str, path: Path, work: Path) -> Iterator[tuple[str, Path, Path]]:
     """The graphs a target's plan is rendered against and where each is written: the export itself for an EP,
-    and for RKNPU one pinned canvas per binary."""
+    and for RKNPU one pinned shape per binary."""
     if target != RKNPU:
         yield target, path, work
         return
-    for index, canvas in enumerate(canvases_of(path)):
+    for index, group in enumerate(dim_sets_of(path)):
+        dims = max_dims(group.dims)
         out_dir = work / f"rknn{index}"
         out_dir.mkdir(parents=True, exist_ok=True)
-        pinned = _pin(path, out_dir, canvas) if canvas else path
-        shape = " ".join(f"{name}={size}" for name, size in sorted(canvas.items())) or "static"
+        pinned = _pin(path, out_dir, dims) if dims else path
+        shape = " ".join(f"{name}={size}" for name, size in sorted(dims.items())) or "static"
         yield f"{target} {shape}", pinned, out_dir
 
 

@@ -33,9 +33,11 @@ CUDAExecutionProvider
     unstamped x273 885c0238
 
 CoreMLExecutionProvider
+    +120 MatMul
     +96 Reshape
+    +96 Slice
     +96 Transpose perm=(0, 2, 1, 3)
-    +48 MatMul
+    +72 Add
     +25 Mul
     -24 Attention is_causal=0 kv_num_heads=16 q_num_heads=16 qk_matmul_output_mode=0 softcap=0.0
     +24 Softmax axis=-1
@@ -44,15 +46,16 @@ CoreMLExecutionProvider
     +1 ReduceSum keepdims=1
     +1 Sqrt
     -1 Transpose perm=(0, 3, 1, 2)
-    665 nodes, weights 109cd9a3298e
+    905 nodes, weights 4d0354554595
     DecomposeAttention x312 acfd99f4
     DecomposeReduceL2 x3 a1bc379c
     RemoveOptionalBiasFromConv x1 06f71de8
+    SplitLargeReduction x264 de5fda1b
     _ConstantifyReshapeTarget x1 f786528a
     _FuseClassTokenPrepend x2 64b83b02
     _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 cde77a8c
     _SelectBeforeLayerNorm x1 ab62bee7
-    unstamped x344 3cfedbc0
+    unstamped x320 1024fd2a
 
 MIGraphXExecutionProvider
     +96 Reshape
@@ -132,6 +135,8 @@ RKNPU static
     -1 Transpose perm=(0, 2, 1)
     -1 Transpose perm=(0, 3, 1, 2)
     1580 nodes, weights 5f8a78619636
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x312 acfd99f4
     DecomposeGelu x120 e51f7645
     PatchEmbedToMatMul, _ConstantifyReshapeTarget, RemoveOptionalBiasFromConv x5 37ecaa30

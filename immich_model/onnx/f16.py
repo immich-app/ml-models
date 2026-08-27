@@ -43,13 +43,8 @@ def narrow(array: np.ndarray) -> np.ndarray:
 
 
 class NarrowToFloat16Pass(ir.passes.InPlacePass):
-    """Narrow every fp32 value to fp16 except the slots the op schemas pin, keeping the graph's own inputs and
-    outputs fp32 behind a Cast. Weights are read one at a time so the peak is the largest single tensor, and
-    casts are inserted at the producer, so the result is topologically ordered by construction."""
-
-    def __init__(self, keep_io_types: bool = True) -> None:
-        super().__init__()
-        self.keep_io_types = keep_io_types
+    """Narrow every fp32 value to fp16 except the slots the op schemas pin. Inputs stay fp32 behind a Cast;
+    outputs come back fp16, widening being exact and the Cast that does it not free."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         graph = model.graph
@@ -74,8 +69,7 @@ class NarrowToFloat16Pass(ir.passes.InPlacePass):
             if node.op_type == "Cast" and node.attributes.get_int("to", 0) == ir.DataType.FLOAT:
                 if not (node.outputs[0] in pinned or node.outputs[0] in outputs):
                     node.attributes["to"] = ir.Attr("to", ir.AttributeType.INT, ir.DataType.FLOAT16)
-            # a Constant carries its tensor in an ATTRIBUTE, which no initializer walk reaches, and ORT types
-            # the node from it, so setting the output type below alone leaves the node producing fp32
+            # a Constant holds its tensor in an attribute no initializer walk reaches, and ORT types it from that
             if node.op_type == "Constant" and not (node.outputs[0] in pinned or node.outputs[0] in outputs):
                 tensor = getattr(node.attributes.get("value"), "value", None)
                 if tensor is not None and tensor.dtype == ir.DataType.FLOAT:
@@ -85,17 +79,12 @@ class NarrowToFloat16Pass(ir.passes.InPlacePass):
                 if value.dtype == ir.DataType.FLOAT and value not in pinned and value not in outputs:
                     value.type = ir.TensorType(ir.DataType.FLOAT16)
 
-        if self.keep_io_types:
-            for value in graph.inputs:
-                if value.dtype == ir.DataType.FLOAT:
-                    self._cast_after_input(graph, value)
-            for index, value in enumerate(graph.outputs):
-                if value.dtype == ir.DataType.FLOAT:
-                    graph.outputs[index] = self._cast_before_output(graph, value)
-        else:
-            for index, value in enumerate(graph.outputs):
-                if value.dtype == ir.DataType.FLOAT:
-                    value.type = ir.TensorType(ir.DataType.FLOAT16)
+        for value in graph.inputs:
+            if value.dtype == ir.DataType.FLOAT:
+                self._cast_after_input(graph, value)
+        for value in graph.outputs:
+            if value.dtype == ir.DataType.FLOAT:
+                value.type = ir.TensorType(ir.DataType.FLOAT16)
 
         # a Cast the narrowing retargeted onto its own input type is now a full-tensor copy of nothing
         identities = [
@@ -120,37 +109,18 @@ class NarrowToFloat16Pass(ir.passes.InPlacePass):
         cast.replace_input_with(0, value)
         graph.insert_before(next(iter(graph)), cast)
 
-    def _cast_before_output(self, graph: ir.Graph, value: ir.Value) -> ir.Value:
-        """Widen a graph output back to fp32. The OUTPUT keeps the name and the narrowed value inside takes
-        the new one; the other way round reads the same on a diff but renames the graph's output."""
-        name = value.name
-        value.name = f"{name}_fp16"
-        value.type = ir.TensorType(ir.DataType.FLOAT16)
-        cast = ir.node("Cast", inputs=[value], attributes={"to": ir.DataType.FLOAT}, name=f"{name}/widen")
-        widened = cast.outputs[0]
-        widened.name = name
-        widened.type = ir.TensorType(ir.DataType.FLOAT)
-        widened.shape = value.shape
-        producer = value.producer()
-        graph.insert_after(producer, cast) if producer is not None else graph.append(cast)
-        return widened
 
-
-def derive(src: Path, dst: Path, outputs_fp16: bool = False) -> None:
+def derive(src: Path, dst: Path) -> None:
     """Convert an fp32 graph to fp16, weights external; the re-inference is what places the casts correctly.
-    onnxconverter_common's converter is no substitute, choking on the uint8 input Cast.
-
-    `outputs_fp16` drops keep_io_types: widening is exact, so an fp32 output buys no precision and only moves
-    the narrowing onto the host. Never for embeddings -- an fp16 one serialises into pgvector without raising."""
+    onnxconverter_common's converter is no substitute, choking on the uint8 input Cast."""
     model = ir.load(src)
-    # `ReinferPass` restores the batch symbol but not the names the exporter asserts after its own last
-    # inference pass, so the fp16 artifact would declare a different contract from its fp32 sibling.
+    # ReinferPass restores the batch symbol but not the asserted names, so the fp16 contract would differ
     named = [
         [dim.value or "" if isinstance(dim, ir.SymbolicDim) else "" for dim in out.shape or ()]
         for out in model.graph.outputs
     ]
     ReinferPass()(model)
-    NarrowToFloat16Pass(keep_io_types=not outputs_fp16)(model)
+    NarrowToFloat16Pass()(model)
 
     for output, names in zip(model.graph.outputs, named):
         for axis, name in enumerate(names):

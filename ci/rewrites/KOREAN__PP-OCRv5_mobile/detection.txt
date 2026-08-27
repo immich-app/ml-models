@@ -1,0 +1,132 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    -24 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +24 HardSwish
+    -24 Mul
+    144 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x24 88c59ad1
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 9586dfce
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 197fa113
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 971d4d3a
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x51 a0e04758
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    167 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x50 06530e5e
+
+MIGraphXExecutionProvider
+    unchanged
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    -24 HardSigmoid alpha=0.1666666716337204 beta=0.5
+    +24 HardSwish
+    -24 Mul
+    144 nodes, weights d3391a68551b
+    FuseBatchNormIntoConv x2 2d29c72c
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x24 88c59ad1
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 9586dfce
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 197fa113
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 971d4d3a
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x51 a0e04758
+
+RKNPU height=1472 width=736
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -1 Cast to=1
+    -1 Concat axis=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    170 nodes, weights ef297fdbed1f
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":1472,"width":736},{"height":736,"width":736},{"height":992,"width":736},{"height":736,"width":992},{"height":1120,"width":736},{"height":736,"width":1120},{"height":736,"width":1472}]}
+    opset 19
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x47 eda712e6
+
+RKNPU height=2176 width=1088
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -1 Cast to=1
+    -1 Concat axis=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    170 nodes, weights ef297fdbed1f
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2176,"width":1088},{"height":1088,"width":1088},{"height":1472,"width":1088},{"height":1088,"width":1472},{"height":1632,"width":1088},{"height":1088,"width":1632},{"height":1088,"width":2176}]}
+    opset 19
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x47 eda712e6
+
+RKNPU height=2880 width=1440
+    +3 Add
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -1 Cast to=1
+    -1 Concat axis=1
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    170 nodes, weights ef297fdbed1f
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2880,"width":1440},{"height":1440,"width":1440},{"height":1920,"width":1440},{"height":1440,"width":1920},{"height":2176,"width":1440},{"height":1440,"width":2176},{"height":1440,"width":2880}]}
+    opset 19
+    FoldConcatIntoConv, FuseBatchNormIntoConv x7 95c1e4a7
+    FuseBatchNormIntoConv x1 188ee567
+    FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
+    _DecomposeHardSwish x48 03b81a7a
+    _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 88effc35
+    _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
+    _FoldAffineBeforeConv x1 97363f91
+    _FoldAffineScaleBeforeConv x3 20599d5b
+    _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 4c022d13
+    _FoldBiasAdd x5 f89d5e54
+    _FoldSeResidual x16 528c3523
+    unstamped x47 eda712e6
+
+TensorrtExecutionProvider
+    unchanged

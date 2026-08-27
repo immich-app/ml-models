@@ -40,6 +40,8 @@ RKNPU static
     -1 Transpose perm=(0, 3, 1, 2)
     100 nodes, weights 0e092d0799d2
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{}]}
+    opset 19
     Flatten2Reshape x1 c4dbf3af
     FuseBatchNormIntoGemm x1 f3cf1b34
     unstamped x98 e78d85c9

@@ -23,6 +23,8 @@ def generate_readme(model_name: str, model_source: ModelSource) -> str:
                 tags.append("multilingual")
         case ModelSource.INSIGHTFACE:
             tags = ["immich", "facial-recognition"]
+        case ModelSource.PADDLE:
+            tags = ["immich", "ocr"]
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
@@ -63,6 +65,10 @@ def export(
             from .. import insightface
 
             insightface.export(model_name, output_dir, cache=cache)
+        case ModelSource.PADDLE:
+            from .. import ocr
+
+            ocr.export(model_name, output_dir, cache=cache)
         case _:
             raise ValueError(f"Unsupported model source {model_source}")
 
@@ -73,14 +79,7 @@ def export(
 
 
 @app.command()
-def derive_f16(
-    model_name: ModelName,
-    output_dir: OutputDir = Path("models"),
-    outputs_fp16: Annotated[
-        list[str] | None,
-        Option(help="Submodel(s) whose graph outputs stay fp16 instead of being cast back; repeatable."),
-    ] = None,
-) -> None:
+def derive_f16(model_name: ModelName, output_dir: OutputDir = Path("models")) -> None:
     """Write model_fp16.onnx beside each exported submodel's model.onnx."""
     from .f16 import derive
 
@@ -90,5 +89,5 @@ def derive_f16(
         raise RuntimeError(f"No ONNX submodel found under {model_dir}")
     for sub in present:
         src = model_dir / sub / "model.onnx"
-        derive(src, src.with_name("model_fp16.onnx"), sub in (outputs_fp16 or []))
+        derive(src, src.with_name("model_fp16.onnx"))
         echo(f"{sub}: fp16 derived")

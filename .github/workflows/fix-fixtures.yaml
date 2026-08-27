@@ -1,0 +1,60 @@
+name: Fix fixtures
+
+# The label applied AFTER a run finished; applied before or during, that run's own `commit-fixtures` job
+# takes it instead, so nothing here ever waits.
+on:
+  pull_request:
+    types: ['labeled']
+
+permissions: {}
+
+jobs:
+  find:
+    if: ${{ github.event.label.name == 'fix:fixtures' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      run-id: ${{ steps.source.outputs.run-id }}
+    steps:
+      # which run to take the renderings from; whether it blessed any is `commit-fixtures`' problem, an
+      # empty download and a clean tree both being no-ops there
+      - id: source
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const { owner, repo } = context.repo
+            const head = process.env.HEAD_SHA
+            const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner, repo, workflow_id: 'push.yaml', head_sha: head, per_page: 100,
+            })
+            // an in-flight run reads the label in its own `labelled` job, and committing under it would
+            // move the head that run's `commit-fixtures` verifies. Leaving the label set is the retry.
+            const pending = runs.find((run) => run.status !== 'completed')
+            if (pending) {
+              return core.info(`run ${pending.id} is ${pending.status} and will commit these itself`)
+            }
+            // a superseded run holds whichever renderings it reached before it died, which is not the set
+            const source = runs.find((run) => run.conclusion !== 'cancelled')
+            if (!source) {
+              return core.info(`no completed run for ${head.slice(0, 7)} to take renderings from`)
+            }
+            core.info(`taking renderings from run ${source.id}`)
+            core.setOutput('run-id', source.id)
+
+  commit:
+    needs: find
+    if: ${{ needs.find.outputs.run-id }}
+    permissions:
+      actions: read
+    uses: ./.github/workflows/commit-fixtures.yaml
+    secrets:
+      client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+    with:
+      run-id: ${{ needs.find.outputs.run-id }}
+      branch: ${{ github.event.pull_request.head.ref }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      pull-number: ${{ github.event.pull_request.number }}

@@ -62,21 +62,25 @@ OpenVINOExecutionProvider
     unstamped x98 a5d8a72d
 
 RKNPU static
-    +12 Slice
+    +15 Slice
+    +11 Add
     +11 MatMul
-    +9 Add
+    +2 Conv auto_pad=NOTSET dilations=(1, 1) group=1 pads=(1, 1, 1, 1) strides=(1, 1)
     -1 Attention is_causal=0 qk_matmul_output_mode=0 softcap=0.0
     -1 Cast to=1
     +1 Mul
     +1 Softmax axis=-1
     +1 Transpose perm=(0, 1, 3, 2)
-    197 nodes, weights 2318f7f490b3
+    204 nodes, weights f79af060a719
+    contract {"dims":[{}]}
+    opset 19
     DecomposeAttention x5 b00b8abe
-    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x55 18e54fd8
-    SplitLargeReduction x33 925fe9f6
+    FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x54 8f65283c
+    SplitLargeConvReduction, FuseBatchNormIntoConv, RemoveOptionalBiasFromConv x8 679b95aa
+    SplitLargeReduction x33 3cabc813
     _ConstantifyReshapeTarget x9 8c4eb3c1
     _ScalarGatherToSlice x1 6e430d0a
-    unstamped x94 a1aff241
+    unstamped x94 9d87f2e4
 
 TensorrtExecutionProvider
     +2 MatMul

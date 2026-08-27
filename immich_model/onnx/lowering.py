@@ -15,6 +15,10 @@ _MIN_PATCH_STRIDE = 8
 _CTC_CLASS_AXIS = 2
 _POOL_SEQ_AXIS = 1
 
+# the exporter's merged SCRFD head, restated: it packs the channel axis anchor-major, 2 anchors of (cls, box, kps)
+_SCRFD_ANCHORS_PER_CELL = 2
+_SCRFD_HEAD_CHANNELS = (1, 4, 10)
+
 
 class FoldConstantGatherElements(RewriteRuleClassBase):
     """GatherElements(broadcast(const_row), const_indices) -> the gathered constant. Retires the XLM-R token-type
@@ -297,10 +301,8 @@ class DecomposeAttentionPass(RewritePass):
 
 
 class ElideMaskQueryAxis(RewriteRuleClassBase):
-    """Drop the zero-Add that materializes a padding mask's query axis, feeding the [b,1,1,S] key row straight to
-    the decomposed score Add, which broadcasts it itself; exact because the mask is square. The Add exists only
-    for the fused op, whose ORT CPU kernel enforces mask.shape[-2] == q_len. `remove_nodes=False`: layers share it.
-    Separate from `DecomposeAttention` on purpose: that row ships to targets whose plans must not move for this."""
+    """Drop the zero-Add materializing a padding mask's query axis and feed [b,1,1,S] to the decomposed score Add,
+    which broadcasts it itself; exact because the mask is square. Its own row: DecomposeAttention ships wider."""
 
     def pattern(self, op: Any, q: Any, k: Any, mask: Any, zeros: Any) -> Any:
         return op.Add(op.MatMul(q, k, _outputs=["scores"]), op.Add(mask, zeros))
@@ -413,7 +415,12 @@ class PatchEmbedToMatMul(RewriteRuleClassBase):
         grid = op.Reshape(x, init(shape1, "patch_reshape1_shape"))
         grouped = op.Transpose(grid, perm=[0, 2, 1, 3])
         cols = op.Reshape(grouped, init(shape2, "patch_reshape2_shape"))
+        # split_large_reduction needs known shapes to apply
+        batch = ir.SymbolicDim(None) if self.batch_dynamic else 1
+        dtype = weight.const_value.dtype
+        cols.shape, cols.type = ir.Shape([batch, num_patches, kernel * kernel * channels]), ir.TensorType(dtype)
         proj = op.MatMul(cols, init(w_patch.astype(w.dtype), "patch_weight"))
+        proj.shape, proj.type = ir.Shape([batch, num_patches, embed]), ir.TensorType(dtype)
         return op.Add(proj, init(bias.astype(w.dtype).reshape(1, 1, embed), "patch_bias"))
 
 
@@ -531,16 +538,15 @@ def _channel_shift(value: ir.Value, channels: int) -> ir.Node | None:
         return None
     const = node.inputs[1]
     tensor = const.const_value if const is not None else None
-    # rank>1 would need a real permutation; rank<=1 only ever broadcasts over the last (channel) axis
+    # rank<=1 only ever broadcasts over the last (channel) axis
     if tensor is None or tensor.shape.rank() > 1 or len(list(const.uses())) != 1:  # type: ignore[union-attr]
         return None
     return node if tensor.size in (1, channels) else None
 
 
 class NchwImageInputPass(ir.passes.InPlacePass):
-    """Retype the uint8 NHWC image input to NCHW and delete the contract's layout Transpose, handing the backend the
-    layout its first conv wants. Mutates graph IO: the caller must feed NCHW. Failing closed on the adjacency is the
-    safety argument -- only elementwise nodes stand in the NHWC domain, so the rest already computes in NCHW."""
+    """Retype the uint8 NHWC image input to NCHW and delete the layout Transpose, handing the backend what its
+    first conv wants. Mutates graph IO: the caller must feed NCHW."""
 
     def call(self, model: ir.Model) -> ir.passes.PassResult:
         declined = ir.passes.PassResult(model, False)
@@ -576,7 +582,6 @@ class NchwImageInputPass(ir.passes.InPlacePass):
             node.outputs[0].shape = ir.Shape(nchw)
         if shift is not None:
             const = shift.inputs[1]
-            # per-channel, so the layout flip moves it
             array = const.const_value.numpy().reshape(-1, 1, 1)  # type: ignore[union-attr]
             const.const_value = ir.tensor(array, name=const.name)
             const.shape = ir.Shape(array.shape)
@@ -627,7 +632,8 @@ class HostCtcDecodePass(ir.passes.InPlacePass):
         if len(graph.outputs) != 2:
             return declined
         indices, probs = graph.outputs
-        if indices.dtype != ir.DataType.INT32 or probs.dtype != ir.DataType.FLOAT:
+        # fp16 too: the derived artifact's `probs` IS fp16, and gating on fp32 would decline it in silence
+        if indices.dtype != ir.DataType.INT32 or probs.dtype not in (ir.DataType.FLOAT, ir.DataType.FLOAT16):
             return declined
 
         prob_producer = probs.producer()
@@ -662,16 +668,12 @@ class HostCtcDecodePass(ir.passes.InPlacePass):
         ):
             return declined
 
+        # the output keeps the logits' own dtype: an fp16 graph hands back fp16, like every other output
         softmax = ir.node("Softmax", inputs=[logits], attributes={"axis": _CTC_CLASS_AXIS}, num_outputs=1)
         softmax.outputs[0].shape, softmax.outputs[0].type = logits.shape, logits.type
-        tail = [softmax]
-        if logits.dtype != ir.DataType.FLOAT:  # fp16 graph, float IO: put keep_io_types' cast back
-            cast = ir.node("Cast", inputs=softmax.outputs, attributes={"to": ir.DataType.FLOAT}, num_outputs=1)
-            cast.outputs[0].shape, cast.outputs[0].type = logits.shape, ir.TensorType(ir.DataType.FLOAT)
-            tail.append(cast)
-        output = tail[-1].outputs[0]
+        output = softmax.outputs[0]
         output.name = "logits_softmax"
-        graph.extend(tail)
+        graph.append(softmax)
         graph.outputs.clear()
         graph.outputs.append(output)
         for node in (*index_nodes, *prob_nodes, reduce_max):
@@ -684,11 +686,8 @@ _FUSED_SKIP_DTYPES = (ir.DataType.FLOAT, ir.DataType.FLOAT16)
 
 
 class FuseSkipLayerNorm(RewriteRuleClassBase):
-    """Residual `Add` + `LayerNormalization` -> `com.microsoft::SkipLayerNormalization`, with the residual sum handed
-    back off the fused op's 4th output. ORT's own fusion requires the Add to have one output edge -- true of a
-    post-norm tower, never of a pre-norm one -- so emitting the node ourselves reaches the sites it skips. Both arms
-    read that count rather than leaning on `remove_nodes`, a two-output pattern anchoring on its FIRST output node so
-    rule order cannot arbitrate. Below the ORT floor in pyproject an fp16 residual saturates `mean(x^2)` (#28682)."""
+    """Residual `Add` + `LayerNormalization` -> `com.microsoft::SkipLayerNormalization`, the sum coming back off the
+    4th output. ORT's own fusion wants the Add single-use, true of post-norm towers and never of pre-norm ones."""
 
     def __init__(self, shared: bool, name: str | None = None) -> None:
         super().__init__(name)
@@ -745,10 +744,8 @@ class FuseSkipLayerNormPass(RewritePass):
 
 
 class KeepdimsMeanPool(RewriteRuleClassBase):
-    """Keep the reduced axis on the masked mean-pool's two ReduceSums and Squeeze it off after the Div, so no shape
-    transform stands between a reduction and its consumer: MIGraphX lowers keepdims=0 as reduce-then-squeeze and
-    `simplify_reshapes` then rewrites it across the Div unchecked. `keepdims` is checked, not pinned in the pattern:
-    its default is 1, so a literal there silently declines the omitted spelling."""
+    """Keep the reduced axis on the masked mean-pool's ReduceSums and Squeeze after the Div, so no shape transform
+    stands between a reduction and its consumer for MIGraphX's `simplify_reshapes` to rewrite across."""
 
     def pattern(self, op: Any, weighted: Any, mask: Any, sum_axes: Any, count_axes: Any, unsq_axes: Any) -> Any:
         summed = op.ReduceSum(weighted, sum_axes, _allow_other_attributes=True, _outputs=["summed"])
@@ -891,9 +888,8 @@ def _live_zero_mask_add_count(model: ir.Model) -> int:
 
 
 class SymmetrizeConvPads(RewriteRuleClassBase):
-    """Widen an even-kernel stride-1 SAME_UPPER conv to the next odd kernel with symmetric padding, zero-extending its
-    weights at the top-left: MIGraphX's `insert_pad` splits an asymmetrically-padded convolution into a standalone
-    `pad` plus a zero-padded conv. Exact, the added terms being identically zero; deleting `auto_pad` terminates it."""
+    """Widen an even-kernel stride-1 SAME_UPPER conv to the next odd kernel with symmetric pads, zero-extending the
+    weights: MIGraphX splits an asymmetrically-padded conv into a standalone `pad` plus a zero-padded conv."""
 
     def pattern(self, op: Any, x: Any, weight: Any) -> Any:
         return op.Conv(x, weight, _allow_other_inputs=True, _allow_other_attributes=True, _outputs=["conv"])
@@ -958,3 +954,35 @@ def _asymmetric_pad_count(model: ir.Model) -> int:
         pads = list(node.attributes.get_ints("pads", [0] * 2 * len(kernel)))
         stuck += pads[: len(pads) // 2] != pads[len(pads) // 2 :]
     return stuck
+
+
+class UnpackScrfdHeads(RewriteRuleClassBase):
+    """Cut the merged SCRFD head's branches apart while the channels are still an axis: [B,A*C,H,W] -> [B,A,C,HW]
+    is a free view of the anchor-major pack. Gated, not exported: it trades one wide Transpose for three narrow."""
+
+    def pattern(self, op: Any, x: Any, flat: Any, sizes: Any) -> Any:
+        rows = op.Reshape(op.Transpose(x, perm=[0, 2, 3, 1]), flat)
+        return op.Split(rows, sizes, axis=2, _outputs=3)
+
+    def check(self, context: Any, x: Any, flat: Any, sizes: Any) -> MatchResult:
+        result = MatchResult()
+        cell = sum(_SCRFD_HEAD_CHANNELS)
+        if _const_ints(sizes) != list(_SCRFD_HEAD_CHANNELS):
+            return result.fail("the Split does not cut a SCRFD head's cls/box/kps channels")
+        if _const_ints(flat) != [0, -1, cell]:
+            return result.fail("the Reshape does not flatten the head to per-anchor rows")
+        dims = x.shape
+        if dims is None or len(dims) != 4 or dims[1] != _SCRFD_ANCHORS_PER_CELL * cell:
+            return result.fail("the head conv does not emit a whole cell of anchor-major head channels")
+        return result
+
+    def rewrite(self, op: Any, x: Any, flat: Any, sizes: Any) -> Any:
+        cell = np.array([0, _SCRFD_ANCHORS_PER_CELL, sum(_SCRFD_HEAD_CHANNELS), -1], np.int64)
+        branches = op.Split(op.Reshape(x, op.Constant(value=ir.tensor(cell))), sizes, axis=2, _outputs=3)
+        return tuple(
+            op.Reshape(
+                op.Transpose(branch, perm=[0, 3, 1, 2]),
+                op.Constant(value=ir.tensor(np.array([0, -1, channels], np.int64))),
+            )
+            for branch, channels in zip(branches, _SCRFD_HEAD_CHANNELS)
+        )

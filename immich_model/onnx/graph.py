@@ -176,21 +176,34 @@ def _symbol(shape: _Shape | None, axis: int) -> str:
     return dim if isinstance(dim, str) else ""
 
 
-def _keeps_window(node: ir.Node) -> bool:
+def _window_axis_ratios(node: ir.Node) -> dict[int, Fraction]:
+    """Per spatial axis, `out == ratio * in` where a windowed op carries the extent. Downsampling floors,
+    so `out == in/s` assumes `s | in` -- true of every canvas we serve, and not knowledge the graph holds."""
     attributes = node.attributes
     kernel = attributes.get_ints("kernel_shape", [])  # the Global* pools carry none
-    if not kernel or attributes.get_ints("output_shape", []) or any(attributes.get_ints("output_padding", [0])):
-        return False
-    spatial = [1] * len(kernel)
+    if not kernel or attributes.get_ints("output_shape", []) or attributes.get_int("ceil_mode", 0):
+        return {}
+    count = len(kernel)
+    unit = [1] * count
     # list() is load-bearing, for the reason `_ir.pointwise` gives: without it this fails open, silently
-    if list(attributes.get_ints("strides", spatial)) != spatial:
-        return False
-    if list(attributes.get_ints("dilations", spatial)) != spatial:
-        return False
-    if attributes.get_string("auto_pad", "NOTSET").startswith("SAME"):
-        return True
-    pads = attributes.get_ints("pads", [0] * 2 * len(kernel))
-    return all(pads[i] + pads[i + len(kernel)] == kernel[i] - 1 for i in range(len(kernel)))
+    strides = list(attributes.get_ints("strides", unit))
+    dilations = list(attributes.get_ints("dilations", unit))
+    padding = list(attributes.get_ints("output_padding", [0] * count))
+    same = attributes.get_string("auto_pad", "NOTSET").startswith("SAME")
+    pads = list(attributes.get_ints("pads", [0] * 2 * count))
+
+    ratios: dict[int, Fraction] = {}
+    for i in range(count):
+        stride, span = strides[i], dilations[i] * (kernel[i] - 1)
+        total = pads[i] + pads[i + count]
+        if node.op_type == "ConvTranspose":
+            # out = s*(in-1) + output_padding + span + 1 - pads
+            if not same and total == padding[i] + span + 1 - stride:
+                ratios[2 + i] = Fraction(stride)
+        elif same or span - stride + 1 <= total <= span:
+            # floor((s*m + total - span - 1)/s) + 1 == m over the aligned inputs
+            ratios[2 + i] = Fraction(1, stride)
+    return ratios
 
 
 def _dim_symbol_renames(graph: ir.Graph) -> dict[str, str]:
@@ -244,9 +257,9 @@ def _dim_symbol_renames(graph: ir.Graph) -> dict[str, str]:
                         link(name, axis, out, axis)
         elif node.op_type in _WINDOWED:
             link(first, 0, out, 0)  # batch never enters the window
-            if _keeps_window(node):
-                for axis in range(2, rank):
-                    link(first, axis, out, axis)
+            for axis, ratio in _window_axis_ratios(node).items():
+                if axis < rank:
+                    link(first, axis, out, axis, ratio)
         elif node.op_type == "Transpose":
             for axis, source_axis in enumerate(node.attributes.get_ints("perm", list(reversed(range(rank))))):
                 link(first, source_axis, out, axis)

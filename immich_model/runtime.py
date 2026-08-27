@@ -26,23 +26,25 @@ from .onnx.lowering import (
     NchwImageInputPass,
     PatchEmbedToMatMulPass,
     SymmetrizeConvPadsPass,
+    UnpackScrfdHeads,
 )
 from .rknn._onnx import (
     FloatifyNotEqual,
     FloatifyPadKeep,
     FloatifyPadMaskPass,
     FloatImageInputPass,
+    FoldConcatIntoConv,
     OpaqueZeroMul,
     PinOpsetPass,
-    RawCtcLogitsPass,
+    SeqMajorLogitsPass,
+    SplitLargeConvReduction,
     SplitLargeReduction,
     Uint8ImageInputPass,
 )
 
 RKNPU = "RKNPU"  # the one target that is not an ORT execution provider: its rows run in `rknn compile`
 
-# Hashed into the rewrite-plan digest alongside the package version, target and ordered rewrite names, all of
-# which already move it. Bump ONLY when a row's behaviour changes with its name and gates fixed.
+# bump only when a row's behaviour changes with its name and gates fixed; everything else already moves the digest
 REWRITE_SET_VERSION = 22
 
 
@@ -55,11 +57,8 @@ class RewriteContext:
 @dataclass(frozen=True)
 class Rewrite:
     name: str
-    # target -> what would retire this row there: documentation held as data so it cannot drift off its row.
-    # Mostly toolkit versions an ORT-version bound cannot express, so do not reintroduce a version field.
+    # target -> what would retire the row there; held as data so it cannot drift off its row
     gates: Mapping[str, str]
-    # a row whose miss is not survivable says so in its own pass's `ensures()`, hand-walked because a pattern
-    # would reproduce the silent non-match it exists to catch; otherwise a miss costs latency
     transform: ir.passes.PassBase
 
     def applies(self, ctx: RewriteContext) -> bool:
@@ -91,8 +90,7 @@ REGISTRY = (
             "CoreMLExecutionProvider": "an ORT release with the upstreamed CoreML Attention/is_causal builders",
             "MIGraphXExecutionProvider": "a MIGraphX release that parses opset-23 Attention and has a fused kernel",
             "OpenVINOExecutionProvider": "OpenVINO >= 2026.3, whose 3D Attention translation works",
-            # both TensorRT EPs miscompute a single-row query against many K/V rows -- not head_dim 72, as an
-            # earlier note here blamed -- and the decomposed form mirrors it above batch 1, where none runs
+            # both TensorRT EPs miscompute a single-row query against many K/V rows
             "TensorrtExecutionProvider": "nothing version-shaped: 10.13 through 11.1 all fail identically",
             "NvTensorRTRTXExecutionProvider": "nothing version-shaped: 10.13 through 11.1 all fail identically",
             RKNPU: "an rknn-toolkit2 that parses the op at the opset it lives in; the chain IS its sdpa matcher's",
@@ -102,8 +100,7 @@ REGISTRY = (
     Rewrite(
         name="broadcast_shape_workaround",
         gates={
-            # two upstream bugs, both hit, so both edits are required: simplify_reshapes throws an unchecked
-            # multibroadcast at the mean-pool divide, simplify_algebra rank-promotes the mask ill-formed
+            # two upstream bugs, both hit, so both edits are required
             "MIGraphXExecutionProvider": "a MIGraphX release carrying fixes for both upstream bugs",
         },
         transform=BroadcastShapeWorkaroundPass(),
@@ -132,6 +129,16 @@ REGISTRY = (
         transform=SymmetrizeConvPadsPass(),
     ),
     Rewrite(
+        # never the NVIDIA backends: a middle-axis Split costs more there than the packed head does
+        name="unpack_scrfd_heads",
+        gates={
+            "CoreMLExecutionProvider": "a CoreML transpose lowering that costs the same over the packed head "
+            "channels as over three narrow branches",
+            RKNPU: "an RKNPU that places the head's row flatten on the NPU rather than the host",
+        },
+        transform=RewritePass([UnpackScrfdHeads.rule()]),
+    ),
+    Rewrite(
         name="greedy_ctc_topk",
         gates={
             "CUDAExecutionProvider": "a cuDNN bump that fixes reduce_tensor occupancy",
@@ -150,8 +157,7 @@ REGISTRY = (
         transform=FuseHardSwishPass(),
     ),
     Rewrite(
-        # never CoreML: mutually exclusive with the more valuable nchw_image_input, since im2col consumes the
-        # layout Transpose that rewrite matches on, leaving the graph on CoreML's slow float-NHWC input path
+        # never CoreML: im2col consumes the layout Transpose nchw_image_input matches on
         name="im2col_patchify",
         gates={
             # a 32x32/stride-32 filter falls off every NVIDIA tensor-core path, which the GEMM stays on
@@ -165,8 +171,7 @@ REGISTRY = (
     Rewrite(
         name="im2col_patchify_ragged",
         gates={
-            # ragged = the patch grid does not tile the image, so the conv silently drops an edge and a plain
-            # im2col reshape would be wrong; slicing to the tiling sub-region first makes the same body exact
+            # ragged grids drop an edge, so the body slices to the tiling sub-region first
             "OpenVINOExecutionProvider": "an intel_gpu release whose selector stops preferring os_iyx_osv32 here",
         },
         transform=PatchEmbedToMatMulPass(crop_ragged=True),
@@ -182,14 +187,11 @@ REGISTRY = (
     Rewrite(
         name="skip_layer_norm",
         gates={
-            # only the EPs that have the kernel AND run level-2 fusions over their own nodes; ORT's own
-            # SkipLayerNormFusion reaches few of the sites (why, in fuse_skip_layer_norm)
+            # only EPs with the kernel that also run level-2 fusions over their own nodes
             "CPUExecutionProvider": "an ORT SkipLayerNormFusion that emits the sum on output 3 rather than bailing",
             # the ORT floor in pyproject is this row's: below it the CUDA fp16 kernel comes back as beta (#28682)
             "CUDAExecutionProvider": "an ORT SkipLayerNormFusion that emits the sum on output 3 rather than bailing",
-            # NEVER OpenVINO: it translates the op in its frontend and implements output 0 only, so the
-            # 4-output form every pre-norm tower needs either fails session create or grows phantom
-            # Parameters. A 1-output variant is safe but pointless, expanding to the unfused pair's nodes.
+            # never OpenVINO: it implements output 0 only, and the 4-output form is what pre-norm towers need
         },
         transform=FuseSkipLayerNormPass(),
     ),
@@ -228,9 +230,9 @@ REGISTRY = (
     Rewrite(
         name="raw_ctc_logits",
         gates={
-            RKNPU: "an RKNPU Exp kernel, which is the whole reason the softmax denominator cannot stay",
+            RKNPU: "an exSoftmax13 correct past 8192 classes on C, where the toolkit places it at any size",
         },
-        transform=RawCtcLogitsPass(),
+        transform=ir.passes.Sequential(HostCtcDecodePass(), SeqMajorLogitsPass()),
     ),
     Rewrite(
         name="floatify_not_equal",
@@ -276,6 +278,30 @@ REGISTRY = (
         transform=RewritePass([SplitLargeReduction.rule()]),
     ),
     Rewrite(
+        # before the split row, which then sees branch-sized reductions rather than the concatenated one
+        name="fold_concat_into_conv",
+        gates={
+            RKNPU: "an RKNPU whose concatenate costs less than the conv it feeds",
+        },
+        transform=RewritePass([FoldConcatIntoConv.rule()]),
+    ),
+    Rewrite(
+        name="split_large_conv_reduction",
+        gates={
+            RKNPU: "an RKNPU whose MAC utilization stops falling away above a 6144-byte conv weight tile",
+        },
+        transform=RewritePass([SplitLargeConvReduction.rule()]),
+    ),
+    Rewrite(
+        # its own row, not a target on the RKNPU one: the two thresholds are independently derived
+        name="split_deep_reduction",
+        gates={
+            "CoreMLExecutionProvider": "an ANE whose matmul throughput stops falling away past a 3584-deep "
+            "contraction, or a shipped tower whose fc2 is narrower than that",
+        },
+        transform=RewritePass([SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]),
+    ),
+    Rewrite(
         name="pin_opset",
         gates={
             RKNPU: "an rknn-toolkit2 that ingests the opset the exporter writes",
@@ -283,8 +309,7 @@ REGISTRY = (
         transform=PinOpsetPass(19),
     ),
     Rewrite(
-        # the rows above leave new nodes unannotated and the toolkit reads the declared shapes. Sorted first:
-        # floatify_pad_mask appends its island at the end of a graph it feeds in the middle.
+        # sorted first: floatify_pad_mask appends its island at the end of a graph it feeds in the middle
         name="reinfer_shapes",
         gates={
             RKNPU: "nothing: a graph the rows have edited has to say what it now computes",
@@ -297,17 +322,14 @@ REGISTRY = (
 def plan_rewrites(ctx: RewriteContext) -> RewritePlan:
     rewrites = tuple(rewrite for rewrite in REGISTRY if rewrite.applies(ctx))
     pkg = version("immich_model")
-    # ort_version is dead for gating but load-bearing here: dropping it, or collapsing the fields into {ctx},
-    # moves every digest and invalidates deployed rewrites and CoreML caches. Named fields, not the context
-    # -- a new RewriteContext field left out of here lets two contexts that plan differently collide.
+    # named fields, not the context: dropping one moves every digest, and a new one left out collides
     facts = f"{pkg}\x1f{REWRITE_SET_VERSION}\x1f{ctx.target}\x1f{ctx.ort_version}\x1f{[r.name for r in rewrites]}"
     return RewritePlan(rewrites, hashlib.sha256(facts.encode()).hexdigest()[:12])
 
 
 def apply_rewrites(src_path: Path, plan: RewritePlan, out_dir: Path | None = None, standalone: bool = False) -> Path:
-    """Apply plan to src_path, writing <stem>.rw-<digest>.onnx beside it, or return it unwritten if nothing matched.
-    Untouched initializers keep external refs into the source's sidecar; `standalone` writes the weights too, for a
-    consumer that takes a file rather than a session."""
+    """Apply plan to src_path as <stem>.rw-<digest>.onnx beside it, or return it unwritten if nothing matched.
+    `standalone` writes the weights too, for a consumer that takes a file rather than a session."""
     src_path = Path(src_path)
     out_path = (src_path.parent if out_dir is None else Path(out_dir)) / f"{src_path.stem}.rw-{plan.digest}.onnx"
 

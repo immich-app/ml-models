@@ -11,12 +11,15 @@ from .constants import CATALOG, catalog
 ELIDE = 60
 
 
-def fixtures(root: Path, models: Path | None) -> Iterator[tuple[Path, str]]:
-    """Every rendering this tree should produce, driven by the catalog rather than by what the tree holds:
-    an export directory is shared across branches and carries models this one does not declare."""
+def plan_fixture(root: Path) -> Iterator[tuple[Path, str]]:
+    """The rewrite plans, a property of the registry that no exported model bears on."""
     yield root / "plans.txt", plans()
+
+
+def model_fixtures(root: Path, models: Path) -> Iterator[tuple[Path, str]]:
+    """What the models present render to, filtered by the catalog."""
     declared = catalog()
-    for onnx in sorted(models.glob("*/*/model.onnx") if models else []):
+    for onnx in sorted(models.glob("*/*/model.onnx")):
         model, submodel = onnx.parent.parent.name, onnx.parent.name
         if model not in declared:
             continue

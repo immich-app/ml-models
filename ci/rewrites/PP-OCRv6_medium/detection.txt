@@ -1,0 +1,103 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    177 nodes, weights cec0648fd947
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x77 b88346ee
+    _FuseErfGelu x13 837b6556
+    unstamped x71 957d1144
+
+MIGraphXExecutionProvider
+    -2 Conv auto_pad=SAME_UPPER dilations=(1, 1) group=1 kernel_shape=(2, 2) strides=(1, 1)
+    +2 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    178 nodes, weights 74673ca875bf
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    SymmetrizeConvPads, _FoldBiasAdd x2 67f062ca
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x75 7cc8ab48
+    _FuseErfGelu x13 837b6556
+    unstamped x72 bb40f7c7
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    unchanged
+
+RKNPU height=1472 width=736
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    233 nodes, weights 9d280467bf08
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":1472,"width":736},{"height":736,"width":736},{"height":992,"width":736},{"height":736,"width":992},{"height":1120,"width":736},{"height":736,"width":1120},{"height":736,"width":1472}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 806e4876
+    FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x75 dc2c1362
+    unstamped x67 492b6de5
+
+RKNPU height=2176 width=1088
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    233 nodes, weights 9d280467bf08
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2176,"width":1088},{"height":1088,"width":1088},{"height":1472,"width":1088},{"height":1088,"width":1472},{"height":1632,"width":1088},{"height":1088,"width":1632},{"height":1088,"width":2176}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 806e4876
+    FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x75 dc2c1362
+    unstamped x67 492b6de5
+
+RKNPU height=2880 width=1440
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    233 nodes, weights 9d280467bf08
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2880,"width":1440},{"height":1440,"width":1440},{"height":1920,"width":1440},{"height":1440,"width":1920},{"height":2176,"width":1440},{"height":1440,"width":2176},{"height":1440,"width":2880}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 806e4876
+    FoldConcatIntoConv, _FoldBiasAdd x10 7429e6fe
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x75 dc2c1362
+    unstamped x67 492b6de5
+
+TensorrtExecutionProvider
+    unchanged

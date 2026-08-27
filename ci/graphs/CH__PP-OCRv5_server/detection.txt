@@ -1,0 +1,676 @@
+<
+   ir_version: 10,
+   opset_import: ["" : 20]
+>
+"PaddlePaddle Graph in PIR mode" (uint8[batch,height,width,3] image) => (float[batch,height,width] dbnet_probs) 
+   <
+      float[batch,1024,unk__46,unk__47] "Add.1"
+      float[batch,32,unk__28,unk__29] "Add.109"
+      float[batch,64,unk__28,unk__29] "Add.11"
+      float[batch,32,unk__28,unk__29] "Add.119"
+      float[batch,64,unk__28,unk__29] "Add.123"
+      float[batch,32,unk__8,unk__9] "Add.125"
+      float[batch,64,unk__46,unk__47] "Add.13"
+      float[batch,32,unk__8,unk__9] "Add.135"
+      float[batch,32,unk__8,unk__9] "Add.145"
+      float[batch,64,unk__136,unk__137] "Add.15"
+      float[batch,32,unk__8,unk__9] "Add.155"
+      float[batch,64,unk__8,unk__9] "Add.159"
+      float[batch,1,height,width] "Add.163"
+      float[batch,1,height,width] "Add.165"
+      float[batch,1,height,width] "Add.167"
+      float[batch,32,unk__136,unk__137] "Add.17"
+      float[batch,32,unk__136,unk__137] "Add.27"
+      float[batch,1024,unk__46,unk__47] "Add.3"
+      float[batch,32,unk__136,unk__137] "Add.37"
+      float[batch,32,unk__136,unk__137] "Add.47"
+      float[batch,256,unk__46,unk__47] "Add.5"
+      float[batch,64,unk__136,unk__137] "Add.51"
+      float[batch,32,unk__46,unk__47] "Add.53"
+      float[batch,32,unk__46,unk__47] "Add.63"
+      float[batch,256,unk__28,unk__29] "Add.7"
+      float[batch,32,unk__46,unk__47] "Add.73"
+      float[batch,32,unk__46,unk__47] "Add.83"
+      float[batch,64,unk__46,unk__47] "Add.87"
+      float[batch,32,unk__28,unk__29] "Add.89"
+      float[batch,256,unk__8,unk__9] "Add.9"
+      float[batch,32,unk__28,unk__29] "Add.99"
+      float[batch,64,unk__0,unk__1] "Concat.1"
+      float[batch,2176,unk__46,unk__47] "Concat.11"
+      float[batch,3328,unk__136,unk__137] "Concat.13"
+      float[batch,256,unk__8,unk__9] "Concat.15"
+      float[batch,65,height,width] "Concat.17"
+      float[batch,336,unk__8,unk__9] "Concat.3"
+      float[batch,704,unk__28,unk__29] "Concat.5"
+      float[batch,1664,unk__46,unk__47] "Concat.7"
+      float[batch,2176,unk__46,unk__47] "Concat.9"
+      float[batch,32,unk__0,unk__1] "p2o.pd_op.batch_norm_.0.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.batch_norm_.1.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.10.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.batch_norm_.11.0"
+      float[batch,128,unk__8,unk__9] "p2o.pd_op.batch_norm_.12.0"
+      float[batch,128,unk__28,unk__29] "p2o.pd_op.batch_norm_.13.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.14.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.15.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.16.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.17.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.18.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.batch_norm_.19.0"
+      float[batch,32,unk__0,unk__1] "p2o.pd_op.batch_norm_.2.0"
+      float[batch,256,unk__28,unk__29] "p2o.pd_op.batch_norm_.20.0"
+      float[batch,512,unk__28,unk__29] "p2o.pd_op.batch_norm_.21.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.batch_norm_.22.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.23.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.24.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.25.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.26.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.27.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.28.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.29.0"
+      float[batch,32,unk__8,unk__9] "p2o.pd_op.batch_norm_.3.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.30.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.31.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.32.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.33.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.34.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.batch_norm_.35.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.batch_norm_.36.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.37.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.38.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.39.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.4.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.40.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.41.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.42.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.43.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.44.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.45.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.46.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.47.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.48.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.batch_norm_.49.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.5.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.batch_norm_.50.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.51.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.52.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.53.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.54.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.55.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.56.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.57.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.58.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.59.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.6.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.60.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.61.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.batch_norm_.62.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.batch_norm_.63.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.batch_norm_.64.0"
+      float[batch,1024,unk__136,unk__137] "p2o.pd_op.batch_norm_.65.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.66.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.67.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.68.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.69.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.7.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.70.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.71.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.72.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.73.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.74.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.75.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.76.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.batch_norm_.77.0"
+      float[batch,1024,unk__136,unk__137] "p2o.pd_op.batch_norm_.78.0"
+      float[batch,2048,unk__136,unk__137] "p2o.pd_op.batch_norm_.79.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.8.0"
+      float[batch,64,unk__136,unk__137] "p2o.pd_op.batch_norm_.80.0"
+      float[batch,64,unk__46,unk__47] "p2o.pd_op.batch_norm_.81.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.batch_norm_.82.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.batch_norm_.83.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.batch_norm_.84.0"
+      float[batch,64,unk__0,unk__1] "p2o.pd_op.batch_norm_.85.0"
+      float[batch,64,height,width] "p2o.pd_op.batch_norm_.86.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.batch_norm_.9.0"
+      float[batch,256,unk__136,unk__137] "p2o.pd_op.conv2d.53.0"
+      float[batch,256,unk__46,unk__47] "p2o.pd_op.conv2d.54.0"
+      float[batch,256,unk__28,unk__29] "p2o.pd_op.conv2d.55.0"
+      float[batch,256,unk__8,unk__9] "p2o.pd_op.conv2d.56.0"
+      float[batch,64,unk__136,unk__137] "p2o.pd_op.conv2d.57.0"
+      float[batch,64,unk__46,unk__47] "p2o.pd_op.conv2d.58.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.conv2d.59.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.conv2d.60.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.conv2d.61.0"
+      float[batch,64,unk__46,unk__47] "p2o.pd_op.conv2d.62.0"
+      float[batch,64,unk__136,unk__137] "p2o.pd_op.conv2d.63.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.conv2d.64.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.conv2d.65.0"
+      float[batch,64,unk__46,unk__47] "p2o.pd_op.conv2d.66.0"
+      float[batch,64,unk__136,unk__137] "p2o.pd_op.conv2d.67.0"
+      float[batch,256,unk__46,unk__47] "p2o.pd_op.nearest_interp.0.0"
+      float[batch,256,unk__28,unk__29] "p2o.pd_op.nearest_interp.1.0"
+      float[batch,256,unk__8,unk__9] "p2o.pd_op.nearest_interp.2.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.nearest_interp.3.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.nearest_interp.4.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.nearest_interp.5.0"
+      float[batch,64,height,width] "p2o.pd_op.nearest_interp.6.0"
+      float[batch,32,unk__0,unk__1] "p2o.pd_op.pool2d.0.0"
+      float[batch,32,unk__0,unk__1] "p2o.pd_op.relu.0.0"
+      float[batch,16,unk__0,unk__1] "p2o.pd_op.relu.1.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.10.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.relu.11.0"
+      float[batch,128,unk__8,unk__9] "p2o.pd_op.relu.12.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.13.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.14.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.15.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.16.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.17.0"
+      float[batch,96,unk__28,unk__29] "p2o.pd_op.relu.18.0"
+      float[batch,256,unk__28,unk__29] "p2o.pd_op.relu.19.0"
+      float[batch,32,unk__0,unk__1] "p2o.pd_op.relu.2.0"
+      float[batch,512,unk__28,unk__29] "p2o.pd_op.relu.20.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.21.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.22.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.23.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.24.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.25.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.26.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.relu.27.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.relu.28.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.29.0"
+      float[batch,32,unk__8,unk__9] "p2o.pd_op.relu.3.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.30.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.31.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.32.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.33.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.34.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.relu.35.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.relu.36.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.37.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.38.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.39.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.4.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.40.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.41.0"
+      float[batch,192,unk__46,unk__47] "p2o.pd_op.relu.42.0"
+      float[batch,512,unk__46,unk__47] "p2o.pd_op.relu.43.0"
+      float[batch,1024,unk__46,unk__47] "p2o.pd_op.relu.44.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.45.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.46.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.47.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.48.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.49.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.5.0"
+      float[batch,384,unk__136,unk__137] "p2o.pd_op.relu.50.0"
+      float[batch,1024,unk__136,unk__137] "p2o.pd_op.relu.51.0"
+      float[batch,2048,unk__136,unk__137] "p2o.pd_op.relu.52.0"
+      float[batch,64,unk__136,unk__137] "p2o.pd_op.relu.53.0"
+      float[batch,64,unk__46,unk__47] "p2o.pd_op.relu.54.0"
+      float[batch,64,unk__28,unk__29] "p2o.pd_op.relu.55.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.relu.56.0"
+      float[batch,64,unk__8,unk__9] "p2o.pd_op.relu.57.0"
+      float[batch,64,unk__0,unk__1] "p2o.pd_op.relu.58.0"
+      float[batch,64,height,width] "p2o.pd_op.relu.59.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.6.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.7.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.8.0"
+      float[batch,48,unk__8,unk__9] "p2o.pd_op.relu.9.0"
+      float[batch,1,height,width] "p2o.pd_op.sigmoid.0.0"
+      float[batch,1,height,width] "p2o.pd_op.sigmoid.1.0"
+      float[batch,1,height,width] fetch_name_0
+      float[batch,height,width,3] tmp
+      float[batch,3,height,width] tmp_0
+      float[batch,3,height,width] x
+   >
+{
+   [n0] tmp = Cast <to: int = 1> (image)
+   [n1] tmp_0 = Transpose <perm: ints = [0, 3, 1, 2]> (tmp)
+   [n4] x = Sub (tmp_0, const_cast)
+   "p2o.pd_op.batch_norm_.0.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> (x, "conv2d_0.w_0", "conv2d_0.w_0_bias")
+   ["Relu.0"] "p2o.pd_op.relu.0.0" = Relu ("p2o.pd_op.batch_norm_.0.0")
+   "p2o.pd_op.batch_norm_.1.0" = Conv <auto_pad: string = "SAME_UPPER", dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.0.0", "conv2d_1.w_0", "conv2d_1.w_0_bias")
+   ["Relu.1"] "p2o.pd_op.relu.1.0" = Relu ("p2o.pd_op.batch_norm_.1.0")
+   "p2o.pd_op.batch_norm_.2.0" = Conv <auto_pad: string = "SAME_UPPER", dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.1.0", "conv2d_2.w_0", "conv2d_2.w_0_bias")
+   ["Relu.2"] "p2o.pd_op.relu.2.0" = Relu ("p2o.pd_op.batch_norm_.2.0")
+   ["MaxPool.0"] "p2o.pd_op.pool2d.0.0" = MaxPool <auto_pad: string = "SAME_UPPER", ceil_mode: int = 0, kernel_shape: ints = [2, 2], strides: ints = [1, 1]> ("p2o.pd_op.relu.0.0")
+   ["Concat.0"] "Concat.1" = Concat <axis: int = 1> ("p2o.pd_op.pool2d.0.0", "p2o.pd_op.relu.2.0")
+   "p2o.pd_op.batch_norm_.3.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Concat.1", "conv2d_3.w_0", "conv2d_3.w_0_bias")
+   ["Relu.3"] "p2o.pd_op.relu.3.0" = Relu ("p2o.pd_op.batch_norm_.3.0")
+   "p2o.pd_op.batch_norm_.4.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.3.0", "conv2d_4.w_0", "conv2d_4.w_0_bias")
+   ["Relu.4"] "p2o.pd_op.relu.4.0" = Relu ("p2o.pd_op.batch_norm_.4.0")
+   "p2o.pd_op.batch_norm_.5.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.4.0", "conv2d_5.w_0", "conv2d_5.w_0_bias")
+   ["Relu.5"] "p2o.pd_op.relu.5.0" = Relu ("p2o.pd_op.batch_norm_.5.0")
+   "p2o.pd_op.batch_norm_.6.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.5.0", "conv2d_6.w_0", "conv2d_6.w_0_bias")
+   ["Relu.6"] "p2o.pd_op.relu.6.0" = Relu ("p2o.pd_op.batch_norm_.6.0")
+   "p2o.pd_op.batch_norm_.7.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.6.0", "conv2d_7.w_0", "conv2d_7.w_0_bias")
+   ["Relu.7"] "p2o.pd_op.relu.7.0" = Relu ("p2o.pd_op.batch_norm_.7.0")
+   "p2o.pd_op.batch_norm_.8.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.7.0", "conv2d_8.w_0", "conv2d_8.w_0_bias")
+   ["Relu.8"] "p2o.pd_op.relu.8.0" = Relu ("p2o.pd_op.batch_norm_.8.0")
+   "p2o.pd_op.batch_norm_.9.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.8.0", "conv2d_9.w_0", "conv2d_9.w_0_bias")
+   ["Relu.9"] "p2o.pd_op.relu.9.0" = Relu ("p2o.pd_op.batch_norm_.9.0")
+   "p2o.pd_op.batch_norm_.10.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.9.0", "conv2d_10.w_0", "conv2d_10.w_0_bias")
+   ["Relu.10"] "p2o.pd_op.relu.10.0" = Relu ("p2o.pd_op.batch_norm_.10.0")
+   ["Concat.2"] "Concat.3" = Concat <axis: int = 1> ("p2o.pd_op.relu.4.0", "p2o.pd_op.relu.5.0", "p2o.pd_op.relu.6.0", "p2o.pd_op.relu.7.0", "p2o.pd_op.relu.8.0", "p2o.pd_op.relu.9.0", "p2o.pd_op.relu.10.0")
+   "p2o.pd_op.batch_norm_.11.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.3", "conv2d_11.w_0", "conv2d_11.w_0_bias")
+   ["Relu.11"] "p2o.pd_op.relu.11.0" = Relu ("p2o.pd_op.batch_norm_.11.0")
+   "p2o.pd_op.batch_norm_.12.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.11.0", "conv2d_12.w_0", "conv2d_12.w_0_bias")
+   ["Relu.12"] "p2o.pd_op.relu.12.0" = Relu ("p2o.pd_op.batch_norm_.12.0")
+   "p2o.pd_op.batch_norm_.13.0" = Conv <dilations: ints = [1, 1], group: int = 128, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("p2o.pd_op.relu.12.0", "conv2d_13.w_0", "conv2d_13.w_0_bias")
+   "p2o.pd_op.batch_norm_.14.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.13.0", "conv2d_14.w_0", "conv2d_14.w_0_bias")
+   ["Relu.13"] "p2o.pd_op.relu.13.0" = Relu ("p2o.pd_op.batch_norm_.14.0")
+   "p2o.pd_op.batch_norm_.15.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.13.0", "conv2d_15.w_0", "conv2d_15.w_0_bias")
+   ["Relu.14"] "p2o.pd_op.relu.14.0" = Relu ("p2o.pd_op.batch_norm_.15.0")
+   "p2o.pd_op.batch_norm_.16.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.14.0", "conv2d_16.w_0", "conv2d_16.w_0_bias")
+   ["Relu.15"] "p2o.pd_op.relu.15.0" = Relu ("p2o.pd_op.batch_norm_.16.0")
+   "p2o.pd_op.batch_norm_.17.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.15.0", "conv2d_17.w_0", "conv2d_17.w_0_bias")
+   ["Relu.16"] "p2o.pd_op.relu.16.0" = Relu ("p2o.pd_op.batch_norm_.17.0")
+   "p2o.pd_op.batch_norm_.18.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.16.0", "conv2d_18.w_0", "conv2d_18.w_0_bias")
+   ["Relu.17"] "p2o.pd_op.relu.17.0" = Relu ("p2o.pd_op.batch_norm_.18.0")
+   "p2o.pd_op.batch_norm_.19.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("p2o.pd_op.relu.17.0", "conv2d_19.w_0", "conv2d_19.w_0_bias")
+   ["Relu.18"] "p2o.pd_op.relu.18.0" = Relu ("p2o.pd_op.batch_norm_.19.0")
+   ["Concat.4"] "Concat.5" = Concat <axis: int = 1> ("p2o.pd_op.batch_norm_.13.0", "p2o.pd_op.relu.13.0", "p2o.pd_op.relu.14.0", "p2o.pd_op.relu.15.0", "p2o.pd_op.relu.16.0", "p2o.pd_op.relu.17.0", "p2o.pd_op.relu.18.0")
+   "p2o.pd_op.batch_norm_.20.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.5", "conv2d_20.w_0", "conv2d_20.w_0_bias")
+   ["Relu.19"] "p2o.pd_op.relu.19.0" = Relu ("p2o.pd_op.batch_norm_.20.0")
+   "p2o.pd_op.batch_norm_.21.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.19.0", "conv2d_21.w_0", "conv2d_21.w_0_bias")
+   ["Relu.20"] "p2o.pd_op.relu.20.0" = Relu ("p2o.pd_op.batch_norm_.21.0")
+   "p2o.pd_op.batch_norm_.22.0" = Conv <dilations: ints = [1, 1], group: int = 512, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("p2o.pd_op.relu.20.0", "conv2d_22.w_0", "conv2d_22.w_0_bias")
+   "p2o.pd_op.batch_norm_.23.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.22.0", "conv2d_23.w_0", "conv2d_23.w_0_bias")
+   "p2o.pd_op.batch_norm_.24.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.23.0", "conv2d_24.w_0", "conv2d_24.w_0_bias")
+   ["Relu.21"] "p2o.pd_op.relu.21.0" = Relu ("p2o.pd_op.batch_norm_.24.0")
+   "p2o.pd_op.batch_norm_.25.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.21.0", "conv2d_25.w_0", "conv2d_25.w_0_bias")
+   "p2o.pd_op.batch_norm_.26.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.25.0", "conv2d_26.w_0", "conv2d_26.w_0_bias")
+   ["Relu.22"] "p2o.pd_op.relu.22.0" = Relu ("p2o.pd_op.batch_norm_.26.0")
+   "p2o.pd_op.batch_norm_.27.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.22.0", "conv2d_27.w_0", "conv2d_27.w_0_bias")
+   "p2o.pd_op.batch_norm_.28.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.27.0", "conv2d_28.w_0", "conv2d_28.w_0_bias")
+   ["Relu.23"] "p2o.pd_op.relu.23.0" = Relu ("p2o.pd_op.batch_norm_.28.0")
+   "p2o.pd_op.batch_norm_.29.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.23.0", "conv2d_29.w_0", "conv2d_29.w_0_bias")
+   "p2o.pd_op.batch_norm_.30.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.29.0", "conv2d_30.w_0", "conv2d_30.w_0_bias")
+   ["Relu.24"] "p2o.pd_op.relu.24.0" = Relu ("p2o.pd_op.batch_norm_.30.0")
+   "p2o.pd_op.batch_norm_.31.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.24.0", "conv2d_31.w_0", "conv2d_31.w_0_bias")
+   "p2o.pd_op.batch_norm_.32.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.31.0", "conv2d_32.w_0", "conv2d_32.w_0_bias")
+   ["Relu.25"] "p2o.pd_op.relu.25.0" = Relu ("p2o.pd_op.batch_norm_.32.0")
+   "p2o.pd_op.batch_norm_.33.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.25.0", "conv2d_33.w_0", "conv2d_33.w_0_bias")
+   "p2o.pd_op.batch_norm_.34.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.33.0", "conv2d_34.w_0", "conv2d_34.w_0_bias")
+   ["Relu.26"] "p2o.pd_op.relu.26.0" = Relu ("p2o.pd_op.batch_norm_.34.0")
+   ["Concat.6"] "Concat.7" = Concat <axis: int = 1> ("p2o.pd_op.batch_norm_.22.0", "p2o.pd_op.relu.21.0", "p2o.pd_op.relu.22.0", "p2o.pd_op.relu.23.0", "p2o.pd_op.relu.24.0", "p2o.pd_op.relu.25.0", "p2o.pd_op.relu.26.0")
+   "p2o.pd_op.batch_norm_.35.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.7", "conv2d_35.w_0", "conv2d_35.w_0_bias")
+   ["Relu.27"] "p2o.pd_op.relu.27.0" = Relu ("p2o.pd_op.batch_norm_.35.0")
+   "p2o.pd_op.batch_norm_.36.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.27.0", "conv2d_36.w_0", "conv2d_36.w_0_bias")
+   ["Relu.28"] "p2o.pd_op.relu.28.0" = Relu ("p2o.pd_op.batch_norm_.36.0")
+   "p2o.pd_op.batch_norm_.37.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.28.0", "conv2d_37.w_0", "conv2d_37.w_0_bias")
+   "p2o.pd_op.batch_norm_.38.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.37.0", "conv2d_38.w_0", "conv2d_38.w_0_bias")
+   ["Relu.29"] "p2o.pd_op.relu.29.0" = Relu ("p2o.pd_op.batch_norm_.38.0")
+   "p2o.pd_op.batch_norm_.39.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.29.0", "conv2d_39.w_0", "conv2d_39.w_0_bias")
+   "p2o.pd_op.batch_norm_.40.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.39.0", "conv2d_40.w_0", "conv2d_40.w_0_bias")
+   ["Relu.30"] "p2o.pd_op.relu.30.0" = Relu ("p2o.pd_op.batch_norm_.40.0")
+   "p2o.pd_op.batch_norm_.41.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.30.0", "conv2d_41.w_0", "conv2d_41.w_0_bias")
+   "p2o.pd_op.batch_norm_.42.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.41.0", "conv2d_42.w_0", "conv2d_42.w_0_bias")
+   ["Relu.31"] "p2o.pd_op.relu.31.0" = Relu ("p2o.pd_op.batch_norm_.42.0")
+   "p2o.pd_op.batch_norm_.43.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.31.0", "conv2d_43.w_0", "conv2d_43.w_0_bias")
+   "p2o.pd_op.batch_norm_.44.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.43.0", "conv2d_44.w_0", "conv2d_44.w_0_bias")
+   ["Relu.32"] "p2o.pd_op.relu.32.0" = Relu ("p2o.pd_op.batch_norm_.44.0")
+   "p2o.pd_op.batch_norm_.45.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.32.0", "conv2d_45.w_0", "conv2d_45.w_0_bias")
+   "p2o.pd_op.batch_norm_.46.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.45.0", "conv2d_46.w_0", "conv2d_46.w_0_bias")
+   ["Relu.33"] "p2o.pd_op.relu.33.0" = Relu ("p2o.pd_op.batch_norm_.46.0")
+   "p2o.pd_op.batch_norm_.47.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.33.0", "conv2d_47.w_0", "conv2d_47.w_0_bias")
+   "p2o.pd_op.batch_norm_.48.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.47.0", "conv2d_48.w_0", "conv2d_48.w_0_bias")
+   ["Relu.34"] "p2o.pd_op.relu.34.0" = Relu ("p2o.pd_op.batch_norm_.48.0")
+   ["Concat.8"] "Concat.9" = Concat <axis: int = 1> ("p2o.pd_op.relu.28.0", "p2o.pd_op.relu.29.0", "p2o.pd_op.relu.30.0", "p2o.pd_op.relu.31.0", "p2o.pd_op.relu.32.0", "p2o.pd_op.relu.33.0", "p2o.pd_op.relu.34.0")
+   "p2o.pd_op.batch_norm_.49.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.9", "conv2d_49.w_0", "conv2d_49.w_0_bias")
+   ["Relu.35"] "p2o.pd_op.relu.35.0" = Relu ("p2o.pd_op.batch_norm_.49.0")
+   "p2o.pd_op.batch_norm_.50.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.35.0", "conv2d_50.w_0", "conv2d_50.w_0_bias")
+   ["Relu.36"] "p2o.pd_op.relu.36.0" = Relu ("p2o.pd_op.batch_norm_.50.0")
+   ["Add.0"] "Add.1" = Add ("p2o.pd_op.relu.36.0", "p2o.pd_op.relu.28.0")
+   "p2o.pd_op.batch_norm_.51.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.1", "conv2d_51.w_0", "conv2d_51.w_0_bias")
+   "p2o.pd_op.batch_norm_.52.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.51.0", "conv2d_52.w_0", "conv2d_52.w_0_bias")
+   ["Relu.37"] "p2o.pd_op.relu.37.0" = Relu ("p2o.pd_op.batch_norm_.52.0")
+   "p2o.pd_op.batch_norm_.53.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.37.0", "conv2d_53.w_0", "conv2d_53.w_0_bias")
+   "p2o.pd_op.batch_norm_.54.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.53.0", "conv2d_54.w_0", "conv2d_54.w_0_bias")
+   ["Relu.38"] "p2o.pd_op.relu.38.0" = Relu ("p2o.pd_op.batch_norm_.54.0")
+   "p2o.pd_op.batch_norm_.55.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.38.0", "conv2d_55.w_0", "conv2d_55.w_0_bias")
+   "p2o.pd_op.batch_norm_.56.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.55.0", "conv2d_56.w_0", "conv2d_56.w_0_bias")
+   ["Relu.39"] "p2o.pd_op.relu.39.0" = Relu ("p2o.pd_op.batch_norm_.56.0")
+   "p2o.pd_op.batch_norm_.57.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.39.0", "conv2d_57.w_0", "conv2d_57.w_0_bias")
+   "p2o.pd_op.batch_norm_.58.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.57.0", "conv2d_58.w_0", "conv2d_58.w_0_bias")
+   ["Relu.40"] "p2o.pd_op.relu.40.0" = Relu ("p2o.pd_op.batch_norm_.58.0")
+   "p2o.pd_op.batch_norm_.59.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.40.0", "conv2d_59.w_0", "conv2d_59.w_0_bias")
+   "p2o.pd_op.batch_norm_.60.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.59.0", "conv2d_60.w_0", "conv2d_60.w_0_bias")
+   ["Relu.41"] "p2o.pd_op.relu.41.0" = Relu ("p2o.pd_op.batch_norm_.60.0")
+   "p2o.pd_op.batch_norm_.61.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.41.0", "conv2d_61.w_0", "conv2d_61.w_0_bias")
+   "p2o.pd_op.batch_norm_.62.0" = Conv <dilations: ints = [1, 1], group: int = 192, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.61.0", "conv2d_62.w_0", "conv2d_62.w_0_bias")
+   ["Relu.42"] "p2o.pd_op.relu.42.0" = Relu ("p2o.pd_op.batch_norm_.62.0")
+   ["Concat.10"] "Concat.11" = Concat <axis: int = 1> ("Add.1", "p2o.pd_op.relu.37.0", "p2o.pd_op.relu.38.0", "p2o.pd_op.relu.39.0", "p2o.pd_op.relu.40.0", "p2o.pd_op.relu.41.0", "p2o.pd_op.relu.42.0")
+   "p2o.pd_op.batch_norm_.63.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.11", "conv2d_63.w_0", "conv2d_63.w_0_bias")
+   ["Relu.43"] "p2o.pd_op.relu.43.0" = Relu ("p2o.pd_op.batch_norm_.63.0")
+   "p2o.pd_op.batch_norm_.64.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.43.0", "conv2d_64.w_0", "conv2d_64.w_0_bias")
+   ["Relu.44"] "p2o.pd_op.relu.44.0" = Relu ("p2o.pd_op.batch_norm_.64.0")
+   ["Add.2"] "Add.3" = Add ("p2o.pd_op.relu.44.0", "Add.1")
+   "p2o.pd_op.batch_norm_.65.0" = Conv <dilations: ints = [1, 1], group: int = 1024, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.3", "conv2d_65.w_0", "conv2d_65.w_0_bias")
+   "p2o.pd_op.batch_norm_.66.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.65.0", "conv2d_66.w_0", "conv2d_66.w_0_bias")
+   "p2o.pd_op.batch_norm_.67.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.66.0", "conv2d_67.w_0", "conv2d_67.w_0_bias")
+   ["Relu.45"] "p2o.pd_op.relu.45.0" = Relu ("p2o.pd_op.batch_norm_.67.0")
+   "p2o.pd_op.batch_norm_.68.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.45.0", "conv2d_68.w_0", "conv2d_68.w_0_bias")
+   "p2o.pd_op.batch_norm_.69.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.68.0", "conv2d_69.w_0", "conv2d_69.w_0_bias")
+   ["Relu.46"] "p2o.pd_op.relu.46.0" = Relu ("p2o.pd_op.batch_norm_.69.0")
+   "p2o.pd_op.batch_norm_.70.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.46.0", "conv2d_70.w_0", "conv2d_70.w_0_bias")
+   "p2o.pd_op.batch_norm_.71.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.70.0", "conv2d_71.w_0", "conv2d_71.w_0_bias")
+   ["Relu.47"] "p2o.pd_op.relu.47.0" = Relu ("p2o.pd_op.batch_norm_.71.0")
+   "p2o.pd_op.batch_norm_.72.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.47.0", "conv2d_72.w_0", "conv2d_72.w_0_bias")
+   "p2o.pd_op.batch_norm_.73.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.72.0", "conv2d_73.w_0", "conv2d_73.w_0_bias")
+   ["Relu.48"] "p2o.pd_op.relu.48.0" = Relu ("p2o.pd_op.batch_norm_.73.0")
+   "p2o.pd_op.batch_norm_.74.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.48.0", "conv2d_74.w_0", "conv2d_74.w_0_bias")
+   "p2o.pd_op.batch_norm_.75.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.74.0", "conv2d_75.w_0", "conv2d_75.w_0_bias")
+   ["Relu.49"] "p2o.pd_op.relu.49.0" = Relu ("p2o.pd_op.batch_norm_.75.0")
+   "p2o.pd_op.batch_norm_.76.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.49.0", "conv2d_76.w_0", "conv2d_76.w_0_bias")
+   "p2o.pd_op.batch_norm_.77.0" = Conv <dilations: ints = [1, 1], group: int = 384, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("p2o.pd_op.batch_norm_.76.0", "conv2d_77.w_0", "conv2d_77.w_0_bias")
+   ["Relu.50"] "p2o.pd_op.relu.50.0" = Relu ("p2o.pd_op.batch_norm_.77.0")
+   ["Concat.12"] "Concat.13" = Concat <axis: int = 1> ("p2o.pd_op.batch_norm_.65.0", "p2o.pd_op.relu.45.0", "p2o.pd_op.relu.46.0", "p2o.pd_op.relu.47.0", "p2o.pd_op.relu.48.0", "p2o.pd_op.relu.49.0", "p2o.pd_op.relu.50.0")
+   "p2o.pd_op.batch_norm_.78.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Concat.13", "conv2d_78.w_0", "conv2d_78.w_0_bias")
+   ["Relu.51"] "p2o.pd_op.relu.51.0" = Relu ("p2o.pd_op.batch_norm_.78.0")
+   "p2o.pd_op.batch_norm_.79.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.51.0", "conv2d_79.w_0", "conv2d_79.w_0_bias")
+   ["Relu.52"] "p2o.pd_op.relu.52.0" = Relu ("p2o.pd_op.batch_norm_.79.0")
+   ["Conv.80"] "p2o.pd_op.conv2d.53.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.52.0", "conv2d_92.w_0")
+   ["Conv.81"] "p2o.pd_op.conv2d.54.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.3", "conv2d_88.w_0")
+   ["Conv.82"] "p2o.pd_op.conv2d.55.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.20.0", "conv2d_84.w_0")
+   ["Conv.83"] "p2o.pd_op.conv2d.56.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.12.0", "conv2d_81.w_0")
+   ["Resize.0"] "p2o.pd_op.nearest_interp.0.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("p2o.pd_op.conv2d.53.0", "helper.constant.1", "helper.constant.0")
+   ["Add.4"] "Add.5" = Add ("p2o.pd_op.conv2d.54.0", "p2o.pd_op.nearest_interp.0.0")
+   ["Resize.1"] "p2o.pd_op.nearest_interp.1.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.5", "helper.constant.1", "helper.constant.0")
+   ["Add.6"] "Add.7" = Add ("p2o.pd_op.conv2d.55.0", "p2o.pd_op.nearest_interp.1.0")
+   ["Resize.2"] "p2o.pd_op.nearest_interp.2.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.7", "helper.constant.1", "helper.constant.0")
+   ["Add.8"] "Add.9" = Add ("p2o.pd_op.conv2d.56.0", "p2o.pd_op.nearest_interp.2.0")
+   ["Conv.84"] "p2o.pd_op.conv2d.57.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.53.0", "conv2d_93.w_0")
+   ["Conv.85"] "p2o.pd_op.conv2d.58.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.5", "conv2d_89.w_0")
+   ["Conv.86"] "p2o.pd_op.conv2d.59.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.7", "conv2d_85.w_0")
+   ["Conv.87"] "p2o.pd_op.conv2d.60.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.9", "conv2d_82.w_0")
+   ["Conv.88"] "p2o.pd_op.conv2d.61.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("p2o.pd_op.conv2d.60.0", "conv2d_86.w_0")
+   ["Add.10"] "Add.11" = Add ("p2o.pd_op.conv2d.59.0", "p2o.pd_op.conv2d.61.0")
+   ["Conv.89"] "p2o.pd_op.conv2d.62.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.11", "conv2d_90.w_0")
+   ["Add.12"] "Add.13" = Add ("p2o.pd_op.conv2d.58.0", "p2o.pd_op.conv2d.62.0")
+   ["Conv.90"] "p2o.pd_op.conv2d.63.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [2, 2]> ("Add.13", "conv2d_94.w_0")
+   ["Add.14"] "Add.15" = Add ("p2o.pd_op.conv2d.57.0", "p2o.pd_op.conv2d.63.0")
+   ["Conv.91"] "p2o.pd_op.conv2d.64.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.60.0", "conv2d_83.w_0")
+   ["Conv.92"] "p2o.pd_op.conv2d.65.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.11", "conv2d_87.w_0")
+   ["Conv.93"] "p2o.pd_op.conv2d.66.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.13", "conv2d_91.w_0")
+   ["Conv.94"] "p2o.pd_op.conv2d.67.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [9, 9], pads: ints = [4, 4, 4, 4], strides: ints = [1, 1]> ("Add.15", "conv2d_95.w_0")
+   "Add.17" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.67.0", "conv2d_129.w_0", "p2o.pd_op.conv2d.68.0_bias")
+   "Add.27" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [7, 7], pads: ints = [3, 3, 3, 3], strides: ints = [1, 1]> ("Add.17", node_Conv_84_asym_w, node_Conv_84_asym_b)
+   "Add.37" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.27", node_Conv_87_asym_w, node_Conv_87_asym_b)
+   "Add.47" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.37", node_Conv_90_asym_w, node_Conv_90_asym_b)
+   "p2o.pd_op.batch_norm_.80.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.47", "conv2d_130.w_0", "p2o.pd_op.conv2d.78.0_bias")
+   ["Relu.53"] "p2o.pd_op.relu.53.0" = Relu ("p2o.pd_op.batch_norm_.80.0")
+   ["Add.50"] "Add.51" = Add ("p2o.pd_op.conv2d.67.0", "p2o.pd_op.relu.53.0")
+   "Add.53" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.66.0", "conv2d_118.w_0", "p2o.pd_op.conv2d.79.0_bias")
+   "Add.63" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [7, 7], pads: ints = [3, 3, 3, 3], strides: ints = [1, 1]> ("Add.53", node_Conv_95_asym_w, node_Conv_95_asym_b)
+   "Add.73" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.63", node_Conv_98_asym_w, node_Conv_98_asym_b)
+   "Add.83" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.73", node_Conv_101_asym_w, node_Conv_101_asym_b)
+   "p2o.pd_op.batch_norm_.81.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.83", "conv2d_119.w_0", "p2o.pd_op.conv2d.89.0_bias")
+   ["Relu.54"] "p2o.pd_op.relu.54.0" = Relu ("p2o.pd_op.batch_norm_.81.0")
+   ["Add.86"] "Add.87" = Add ("p2o.pd_op.conv2d.66.0", "p2o.pd_op.relu.54.0")
+   "Add.89" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.65.0", "conv2d_107.w_0", "p2o.pd_op.conv2d.90.0_bias")
+   "Add.99" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [7, 7], pads: ints = [3, 3, 3, 3], strides: ints = [1, 1]> ("Add.89", node_Conv_106_asym_w, node_Conv_106_asym_b)
+   "Add.109" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.99", node_Conv_109_asym_w, node_Conv_109_asym_b)
+   "Add.119" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.109", node_Conv_112_asym_w, node_Conv_112_asym_b)
+   "p2o.pd_op.batch_norm_.82.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.119", "conv2d_108.w_0", "p2o.pd_op.conv2d.100.0_bias")
+   ["Relu.55"] "p2o.pd_op.relu.55.0" = Relu ("p2o.pd_op.batch_norm_.82.0")
+   ["Add.122"] "Add.123" = Add ("p2o.pd_op.conv2d.65.0", "p2o.pd_op.relu.55.0")
+   "Add.125" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.conv2d.64.0", "conv2d_96.w_0", "p2o.pd_op.conv2d.101.0_bias")
+   "Add.135" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [7, 7], pads: ints = [3, 3, 3, 3], strides: ints = [1, 1]> ("Add.125", node_Conv_117_asym_w, node_Conv_117_asym_b)
+   "Add.145" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [5, 5], pads: ints = [2, 2, 2, 2], strides: ints = [1, 1]> ("Add.135", node_Conv_120_asym_w, node_Conv_120_asym_b)
+   "Add.155" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Add.145", node_Conv_123_asym_w, node_Conv_123_asym_b)
+   "p2o.pd_op.batch_norm_.83.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("Add.155", "conv2d_97.w_0", "p2o.pd_op.conv2d.111.0_bias")
+   ["Relu.56"] "p2o.pd_op.relu.56.0" = Relu ("p2o.pd_op.batch_norm_.83.0")
+   ["Add.158"] "Add.159" = Add ("p2o.pd_op.conv2d.64.0", "p2o.pd_op.relu.56.0")
+   ["Resize.3"] "p2o.pd_op.nearest_interp.3.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.51", "helper.constant.1", "helper.constant.6")
+   ["Resize.4"] "p2o.pd_op.nearest_interp.4.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.87", "helper.constant.1", "helper.constant.8")
+   ["Resize.5"] "p2o.pd_op.nearest_interp.5.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.123", "helper.constant.1", "helper.constant.0")
+   ["Concat.14"] "Concat.15" = Concat <axis: int = 1> ("p2o.pd_op.nearest_interp.3.0", "p2o.pd_op.nearest_interp.4.0", "p2o.pd_op.nearest_interp.5.0", "Add.159")
+   "p2o.pd_op.batch_norm_.84.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Concat.15", "conv2d_140.w_0", "conv2d_140.w_0_bias")
+   ["Relu.57"] "p2o.pd_op.relu.57.0" = Relu ("p2o.pd_op.batch_norm_.84.0")
+   "p2o.pd_op.batch_norm_.85.0" = ConvTranspose <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("p2o.pd_op.relu.57.0", "auto.cast.93", "ConvTranspose.1_bias")
+   ["Relu.58"] "p2o.pd_op.relu.58.0" = Relu ("p2o.pd_op.batch_norm_.85.0")
+   "Add.163" = ConvTranspose <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [2, 2], pads: ints = [0, 0, 0, 0], strides: ints = [2, 2]> ("p2o.pd_op.relu.58.0", "auto.cast.96", "ConvTranspose.3_bias")
+   ["Sigmoid.0"] "p2o.pd_op.sigmoid.0.0" = Sigmoid ("Add.163")
+   ["Resize.6"] "p2o.pd_op.nearest_interp.6.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("p2o.pd_op.relu.58.0", "helper.constant.1", "helper.constant.0")
+   ["Concat.16"] "Concat.17" = Concat <axis: int = 1> ("p2o.pd_op.sigmoid.0.0", "p2o.pd_op.nearest_interp.6.0")
+   "p2o.pd_op.batch_norm_.86.0" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1], strides: ints = [1, 1]> ("Concat.17", "conv2d_142.w_0", "conv2d_142.w_0_bias")
+   ["Relu.59"] "p2o.pd_op.relu.59.0" = Relu ("p2o.pd_op.batch_norm_.86.0")
+   "Add.165" = Conv <dilations: ints = [1, 1], group: int = 1, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> ("p2o.pd_op.relu.59.0", "conv2d_143.w_0", "p2o.pd_op.conv2d.114.0_bias")
+   ["Sigmoid.1"] "p2o.pd_op.sigmoid.1.0" = Sigmoid ("Add.165")
+   ["Add.166"] "Add.167" = Add ("p2o.pd_op.sigmoid.0.0", "p2o.pd_op.sigmoid.1.0")
+   ["Mul.0"] fetch_name_0 = Mul ("Add.167", "auto.cast.102")
+   [n1_2] dbnet_probs = Squeeze (fetch_name_0, int64_1_1d)
+}
+
+weights:
+ConvTranspose.1_bias FLOAT[64] 4d9e09811298
+ConvTranspose.3_bias FLOAT[1] d7cf0756b564
+auto.cast.102 FLOAT[1] d99e58435243
+auto.cast.93 FLOAT[64,64,2,2] 446499e40216
+auto.cast.96 FLOAT[64,1,2,2] 6fa61becf97c
+const_cast FLOAT[] 9fd754fbfd83
+conv2d_0.w_0 FLOAT[32,3,3,3] aed5723444c4
+conv2d_0.w_0_bias FLOAT[32] a404004a3f2d
+conv2d_1.w_0 FLOAT[16,32,2,2] 6355973c9252
+conv2d_1.w_0_bias FLOAT[16] db00ab5bf862
+conv2d_10.w_0 FLOAT[48,48,3,3] 51411ab738f8
+conv2d_10.w_0_bias FLOAT[48] 5b2cfae3b29a
+conv2d_107.w_0 FLOAT[32,64,1,1] 9f1dcbc35c35
+conv2d_108.w_0 FLOAT[64,32,1,1] f35808fcbd70
+conv2d_11.w_0 FLOAT[64,336,1,1] 83fde16b8fa0
+conv2d_11.w_0_bias FLOAT[64] c6174a10a753
+conv2d_118.w_0 FLOAT[32,64,1,1] 9f1dcbc35c35
+conv2d_119.w_0 FLOAT[64,32,1,1] eb87e44872d1
+conv2d_12.w_0 FLOAT[128,64,1,1] 5143914c85dc
+conv2d_12.w_0_bias FLOAT[128] 1a81f1411319
+conv2d_129.w_0 FLOAT[32,64,1,1] 9f1dcbc35c35
+conv2d_13.w_0 FLOAT[128,1,3,3] ae6f9b4b68af
+conv2d_13.w_0_bias FLOAT[128] 4e95a650212e
+conv2d_130.w_0 FLOAT[64,32,1,1] 1920115e5065
+conv2d_14.w_0 FLOAT[96,128,3,3] 1bbba7c1ce63
+conv2d_14.w_0_bias FLOAT[96] 51a8b2bbfe5f
+conv2d_140.w_0 FLOAT[64,256,3,3] a7695f15be7f
+conv2d_140.w_0_bias FLOAT[64] b2af6f525940
+conv2d_142.w_0 FLOAT[64,65,3,3] a31b42b48097
+conv2d_142.w_0_bias FLOAT[64] bdd4b593bf14
+conv2d_143.w_0 FLOAT[1,64,1,1] 84eabc2d820d
+conv2d_15.w_0 FLOAT[96,96,3,3] 69fd2f6e6a93
+conv2d_15.w_0_bias FLOAT[96] 2f717b0fd722
+conv2d_16.w_0 FLOAT[96,96,3,3] f732bcd2e98a
+conv2d_16.w_0_bias FLOAT[96] c6d310e2c8c4
+conv2d_17.w_0 FLOAT[96,96,3,3] 29b1c22f58f5
+conv2d_17.w_0_bias FLOAT[96] 97fe21a0d6e5
+conv2d_18.w_0 FLOAT[96,96,3,3] dd647ff9da4e
+conv2d_18.w_0_bias FLOAT[96] 6da0f2396ba0
+conv2d_19.w_0 FLOAT[96,96,3,3] 2a226b6562ff
+conv2d_19.w_0_bias FLOAT[96] afe239509ede
+conv2d_2.w_0 FLOAT[32,16,2,2] 903f80a9fc40
+conv2d_2.w_0_bias FLOAT[32] 402ab8f2e445
+conv2d_20.w_0 FLOAT[256,704,1,1] 8a6115c40624
+conv2d_20.w_0_bias FLOAT[256] 329ac342b86c
+conv2d_21.w_0 FLOAT[512,256,1,1] 895e6ce805d0
+conv2d_21.w_0_bias FLOAT[512] f014d6e30f9f
+conv2d_22.w_0 FLOAT[512,1,3,3] 122dd5643a79
+conv2d_22.w_0_bias FLOAT[512] 65118505cbb5
+conv2d_23.w_0 FLOAT[192,512,1,1] a786e504252f
+conv2d_23.w_0_bias FLOAT[192] 43bb2d7f6ea2
+conv2d_24.w_0 FLOAT[192,1,5,5] 48edfb95d59e
+conv2d_24.w_0_bias FLOAT[192] 16563dcb5fe5
+conv2d_25.w_0 FLOAT[192,192,1,1] d142c7c70596
+conv2d_25.w_0_bias FLOAT[192] 69debf8dfe33
+conv2d_26.w_0 FLOAT[192,1,5,5] 36dd82de8800
+conv2d_26.w_0_bias FLOAT[192] e5d093b7afb1
+conv2d_27.w_0 FLOAT[192,192,1,1] b137a4bcaab2
+conv2d_27.w_0_bias FLOAT[192] b585dc971a34
+conv2d_28.w_0 FLOAT[192,1,5,5] 14c15b82cb29
+conv2d_28.w_0_bias FLOAT[192] 4f74bd26f9f3
+conv2d_29.w_0 FLOAT[192,192,1,1] e25f2419665e
+conv2d_29.w_0_bias FLOAT[192] 3119aa8fd66c
+conv2d_3.w_0 FLOAT[32,64,3,3] 4933a30975d2
+conv2d_3.w_0_bias FLOAT[32] 73657ab565e9
+conv2d_30.w_0 FLOAT[192,1,5,5] 69a422cfaeb1
+conv2d_30.w_0_bias FLOAT[192] a1e447196d01
+conv2d_31.w_0 FLOAT[192,192,1,1] b144357846d3
+conv2d_31.w_0_bias FLOAT[192] f4aa4639f652
+conv2d_32.w_0 FLOAT[192,1,5,5] 1debb74f8bac
+conv2d_32.w_0_bias FLOAT[192] 83d9e916e680
+conv2d_33.w_0 FLOAT[192,192,1,1] ccdace993034
+conv2d_33.w_0_bias FLOAT[192] 641de90dc092
+conv2d_34.w_0 FLOAT[192,1,5,5] 4dc84372652b
+conv2d_34.w_0_bias FLOAT[192] e83e1469ee5b
+conv2d_35.w_0 FLOAT[512,1664,1,1] 2e1301c127b8
+conv2d_35.w_0_bias FLOAT[512] 2ee5703de97b
+conv2d_36.w_0 FLOAT[1024,512,1,1] 8f1b0de9a3b4
+conv2d_36.w_0_bias FLOAT[1024] 7a55a55e87da
+conv2d_37.w_0 FLOAT[192,1024,1,1] 00412b9131e0
+conv2d_37.w_0_bias FLOAT[192] 9689e7947a56
+conv2d_38.w_0 FLOAT[192,1,5,5] 19f1b11f6b8c
+conv2d_38.w_0_bias FLOAT[192] 0deeb692417d
+conv2d_39.w_0 FLOAT[192,192,1,1] 92026b573cfb
+conv2d_39.w_0_bias FLOAT[192] 590a0207459f
+conv2d_4.w_0 FLOAT[48,32,1,1] 3e8a7a325a2e
+conv2d_4.w_0_bias FLOAT[48] dd13b9696a60
+conv2d_40.w_0 FLOAT[192,1,5,5] cea2f56ef92e
+conv2d_40.w_0_bias FLOAT[192] 394efd933dbe
+conv2d_41.w_0 FLOAT[192,192,1,1] 083661a0266b
+conv2d_41.w_0_bias FLOAT[192] 082b3c2f5aca
+conv2d_42.w_0 FLOAT[192,1,5,5] 1915f99f1753
+conv2d_42.w_0_bias FLOAT[192] f02edaf2fa20
+conv2d_43.w_0 FLOAT[192,192,1,1] 2f561e64f6e8
+conv2d_43.w_0_bias FLOAT[192] e658c6a83708
+conv2d_44.w_0 FLOAT[192,1,5,5] 49d58ef2e1cb
+conv2d_44.w_0_bias FLOAT[192] 20b51dfab43e
+conv2d_45.w_0 FLOAT[192,192,1,1] e9f080846f2f
+conv2d_45.w_0_bias FLOAT[192] 5536be8a931c
+conv2d_46.w_0 FLOAT[192,1,5,5] 493918a100cd
+conv2d_46.w_0_bias FLOAT[192] 9950b66a4d4e
+conv2d_47.w_0 FLOAT[192,192,1,1] 701d098688e2
+conv2d_47.w_0_bias FLOAT[192] 76c58042b727
+conv2d_48.w_0 FLOAT[192,1,5,5] a48e880bce28
+conv2d_48.w_0_bias FLOAT[192] e3cfecc74be6
+conv2d_49.w_0 FLOAT[512,2176,1,1] 76108a3c4cf9
+conv2d_49.w_0_bias FLOAT[512] 3b55275475c3
+conv2d_5.w_0 FLOAT[48,48,3,3] 09008d53042f
+conv2d_5.w_0_bias FLOAT[48] 73192bdb6f5c
+conv2d_50.w_0 FLOAT[1024,512,1,1] 9ad2544c0e16
+conv2d_50.w_0_bias FLOAT[1024] 21eef1b61ac5
+conv2d_51.w_0 FLOAT[192,1024,1,1] a97e80d30eaf
+conv2d_51.w_0_bias FLOAT[192] 3402dbc6bd14
+conv2d_52.w_0 FLOAT[192,1,5,5] e9f3b5d3046b
+conv2d_52.w_0_bias FLOAT[192] 277e2bd5f1ed
+conv2d_53.w_0 FLOAT[192,192,1,1] 37629bb1cc32
+conv2d_53.w_0_bias FLOAT[192] a38560394397
+conv2d_54.w_0 FLOAT[192,1,5,5] 05fb4d6b334c
+conv2d_54.w_0_bias FLOAT[192] f3e5bf9d19e7
+conv2d_55.w_0 FLOAT[192,192,1,1] d6bf8a539a0b
+conv2d_55.w_0_bias FLOAT[192] a7f5411d539d
+conv2d_56.w_0 FLOAT[192,1,5,5] facfc96767e7
+conv2d_56.w_0_bias FLOAT[192] a04889ef0afd
+conv2d_57.w_0 FLOAT[192,192,1,1] 894777b46366
+conv2d_57.w_0_bias FLOAT[192] f0c285f1eae6
+conv2d_58.w_0 FLOAT[192,1,5,5] d5e48fbf3ee2
+conv2d_58.w_0_bias FLOAT[192] 9be347e95bb9
+conv2d_59.w_0 FLOAT[192,192,1,1] 700d4c63ea85
+conv2d_59.w_0_bias FLOAT[192] d72df89f574f
+conv2d_6.w_0 FLOAT[48,48,3,3] 308c19bfcf5e
+conv2d_6.w_0_bias FLOAT[48] 635143bd4452
+conv2d_60.w_0 FLOAT[192,1,5,5] a741705e9788
+conv2d_60.w_0_bias FLOAT[192] 7ebde9240317
+conv2d_61.w_0 FLOAT[192,192,1,1] 6b46473b3149
+conv2d_61.w_0_bias FLOAT[192] 736f11c9d244
+conv2d_62.w_0 FLOAT[192,1,5,5] c5b6bc42b776
+conv2d_62.w_0_bias FLOAT[192] 4cc54272c636
+conv2d_63.w_0 FLOAT[512,2176,1,1] 5608efb9c257
+conv2d_63.w_0_bias FLOAT[512] 47cbb56a497a
+conv2d_64.w_0 FLOAT[1024,512,1,1] 6beb7705f174
+conv2d_64.w_0_bias FLOAT[1024] 952f3e5be0c1
+conv2d_65.w_0 FLOAT[1024,1,3,3] 543854fbe506
+conv2d_65.w_0_bias FLOAT[1024] da89e73edd61
+conv2d_66.w_0 FLOAT[384,1024,1,1] ab336657501a
+conv2d_66.w_0_bias FLOAT[384] 80a676c7aab9
+conv2d_67.w_0 FLOAT[384,1,5,5] 3474a1022fdd
+conv2d_67.w_0_bias FLOAT[384] 7ee0f9d35974
+conv2d_68.w_0 FLOAT[384,384,1,1] e58fce181f95
+conv2d_68.w_0_bias FLOAT[384] 362bbfa580cd
+conv2d_69.w_0 FLOAT[384,1,5,5] 27dda3b3d0d7
+conv2d_69.w_0_bias FLOAT[384] f6a00eaaf5e8
+conv2d_7.w_0 FLOAT[48,48,3,3] adc1b4529bcc
+conv2d_7.w_0_bias FLOAT[48] a307c3d1cb1f
+conv2d_70.w_0 FLOAT[384,384,1,1] df4e87969670
+conv2d_70.w_0_bias FLOAT[384] 1bd79ee4c9e6
+conv2d_71.w_0 FLOAT[384,1,5,5] 1a44da8e03a7
+conv2d_71.w_0_bias FLOAT[384] 361d8bca6885
+conv2d_72.w_0 FLOAT[384,384,1,1] a6af4880b6db
+conv2d_72.w_0_bias FLOAT[384] 9ef132ad1dd0
+conv2d_73.w_0 FLOAT[384,1,5,5] 0feedf067bd6
+conv2d_73.w_0_bias FLOAT[384] ff0cdd3fe0b2
+conv2d_74.w_0 FLOAT[384,384,1,1] 6c644edd904d
+conv2d_74.w_0_bias FLOAT[384] 1f54b47144f7
+conv2d_75.w_0 FLOAT[384,1,5,5] 55c105e10e08
+conv2d_75.w_0_bias FLOAT[384] 1d631fb327b4
+conv2d_76.w_0 FLOAT[384,384,1,1] 1a1fc3ccdd2c
+conv2d_76.w_0_bias FLOAT[384] 90bc957eee42
+conv2d_77.w_0 FLOAT[384,1,5,5] 84e9bd430b83
+conv2d_77.w_0_bias FLOAT[384] 440d8a3dcecd
+conv2d_78.w_0 FLOAT[1024,3328,1,1] 113ea9eda44a
+conv2d_78.w_0_bias FLOAT[1024] 8c39729cf00c
+conv2d_79.w_0 FLOAT[2048,1024,1,1] 78b6983c4973
+conv2d_79.w_0_bias FLOAT[2048] dfd4aff6cd80
+conv2d_8.w_0 FLOAT[48,48,3,3] 6fcce5235f78
+conv2d_8.w_0_bias FLOAT[48] b8b149cb92e1
+conv2d_81.w_0 FLOAT[256,128,1,1] 5294b218dde6
+conv2d_82.w_0 FLOAT[64,256,9,9] 860a2c2f44ed
+conv2d_83.w_0 FLOAT[64,64,9,9] 073941384d9c
+conv2d_84.w_0 FLOAT[256,512,1,1] 355cf6d6aaf2
+conv2d_85.w_0 FLOAT[64,256,9,9] 6ab5aa7a3aaa
+conv2d_86.w_0 FLOAT[64,64,3,3] 7ec046584c86
+conv2d_87.w_0 FLOAT[64,64,9,9] 0e915f8b2a44
+conv2d_88.w_0 FLOAT[256,1024,1,1] 922be789a59b
+conv2d_89.w_0 FLOAT[64,256,9,9] 41cdf13c5867
+conv2d_9.w_0 FLOAT[48,48,3,3] ba744539217a
+conv2d_9.w_0_bias FLOAT[48] 5e225c1cd595
+conv2d_90.w_0 FLOAT[64,64,3,3] 8db0d95502bb
+conv2d_91.w_0 FLOAT[64,64,9,9] 6d6102e52c48
+conv2d_92.w_0 FLOAT[256,2048,1,1] fd9fe5ec3288
+conv2d_93.w_0 FLOAT[64,256,9,9] d6c8040de5a2
+conv2d_94.w_0 FLOAT[64,64,3,3] 7c6b6a1a0bca
+conv2d_95.w_0 FLOAT[64,64,9,9] 6db06f7cf7c6
+conv2d_96.w_0 FLOAT[32,64,1,1] 9f1dcbc35c35
+conv2d_97.w_0 FLOAT[64,32,1,1] b64d8ab1f062
+helper.constant.0 FLOAT[4] aa5b3e0ef3e8
+helper.constant.1 FLOAT[0] e3b0c44298fc
+helper.constant.6 FLOAT[4] cf5451a623be
+helper.constant.8 FLOAT[4] 1811eb557cd7
+int64_1_1d INT64[1] 7c9fa136d441
+node_Conv_101_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_101_asym_w FLOAT[32,32,3,3] 1c0273095382
+node_Conv_106_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_106_asym_w FLOAT[32,32,7,7] ba0ee4b797b9
+node_Conv_109_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_109_asym_w FLOAT[32,32,5,5] f627ca4c2c32
+node_Conv_112_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_112_asym_w FLOAT[32,32,3,3] 1c0273095382
+node_Conv_117_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_117_asym_w FLOAT[32,32,7,7] a5e56dbbfbc8
+node_Conv_120_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_120_asym_w FLOAT[32,32,5,5] f627ca4c2c32
+node_Conv_123_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_123_asym_w FLOAT[32,32,3,3] 1c0273095382
+node_Conv_84_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_84_asym_w FLOAT[32,32,7,7] ba0ee4b797b9
+node_Conv_87_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_87_asym_w FLOAT[32,32,5,5] f627ca4c2c32
+node_Conv_90_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_90_asym_w FLOAT[32,32,3,3] 1c0273095382
+node_Conv_95_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_95_asym_w FLOAT[32,32,7,7] ba0ee4b797b9
+node_Conv_98_asym_b FLOAT[32] 38723a2e5e8a
+node_Conv_98_asym_w FLOAT[32,32,5,5] f627ca4c2c32
+p2o.pd_op.conv2d.100.0_bias FLOAT[64] 936316c173ad
+p2o.pd_op.conv2d.101.0_bias FLOAT[32] 38723a2e5e8a
+p2o.pd_op.conv2d.111.0_bias FLOAT[64] f0eba8610837
+p2o.pd_op.conv2d.114.0_bias FLOAT[1] d894932b695a
+p2o.pd_op.conv2d.68.0_bias FLOAT[32] 38723a2e5e8a
+p2o.pd_op.conv2d.78.0_bias FLOAT[64] 78bb18b3d82f
+p2o.pd_op.conv2d.79.0_bias FLOAT[32] 38723a2e5e8a
+p2o.pd_op.conv2d.89.0_bias FLOAT[64] 4761b58748c8
+p2o.pd_op.conv2d.90.0_bias FLOAT[32] 38723a2e5e8a

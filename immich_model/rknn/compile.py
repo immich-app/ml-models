@@ -1,27 +1,33 @@
 import json
 import tempfile
 from collections.abc import Mapping, Sequence
+from multiprocessing import get_context
+from multiprocessing.connection import Connection
 from pathlib import Path
 from typing import Any, cast
 
-from ..constants import RKNN_SOCS, SUBMODELS, canvases_of, variant_dir
+from ..constants import RKNN_SOCS, SUBMODELS, dim_sets_of, dims_label, max_dims, variant_dir
 from ..onnx._ir import ReinferShapesPass
 from ..runtime import RKNPU, RewriteContext, apply_rewrites, plan_rewrites
-from ._onnx import rknn_config
+from ._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config
 
-# what `--cache` and the bench agree "compiled" means; `nodes` is absent, a foreign binary having no graph
-SIDECAR_KEYS = ("canvas", "input")
+
+def contract(group: Sequence[Mapping[str, int]]) -> str:
+    """What a binary declares it serves, carried in `custom_string` and read back with `rknn_query`."""
+    widest = max_dims(group)
+    ordered = [widest, *(dims for dims in group if dims != widest)]
+    return json.dumps({"dims": [dict(dims) for dims in ordered]}, separators=(",", ":"))
 
 
 def _export_platform(
     onnx_path: Path,
     output_dir: Path,
     target_platform: str,
-    canvas: Mapping[str, int],
+    group: Sequence[Mapping[str, int]],
     inputs: list[str],
-    input_size_list: list[list[int]],
+    shapes: list[list[list[int]]],
     config_extras: dict[str, Any] | None = None,
-    fuse_matmul_softmax_matmul_to_sdpa: bool = True,
+    disable_rules: Sequence[str] = (),
     variant: str = "",
 ) -> None:
     from rknn.api import RKNN
@@ -33,20 +39,23 @@ def _export_platform(
         if ret != 0:
             raise RuntimeError(f"RKNN {step} failed for {target_platform} (code {ret})")
 
+    # recovery, so it adds to the declared row rather than standing in as a second copy of it
+    config = RKNN_CONFIG | (config_extras or {})
+    config["disable_rules"] = [*config["disable_rules"], *disable_rules]
     rknn = RKNN(verbose=False)
     rknn.config(
         target_platform=target_platform,
-        disable_rules=[] if fuse_matmul_softmax_matmul_to_sdpa else ["fuse_matmul_softmax_matmul_to_sdpa"],
-        enable_flash_attention=False,
-        model_pruning=True,
-        **(config_extras or {}),  # mean/std for a native uint8 image input (else empty)
+        custom_string=contract(group),
+        # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one. A single shape
+        # has nothing to be dynamic about; asking anyway drops toolkit passes and only slows the compile.
+        **({"dynamic_input": shapes} if len(shapes) > 1 else {}),
+        **config,
     )
-    check(rknn.load_onnx(model=onnx_path.as_posix(), inputs=inputs, input_size_list=input_size_list), "load")
-    check(rknn.build(do_quantization=False), "build")
+    check(rknn.load_onnx(model=onnx_path.as_posix(), inputs=inputs, input_size_list=shapes[0]), "load")
+    check(rknn.build(do_quantization=DO_QUANTIZATION), "build")
     output_path.parent.mkdir(parents=True, exist_ok=True)
     check(rknn.export_rknn(output_path.as_posix()), "export")
-    # what was actually compiled: the .rknn carries none of it, the source .onnx disagrees, and rknn
-    # reports the input shape back permuted
+    # what was actually compiled: the .rknn carries none of it and the source .onnx disagrees
     import onnx_ir as ir
 
     prepared = ir.load(onnx_path)
@@ -54,8 +63,8 @@ def _export_platform(
         json.dumps(
             {
                 "nodes": len(list(ir.traversal.RecursiveGraphIterator(prepared.graph))),
-                "canvas": dict(canvas),
-                "input": {"name": inputs[0], "shape": input_size_list[0]},
+                "contract": contract(group),
+                "input": {"name": inputs[0], "shapes": [shape[0] for shape in shapes]},
             }
         )
     )
@@ -68,13 +77,13 @@ def _export_platforms(
     target_socs: Sequence[str] | None = None,
 ) -> None:
     source = input_dir / "model.onnx"
-    grid = canvases_of(source)
-    for canvas in grid:
-        variant = variant_dir(grid, canvas)
+    sets = dim_sets_of(source)
+    for group in sets:
+        variant = variant_dir(sets, group.dims[0])
         socs = []
         for soc in target_socs or RKNN_SOCS:
             model_path = output_dir / "rknpu" / soc / variant / "model.rknn"
-            missing = stale(model_path)
+            missing = stale(model_path, contract(group.dims))
             if cache and not missing:
                 print(f"{model_path} already exists, skipping")
                 continue
@@ -82,44 +91,58 @@ def _export_platforms(
             socs.append(soc)
         if not socs:
             continue
-        _export_canvas(source, output_dir, socs, canvas, variant)
+        _export_set(source, output_dir, socs, group.dims, variant)
 
 
-def _export_canvas(source: Path, output_dir: Path, socs: list[str], canvas: Mapping[str, int], variant: str) -> None:
+def _build(tx: Connection, args: tuple[Any, ...]) -> None:
+    try:
+        _export_platform(*args)
+    except Exception as e:
+        tx.send(str(e))
+    tx.close()
+
+
+def _export_set(
+    source: Path, output_dir: Path, socs: list[str], group: Sequence[Mapping[str, int]], variant: str
+) -> None:
     with tempfile.TemporaryDirectory() as work_dir:
-        # normalise once for all SoCs; spec and DMA config come off the PREPARED graph, since a source-read
-        # config could claim a shift the rows had not in fact retired
+        # spec and DMA config come off the PREPARED graph, which is the one that retired the shift
         work = Path(work_dir)
-        pinned = _pin(source, work, canvas)
-        onnx_path = apply_rewrites(pinned, plan_rewrites(RewriteContext(RKNPU, ())), out_dir=work, standalone=True)
+        # every shape is prepared, but only MaxShape's graph is compiled
+        widest = max_dims(group)
+        rest = [dims for dims in group if dims != widest]
+        onnx_path = _prepare(source, work / "max", widest)
         config_extras = rknn_config(onnx_path)
-        inputs, input_size_list = _input_spec(onnx_path)
+        inputs, max_shape = _input_spec(onnx_path)
+        ordered = [max_shape] + [_input_spec(_prepare(source, work / dims_label(c), c))[1] for c in rest]
 
-        def attempt(soc: str, fuse: bool) -> None:
-            _export_platform(
-                onnx_path,
-                output_dir,
-                soc,
-                canvas,
-                inputs,
-                input_size_list,
-                config_extras=config_extras,
-                fuse_matmul_softmax_matmul_to_sdpa=fuse,
-                variant=variant,
-            )
+        def attempt(soc: str, disable_rules: Sequence[str]) -> None:
+            ctx = get_context("fork")
+            rx, tx = ctx.Pipe(duplex=False)
+            args = (onnx_path, output_dir, soc, group, inputs, ordered, config_extras, disable_rules, variant)
+            child = ctx.Process(target=_build, args=(tx, args))  # ensure no residual memory usage
+            child.start()
+            tx.close()
+            child.join()
+            try:
+                failed = rx.recv()
+            except EOFError:
+                failed = None
+            if failed or child.exitcode:
+                raise RuntimeError(failed or f"compiling for {soc} died with exit code {child.exitcode}")
 
-        fuse = True
+        dropped: list[str] = []
         failed: list[str] = []
         for soc in socs:
             try:
-                attempt(soc, fuse)
+                attempt(soc, dropped)
             except Exception as e:
                 # fusion isn't valid for every model; drop for this and later SoCs, then retry
-                if fuse and "inputs or 'outputs' must be set" in str(e):
+                if not dropped and "inputs or 'outputs' must be set" in str(e):
                     print(f"Retrying {soc} without fuse_matmul_softmax_matmul_to_sdpa")
-                    fuse = False
+                    dropped = ["fuse_matmul_softmax_matmul_to_sdpa"]
                     try:
-                        attempt(soc, fuse)
+                        attempt(soc, dropped)
                         continue
                     except Exception as retry_error:
                         e = retry_error
@@ -130,21 +153,29 @@ def _export_canvas(source: Path, output_dir: Path, socs: list[str], canvas: Mapp
             raise RuntimeError(f"RKNN export failed for {source.parent.name} on: {', '.join(failed)}")
 
 
-def stale(model_path: Path) -> list[str]:
-    """What this compiled binary is missing: the binary itself, its sidecar, or the sidecar's keys."""
+def stale(model_path: Path, expected: str) -> list[str]:
+    """What this binary is missing or disagrees with; empty means fresh. The sidecar is written last."""
     sidecar = model_path.with_suffix(".json")
     if not model_path.is_file():
         return [model_path.name]
     if not sidecar.is_file():
         return [sidecar.name]
-    recorded = json.loads(sidecar.read_text())
-    return [key for key in SIDECAR_KEYS if key not in recorded]
+    if json.loads(sidecar.read_text()).get("contract") != expected:
+        return ["contract"]
+    return []
 
 
-def _pin(onnx_path: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
-    """Resolve the graph's named free input dims to `canvas`, ahead of the RKNPU rows: rknn.load_onnx takes
-    the canvas as a shape list, so pinning only there leaves the rows reading a symbolic graph."""
-    if not canvas:
+def _prepare(source: Path, work_dir: Path, dims: Mapping[str, int]) -> Path:
+    """The graph the rows produce for one shape: pinned, rewritten, and carrying its own weights."""
+    work_dir.mkdir(parents=True, exist_ok=True)
+    pinned = _pin(source, work_dir, dims)
+    return apply_rewrites(pinned, plan_rewrites(RewriteContext(RKNPU, ())), out_dir=work_dir, standalone=True)
+
+
+def _pin(onnx_path: Path, work_dir: Path, dims: Mapping[str, int]) -> Path:
+    """Resolve the graph's named free input dims to `dims`, ahead of the RKNPU rows: rknn.load_onnx takes
+    them as a shape list, so pinning only there leaves the rows reading a symbolic graph."""
+    if not dims:
         return onnx_path
 
     import onnx_ir as ir
@@ -152,7 +183,7 @@ def _pin(onnx_path: Path, work_dir: Path, canvas: Mapping[str, int]) -> Path:
     model = ir.load(onnx_path)
     for inp in model.graph.inputs:
         if inp.shape is not None:
-            inp.shape = ir.Shape([canvas.get(str(dim), dim) for dim in inp.shape])
+            inp.shape = ir.Shape([dims.get(str(dim), dim) for dim in inp.shape])
     pinned_path = work_dir / "pinned.onnx"
     ReinferShapesPass()(model)
     ir.save(model, pinned_path, external_data="pinned.onnx.data")

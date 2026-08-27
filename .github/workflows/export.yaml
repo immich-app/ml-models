@@ -19,6 +19,12 @@ on:
       upload:
         type: boolean
         default: false
+      compile-all:
+        type: boolean
+        default: true
+      previous-ref:
+        type: string
+        default: ''
 
 jobs:
   export:
@@ -26,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the compile scope below diffs this model's renderings against the previous ref
 
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -39,15 +47,15 @@ jobs:
           HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      # Here rather than in its own job because this is where an exported model exists
+      # Here rather than in its own job because this is where an exported model exists.
       - id: check
-        run: uv run --frozen --extra export immich-model check --models models
+        run: uv run --frozen --extra export immich-model check model models
 
       # An exporter change stales every rendering at once; hand back this run's rather than making the
       # author re-export the catalog
 
       - if: ${{ failure() && steps.check.outcome == 'failure' }}
-        run: uv run --frozen --extra export immich-model check --models models --bless
+        run: uv run --frozen --extra export immich-model check model models --bless
       - if: ${{ failure() && steps.check.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -56,8 +64,22 @@ jobs:
             ci/graphs/${{ inputs.model-name }}
             ci/rewrites/${{ inputs.model-name }}
 
+      # Skip compilation if the renderings are the same, being what the binary is built from
+      - id: needed
+        env:
+          MODEL_NAME: ${{ inputs.model-name }}
+          COMPILE_ALL: ${{ inputs.compile-all }}
+          PREVIOUS_REF: ${{ inputs.previous-ref }}
+        run: |
+          git add -N ci # a model exported for the first time renders to a path git is not yet tracking
+          if [ "$COMPILE_ALL" = 'true' ] || ! git diff --quiet "$PREVIOUS_REF" -- ci/plans.txt \
+              "ci/graphs/$MODEL_NAME" "ci/rewrites/$MODEL_NAME"; then
+            echo "compile=yes" >> "$GITHUB_OUTPUT"
+          fi
+
       # RKNN binaries are built from the same fused ONNX every other backend uses
-      - run: uv run --frozen --extra rknn immich-model rknn compile "$MODEL_NAME"
+      - if: ${{ steps.needed.outputs.compile }}
+        run: uv run --frozen --extra rknn immich-model rknn compile "$MODEL_NAME"
         env:
           MODEL_NAME: ${{ inputs.model-name }}
 

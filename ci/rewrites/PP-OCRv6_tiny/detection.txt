@@ -1,0 +1,98 @@
+CPUExecutionProvider
+    unchanged
+
+CUDAExecutionProvider
+    unchanged
+
+CoreMLExecutionProvider
+    -1 Transpose perm=(0, 3, 1, 2)
+    171 nodes, weights 39fde6614b6c
+    _FoldBiasAdd x61 265bf66a
+    _FoldSeResidual x16 11481d1e
+    _FuseErfGelu x13 837b6556
+    unstamped x81 caa53d6f
+
+MIGraphXExecutionProvider
+    -2 Conv auto_pad=SAME_UPPER dilations=(1, 1) group=1 kernel_shape=(2, 2) strides=(1, 1)
+    +2 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    172 nodes, weights 52b390ae5ce9
+    SymmetrizeConvPads, _FoldBiasAdd x2 a2ff9cf8
+    _FoldBiasAdd x59 169c4fca
+    _FoldSeResidual x16 11481d1e
+    _FuseErfGelu x13 837b6556
+    unstamped x82 2ccb5d0c
+
+NvTensorRTRTXExecutionProvider
+    unchanged
+
+OpenVINOExecutionProvider
+    unchanged
+
+RKNPU height=1472 width=736
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    227 nodes, weights 623ebf5b4b64
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":1472,"width":736},{"height":736,"width":736},{"height":992,"width":736},{"height":736,"width":992},{"height":1120,"width":736},{"height":736,"width":1120},{"height":736,"width":1472}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
+    _FoldSeResidual x16 11481d1e
+    unstamped x77 ba854663
+
+RKNPU height=2176 width=1088
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    227 nodes, weights 623ebf5b4b64
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2176,"width":1088},{"height":1088,"width":1088},{"height":1472,"width":1088},{"height":1088,"width":1472},{"height":1632,"width":1088},{"height":1088,"width":1632},{"height":1088,"width":2176}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
+    _FoldSeResidual x16 11481d1e
+    unstamped x77 ba854663
+
+RKNPU height=2880 width=1440
+    +26 Mul
+    +17 Add
+    +13 Div
+    +13 Erf
+    -13 Gelu approximate=none
+    +3 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
+    -2 Concat axis=1
+    -1 Cast to=1
+    +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
+    -1 Sub
+    -1 Transpose perm=(0, 3, 1, 2)
+    227 nodes, weights 623ebf5b4b64
+    config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
+    contract {"dims":[{"height":2880,"width":1440},{"height":1440,"width":1440},{"height":1920,"width":1440},{"height":1440,"width":1920},{"height":2176,"width":1440},{"height":1440,"width":2176},{"height":1440,"width":2880}]}
+    opset 19
+    DecomposeGelu, _FuseErfGelu x65 8ccf2ca9
+    FoldConcatIntoConv, _FoldBiasAdd x10 d7b409b2
+    _FoldBiasAdd x59 fda46f28
+    _FoldSeResidual x16 11481d1e
+    unstamped x77 ba854663
+
+TensorrtExecutionProvider
+    unchanged

@@ -1,7 +1,8 @@
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Annotated
 
-from typer import Exit, Option, Typer, echo
+from typer import Argument, Exit, Option, Typer, echo
 
 from ._cli import ModelName
 from .constants import DELETE_PATTERNS, FIXTURES
@@ -17,24 +18,44 @@ app.add_typer(onnx_app, name="onnx")
 app.add_typer(rknn_app, name="rknn")
 
 
-@app.command()
-def check(
-    models: Annotated[Path | None, Option(help="Exported model tree; omit to check the plans alone.")] = None,
+check_app = Typer(no_args_is_help=True, help="Diff the committed CI fixtures against what this tree produces.")
+app.add_typer(check_app, name="check")
+
+
+@check_app.command()
+def plan(
+    fixtures: Annotated[Path, Option(help="Directory holding the committed renderings.")] = FIXTURES,
+    bless: Annotated[bool, Option(help="Rewrite the committed fixtures instead of diffing them.")] = False,
+) -> None:
+    """Diff the rewrite plans and account for every model the catalog declares."""
+    from ._check import gaps, plan_fixture
+
+    root = fixtures.resolve()
+    _verify(root, plan_fixture(root), [] if bless else gaps(root), bless)
+
+
+@check_app.command()
+def model(
+    models: Annotated[Path, Argument(help="Exported model tree.")],
     fixtures: Annotated[Path, Option(help="Directory holding the committed renderings.")] = FIXTURES,
     bless: Annotated[bool, Option(help="Rewrite the committed renderings instead of diffing them.")] = False,
 ) -> None:
-    """Diff the committed graph and rewrite-plan renderings against what this tree produces; a model with
-    no committed rendering fails, so a new one cannot merge without its fixture."""
-    from ._check import ELIDE, diff, gaps
-    from ._check import fixtures as rendered
+    """Diff the graph and rewrite renderings of the models present."""
+    from ._check import model_fixtures
+
+    root = fixtures.resolve()
+    _verify(root, model_fixtures(root, models), [], bless)
+
+
+def _verify(root: Path, items: Iterable[tuple[Path, str]], problems: Iterable[str], bless: bool) -> None:
+    from ._check import ELIDE, diff
 
     failures = 0
-    fixtures = fixtures.resolve()
-    for problem in [] if bless else gaps(fixtures):
+    for problem in problems:
         echo(problem)
         failures += 1
-    for path, text in rendered(fixtures, models):
-        label = path.relative_to(fixtures.parent)
+    for path, text in items:
+        label = path.relative_to(root.parent)
         if bless:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text)
@@ -77,6 +98,7 @@ def upload(
             repo_id=repo_id,
             folder_path=model_dir,
             revision=hf_branch,
+            ignore_patterns=["**/model.json"],
             # deleted in the same commit as the upload, so it's atomic
             delete_patterns=DELETE_PATTERNS,
         )

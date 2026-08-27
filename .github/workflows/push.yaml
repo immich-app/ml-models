@@ -3,6 +3,7 @@ on:
   push:
     branches: ['main']
   pull_request:
+    types: ['opened', 'synchronize', 'reopened']
   release:
     types: ['published']
   workflow_dispatch:
@@ -28,16 +29,26 @@ jobs:
           persist-credentials: false
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
-          # this job produces no artifact for a poisoned cache to reach
+          # the rendering it hands back is of this PR's own source and is committed to this PR's own head,
+          # and a PR-scoped cache is readable by no other PR, so a poisoned one reaches nothing new
           enable-cache: true # zizmor: ignore[cache-poisoning]
           cache-dependency-glob: uv.lock
-      - run: uv run --frozen --extra export immich-model check
+      - id: check
+        run: uv run --frozen --extra export immich-model check plan
+      - if: ${{ failure() && steps.check.outcome == 'failure' }}
+        run: uv run --frozen --extra export immich-model check plan --bless
+      - if: ${{ failure() && steps.check.outcome == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: renderings-plans
+          path: ci/plans.txt
 
   configure:
     runs-on: ubuntu-latest
     outputs:
       to_export: ${{ steps.scope.outputs.to_export }}
       unchanged: ${{ steps.scope.outputs.unchanged }}
+      previous-ref: ${{ steps.ref.outputs.previous-ref }}
     steps:
       - name: Checkout new ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,8 +96,8 @@ jobs:
             script({core})
 
 
-  # TODO: Explicitly skip this if nothing to do
   export:
+    if: ${{ needs.configure.outputs.to_export != '[]' }}
     uses: ./.github/workflows/export.yaml
     needs: configure
     secrets: inherit
@@ -102,3 +113,42 @@ jobs:
       hf-name: ${{ matrix.hf-name }}
       runner: ${{ matrix.runner || 'ubuntu-latest'}}
       upload: ${{ inputs.force || github.event_name == 'release'}}
+      previous-ref: ${{ needs.configure.outputs.previous-ref }}
+      compile-all: ${{ inputs.force || github.event_name == 'release' }}
+
+  # Read at the end rather than off the event payload, so labelling while the matrix runs still counts.
+  labelled:
+    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+    needs: [plans, export]
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      wanted: ${{ steps.label.outputs.wanted }}
+    steps:
+      - id: label
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            })
+            const wanted = pull.labels.some((applied) => applied.name === 'fix:fixtures')
+            core.info(wanted ? 'labelled fix:fixtures' : 'not labelled, leaving the fixtures alone')
+            core.setOutput('wanted', wanted ? 'yes' : '')
+
+  commit-fixtures:
+    needs: labelled
+    if: ${{ !cancelled() && needs.labelled.outputs.wanted }}
+    uses: ./.github/workflows/commit-fixtures.yaml
+    secrets:
+      client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+    with:
+      run-id: ${{ github.run_id }}
+      branch: ${{ github.event.pull_request.head.ref }}
+      head-sha: ${{ github.event.pull_request.head.sha }}
+      pull-number: ${{ github.event.pull_request.number }}
+

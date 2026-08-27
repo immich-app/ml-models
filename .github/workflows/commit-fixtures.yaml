@@ -1,0 +1,90 @@
+name: Commit fixtures
+
+# Takes the renderings a run blessed and commits them to the PR. Called twice: by the export run itself
+# once the matrix settles, and by the label when that run has already finished.
+on:
+  workflow_call:
+    inputs:
+      run-id:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      head-sha:
+        required: true
+        type: string
+      pull-number:
+        required: true
+        type: number
+    secrets:
+      client-id:
+        required: true
+      private-key:
+        required: true
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    # both entry points can reach the same branch at once; queue them rather than race the push
+    concurrency:
+      group: commit-fixtures-${{ inputs.branch }}
+      cancel-in-progress: false
+    permissions:
+      actions: read
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.client-id }}
+          private-key: ${{ secrets.private-key }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      # nothing in the tree is executed here, so checking out the PR's own code carries no risk
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.branch }}
+          persist-credentials: true
+          token: ${{ steps.token.outputs.token }}
+
+      # a push between resolving the run and checking out would put these renderings on a commit that
+      # never produced them, and the branch checkout above would follow it silently
+      - env:
+          EXPECTED: ${{ inputs.head-sha }}
+        run: |
+          actual=$(git rev-parse HEAD)
+          if [ "$actual" != "$EXPECTED" ]; then
+            echo "head is $actual, not the $EXPECTED these renderings describe; label again" >&2
+            exit 1
+          fi
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: renderings-*
+          # every artifact is rooted at `ci`, so the models merge back into one tree
+          merge-multiple: true
+          path: ci
+          run-id: ${{ inputs.run-id }}
+          # the job's own `actions: read`, not the app token, which is scoped to contents and pull requests
+          github-token: ${{ github.token }}
+
+      - uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
+        with:
+          default_author: github_actions
+          message: 'chore: bless ci fixtures'
+          add: ci
+
+      - if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PULL_NUMBER: ${{ inputs.pull-number }}
+        with:
+          github-token: ${{ steps.token.outputs.token }}
+          script: |
+            github.rest.issues.removeLabel({
+              issue_number: Number(process.env.PULL_NUMBER),
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'fix:fixtures',
+            })
