@@ -5,7 +5,7 @@ from typing import Annotated
 from typer import Argument, Exit, Option, Typer, echo
 
 from ._cli import ModelName
-from .constants import DELETE_PATTERNS, FIXTURES
+from .constants import DELETE_PATTERNS, FIXTURES, RETRY_STATUS
 from .onnx.cli import app as onnx_app
 from .rknn.cli import app as rknn_app
 
@@ -82,14 +82,23 @@ def upload(
 ) -> None:
     """Upload an exported model directory (<input-dir>/<model-name>) to a Hugging Face repo."""
     from huggingface_hub import create_branch, create_repo, upload_folder
-    from tenacity import retry, stop_after_attempt, wait_fixed
+    from huggingface_hub.errors import HfHubHTTPError
+    from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
     if not hf_model_name:
         hf_model_name = model_name
     model_dir = input_dir / model_name
     repo_id = f"{hf_organization}/{hf_model_name}"
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
+    def transient(error: BaseException) -> bool:
+        return isinstance(error, HfHubHTTPError) and error.response.status_code in RETRY_STATUS
+
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=2, max=60),
+        retry=retry_if_exception(transient),
+        reraise=True,
+    )
     def upload_model() -> None:
         create_repo(repo_id, exist_ok=True)
         if hf_branch != "main":
