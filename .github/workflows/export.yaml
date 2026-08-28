@@ -118,9 +118,8 @@ jobs:
 
       - run: |
           uv run --frozen --extra export immich-model upload "$MODEL_NAME" \
-            --hf-model-name "$HF_MODEL_NAME" --hf-organization "$ORGANIZATION" --hf-branch v2
+            --hf-organization "$ORGANIZATION" --hf-branch v2
         env:
           MODEL_NAME: ${{ inputs.model-name }}
-          HF_MODEL_NAME: ${{ inputs.hf-name || inputs.model-name }}
           ORGANIZATION: ${{ inputs.organization }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}

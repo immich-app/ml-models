@@ -213,6 +213,7 @@ def variant_dir(sets: Sequence[DimSet], dims: Mapping[str, int]) -> str:
 # glob to delete old UUID blobs when reuploading models
 _uuid_char = "[a-fA-F0-9]"
 _uuid_glob = _uuid_char * 8 + "-" + _uuid_char * 4 + "-" + _uuid_char * 4 + "-" + _uuid_char * 4 + "-" + _uuid_char * 12
+RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
 DELETE_PATTERNS = [
     "**/*onnx*",
     "**/*rknpu*",
