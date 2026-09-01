@@ -123,3 +123,4 @@ jobs:
           MODEL_NAME: ${{ inputs.model-name }}
           ORGANIZATION: ${{ inputs.organization }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_ENDPOINT: https://huggingface.co
