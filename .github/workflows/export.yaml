@@ -16,7 +16,7 @@ on:
       hf-name:
         required: false
         type: string
-      organization:
+      environment:
         type: string
         default: ''
       compile-all:
@@ -97,9 +97,10 @@ jobs:
   # Download the exported artifact, and upload an artifact with the benchmark result to be used below
 
   upload:
-    if: ${{ inputs.organization && needs.export.outputs.changed }}
+    if: ${{ inputs.environment && needs.export.outputs.changed }}
     runs-on: ${{ inputs.runner }}
     needs: export
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -121,6 +122,6 @@ jobs:
             --hf-organization "$ORGANIZATION" --hf-branch v2
         env:
           MODEL_NAME: ${{ inputs.model-name }}
-          ORGANIZATION: ${{ inputs.organization }}
+          ORGANIZATION: ${{ vars.HF_ORGANIZATION }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_ENDPOINT: https://huggingface.co
