@@ -6,22 +6,22 @@ resolution-markers = [
     "(python_full_version == '3.12.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.12.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "(python_full_version == '3.11.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.11.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version < '3.11' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 supported-markers = [
@@ -52,9 +52,9 @@ name = "anyio"
 version = "4.14.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
-    { name = "idna", marker = "python_full_version < '3.13'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "idna" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3b/72/5562aabb8dd7181e8e860622a38bea08d17842b99ecd4c91f84ac95251b0/anyio-4.14.1.tar.gz", hash = "sha256:8d648a3544c1a700e3ff78615cd679e4c5c3f149904287e73687b2596963629e", size = 254831, upload-time = "2026-06-24T20:56:06.017Z" }
 wheels = [
@@ -100,14 +100,14 @@ name = "black"
 version = "26.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "click", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "mypy-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "packaging", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pathspec", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "platformdirs", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pytokens", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "click" },
+    { name = "mypy-extensions" },
+    { name = "packaging" },
+    { name = "pathspec" },
+    { name = "platformdirs" },
+    { name = "pytokens" },
+    { name = "tomli", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c0/37/5628dd55bf2b34257fc7603f0fe97c40e3aaf24265f416a9c85c95ca1436/black-26.5.1.tar.gz", hash = "sha256:dd321f668053961824bcc1be1cc1df748b2d7e4fa28086b08331e577b0100a73", size = 679439, upload-time = "2026-05-18T16:53:36.107Z" }
 wheels = [
@@ -139,7 +139,7 @@ name = "bleach"
 version = "6.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "webencodings", marker = "python_full_version < '3.13'" },
+    { name = "webencodings" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/48/3c/e12ac860709702bd5ebeb9b56a4fe334f1001246ee1b8f2b7ee28912df7d/bleach-6.4.0.tar.gz", hash = "sha256:4202482733d85cedd04e59fcb2f89f4e4c7c385a78d3c3c23c30446843a37452", size = 204857, upload-time = "2026-06-05T13:01:13.734Z" }
 wheels = [
@@ -230,7 +230,7 @@ name = "click"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "(python_full_version < '3.13' and sys_platform == 'win32') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'win32' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
 wheels = [
@@ -242,17 +242,17 @@ name = "clip-benchmark"
 version = "1.6.1"
 source = { git = "https://github.com/mertalev/CLIP_benchmark.git?rev=77e733ee241399611296d3c4aca583ec89cf5190#77e733ee241399611296d3c4aca583ec89cf5190" }
 dependencies = [
-    { name = "open-clip-torch", marker = "python_full_version < '3.13'" },
-    { name = "pycocoevalcap", marker = "python_full_version < '3.13'" },
-    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "open-clip-torch" },
+    { name = "pycocoevalcap" },
+    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "scikit-learn", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "tqdm", marker = "python_full_version < '3.13'" },
-    { name = "transformers", marker = "python_full_version < '3.13'" },
-    { name = "webdataset", marker = "python_full_version < '3.13'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "tqdm" },
+    { name = "transformers" },
+    { name = "webdataset" },
 ]
 
 [[package]]
@@ -269,7 +269,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -281,7 +281,7 @@ name = "fast-histogram"
 version = "0.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e8/77/04a9b4b5caa6e6b3a2f633b15dec0996c1559fc26e9ba73bb3d1d844c874/fast_histogram-0.14.tar.gz", hash = "sha256:390973b98af22bda85c29dcf6f008ba0d626321e9bd3f5a9d7a43e5690ea69ea", size = 47469, upload-time = "2024-04-16T20:20:03.51Z" }
 wheels = [
@@ -334,7 +334,7 @@ name = "ftfy"
 version = "6.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "wcwidth", marker = "python_full_version < '3.13'" },
+    { name = "wcwidth" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a5/d3/8650919bc3c7c6e90ee3fa7fd618bf373cbbe55dff043bd67353dbb20cd8/ftfy-6.3.1.tar.gz", hash = "sha256:9b3c3d90f84fb267fe64d375a07b7f8912d817cf86009ae134aa03e1819506ec", size = 308927, upload-time = "2024-10-26T00:50:35.149Z" }
 wheels = [
@@ -379,8 +379,8 @@ name = "httpcore"
 version = "1.0.9"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "certifi", marker = "python_full_version < '3.13'" },
-    { name = "h11", marker = "python_full_version < '3.13'" },
+    { name = "certifi" },
+    { name = "h11" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/06/94/82699a10bca87a5556c9c59b5963f2d039dbd239f25bc2a63907a05a14cb/httpcore-1.0.9.tar.gz", hash = "sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8", size = 85484, upload-time = "2025-04-24T22:06:22.219Z" }
 wheels = [
@@ -392,10 +392,10 @@ name = "httpx"
 version = "0.28.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "anyio", marker = "python_full_version < '3.13'" },
-    { name = "certifi", marker = "python_full_version < '3.13'" },
-    { name = "httpcore", marker = "python_full_version < '3.13'" },
-    { name = "idna", marker = "python_full_version < '3.13'" },
+    { name = "anyio" },
+    { name = "certifi" },
+    { name = "httpcore" },
+    { name = "idna" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
@@ -407,15 +407,15 @@ name = "huggingface-hub"
 version = "1.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "click", marker = "python_full_version < '3.13'" },
-    { name = "filelock", marker = "python_full_version < '3.13'" },
-    { name = "fsspec", marker = "python_full_version < '3.13'" },
-    { name = "hf-xet", marker = "(python_full_version < '3.13' and platform_machine == 'AMD64') or (python_full_version < '3.13' and platform_machine == 'aarch64') or (python_full_version < '3.13' and platform_machine == 'amd64') or (python_full_version < '3.13' and platform_machine == 'arm64') or (python_full_version < '3.13' and platform_machine == 'x86_64')" },
-    { name = "httpx", marker = "python_full_version < '3.13'" },
-    { name = "packaging", marker = "python_full_version < '3.13'" },
-    { name = "pyyaml", marker = "python_full_version < '3.13'" },
-    { name = "tqdm", marker = "python_full_version < '3.13'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "click" },
+    { name = "filelock" },
+    { name = "fsspec" },
+    { name = "hf-xet", marker = "platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'" },
+    { name = "httpx" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "tqdm" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1a/8f/999e4dda11c6187c78f090eac00895a47e11a0049308f07579bcb7aa3aa2/huggingface_hub-1.23.0.tar.gz", hash = "sha256:c04997fb8bbdace1e57b7703d30ed7678af51f70d00d241819ff411b92ae9a88", size = 919163, upload-time = "2026-07-09T14:49:32.315Z" }
 wheels = [
@@ -436,54 +436,54 @@ name = "immich-model"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.11.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.12.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx-ir", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnxruntime", version = "1.24.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
+    { name = "onnx-ir" },
+    { name = "onnxruntime", version = "1.24.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "onnxruntime", version = "1.26.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnxscript", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "onnxscript" },
 ]
 
 [package.optional-dependencies]
 export = [
-    { name = "clip-benchmark", marker = "python_full_version < '3.13'" },
-    { name = "huggingface-hub", marker = "python_full_version < '3.13'" },
-    { name = "kaggle", version = "1.7.4.5", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "clip-benchmark" },
+    { name = "huggingface-hub" },
+    { name = "kaggle", version = "1.7.4.5", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "kaggle", version = "2.2.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "ml-dtypes", marker = "python_full_version < '3.13'" },
-    { name = "multilingual-clip", marker = "python_full_version < '3.13'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "ml-dtypes" },
+    { name = "multilingual-clip" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "open-clip-torch", marker = "python_full_version < '3.13'" },
-    { name = "safetensors", marker = "python_full_version < '3.13'" },
-    { name = "tenacity", marker = "python_full_version < '3.13'" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "transformers", marker = "python_full_version < '3.13'" },
-    { name = "typer", marker = "python_full_version < '3.13'" },
+    { name = "open-clip-torch" },
+    { name = "safetensors" },
+    { name = "tenacity" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "transformers" },
+    { name = "typer" },
 ]
 rknn = [
-    { name = "pyyaml", marker = "python_full_version < '3.13'" },
-    { name = "rknn-toolkit2", marker = "python_full_version < '3.13'" },
-    { name = "safetensors", marker = "python_full_version < '3.13'" },
-    { name = "setuptools", marker = "python_full_version < '3.13'" },
-    { name = "torch", version = "2.2.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.2.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typer", marker = "python_full_version < '3.13'" },
+    { name = "pyyaml" },
+    { name = "rknn-toolkit2" },
+    { name = "safetensors" },
+    { name = "setuptools" },
+    { name = "torch", version = "2.2.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.2.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "typer" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "black", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "mypy", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "ruff", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "black" },
+    { name = "mypy" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -504,7 +504,7 @@ requires-dist = [
     { name = "rknn-toolkit2", marker = "extra == 'rknn'", specifier = ">=2.3.0" },
     { name = "safetensors", marker = "extra == 'export'", specifier = ">=0.7,<0.8" },
     { name = "safetensors", marker = "extra == 'rknn'", specifier = ">=0.7,<0.8" },
-    { name = "setuptools", marker = "extra == 'rknn'", specifier = "<81" },
+    { name = "setuptools", marker = "extra == 'rknn'", specifier = "<84" },
     { name = "tenacity", marker = "extra == 'export'", specifier = ">=9.0.0" },
     { name = "torch", marker = "extra == 'export'", index = "https://download.pytorch.org/whl/cpu" },
     { name = "torch", marker = "extra == 'rknn'", index = "https://download.pytorch.org/whl/cpu" },
@@ -527,7 +527,7 @@ name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "markupsafe", marker = "python_full_version < '3.13'" },
+    { name = "markupsafe" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c72f3e33cef02e048281fec7ecec5f032d4aac52226b/jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d", size = 245115, upload-time = "2025-03-05T20:05:02.478Z" }
 wheels = [
@@ -608,20 +608,20 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
 ]
 dependencies = [
-    { name = "bleach", marker = "python_full_version < '3.11'" },
-    { name = "certifi", marker = "python_full_version < '3.11'" },
-    { name = "charset-normalizer", marker = "python_full_version < '3.11'" },
-    { name = "idna", marker = "python_full_version < '3.11'" },
-    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "python-dateutil", marker = "python_full_version < '3.11'" },
-    { name = "python-slugify", marker = "python_full_version < '3.11'" },
-    { name = "requests", marker = "python_full_version < '3.11'" },
-    { name = "setuptools", marker = "python_full_version < '3.11'" },
-    { name = "six", marker = "python_full_version < '3.11'" },
-    { name = "text-unidecode", marker = "python_full_version < '3.11'" },
-    { name = "tqdm", marker = "python_full_version < '3.11'" },
-    { name = "urllib3", marker = "python_full_version < '3.11'" },
-    { name = "webencodings", marker = "python_full_version < '3.11'" },
+    { name = "bleach", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "certifi", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "charset-normalizer", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "idna", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "python-dateutil", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "python-slugify", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "requests", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "setuptools", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "six", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "text-unidecode", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "tqdm", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "urllib3", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "webencodings", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b1/02/b0c189a46531ea2b2691ae277508d2c80e5fd3d757083283c5cc27800ca8/kaggle-1.7.4.5.tar.gz", hash = "sha256:1d9821bd6a6a1470741c76d26495a18475b5a7bfe0c80b19191254b2735d41dd", size = 336100, upload-time = "2025-05-08T21:17:20.081Z" }
 wheels = [
@@ -734,7 +734,7 @@ name = "markdown-it-py"
 version = "4.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mdurl", marker = "python_full_version < '3.13'" },
+    { name = "mdurl" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/06/ff/7841249c247aa650a76b9ee4bbaeae59370dc8bfd2f6c01f3630c35eb134/markdown_it_py-4.2.0.tar.gz", hash = "sha256:04a21681d6fbb623de53f6f364d352309d4094dd4194040a10fd51833e418d49", size = 82454, upload-time = "2026-05-07T12:08:28.36Z" }
 wheels = [
@@ -830,8 +830,8 @@ name = "ml-dtypes"
 version = "0.5.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.11.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.12.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
@@ -877,7 +877,7 @@ name = "multilingual-clip"
 version = "1.0.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "transformers", marker = "python_full_version < '3.13'" },
+    { name = "transformers" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a8/18/a9aecb457c904696e9800d2ac538f364b23a3c7b8815326a45d9f3741a24/multilingual_clip-1.0.10.tar.gz", hash = "sha256:eea1ef03ce91735636ddcd4c887f6ea54a7e45f47d4a06deef1dbe2ce8dec19c", size = 17709, upload-time = "2022-06-02T22:56:56.083Z" }
 wheels = [
@@ -889,12 +889,12 @@ name = "mypy"
 version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ast-serialize", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "librt", marker = "(python_full_version < '3.13' and platform_python_implementation != 'PyPy') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation == 'PyPy' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "mypy-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pathspec", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "ast-serialize" },
+    { name = "librt", marker = "platform_python_implementation != 'PyPy' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "mypy-extensions" },
+    { name = "pathspec" },
+    { name = "tomli", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e9/7e/be536678c6ae49ef058aba4b483d8c7bc104f471479016066f345bc1f5f8/mypy-2.2.0.tar.gz", hash = "sha256:2cdd99d48590dce6f6b7f1961eda75386364398fcdaad86923bc0f0231bf9baf", size = 3950939, upload-time = "2026-07-08T01:37:27.335Z" }
 wheels = [
@@ -988,12 +988,12 @@ resolution-markers = [
     "(python_full_version == '3.12.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.12.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "(python_full_version == '3.11.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.11.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
@@ -1232,8 +1232,8 @@ resolution-markers = [
     "python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux'",
 ]
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/9a/54/0e385c26bf230d223810a9c7d06628d954008a5e5e4b73ee26ef02327282/onnx-1.17.0.tar.gz", hash = "sha256:48ca1a91ff73c1d5e3ea2eef20ae5d0e709bb8a2355ed798ffc2169753013fd3", size = 12165120, upload-time = "2024-10-01T21:48:40.63Z" }
 wheels = [
@@ -1261,21 +1261,21 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 dependencies = [
-    { name = "ml-dtypes", marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "ml-dtypes", marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.11.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.12.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typing-extensions", marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
+    { name = "typing-extensions", marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/04/19/8ea73a64b368b75fe339771a20a02bc61ea1f551484c9e3d9d0bfbd0450f/onnx-1.22.0.tar.gz", hash = "sha256:ef40c0aaf0b643857ea9306fc7eddce17eaf9fb0407e4801f1fc5758443a38e0", size = 12024721, upload-time = "2026-06-15T12:50:05.354Z" }
 wheels = [
@@ -1304,15 +1304,15 @@ name = "onnx-ir"
 version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ml-dtypes", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "ml-dtypes" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.11.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.12.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "sympy", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
+    { name = "sympy" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/35/e6/672fefb2f108d077f58181a7babf4c0f8d1182a30353ffc9c79c63afc5ee/onnx_ir-0.2.1.tar.gz", hash = "sha256:8b8b10a93f43e65962104de6070c43c5dacb0e3cdfefc7c8059dd83c9db64f35", size = 144279, upload-time = "2026-04-20T20:21:47.735Z" }
 wheels = [
@@ -1324,7 +1324,7 @@ name = "onnxoptimizer"
 version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/5b/a7/e4f0e67a7e077d7cc65b968febfc53f8f52d3a22257624aa7977f14fff8c/onnxoptimizer-0.4.2.tar.gz", hash = "sha256:dac4a972b5dc80a870b930e85e4b043d090d4546d7878106ef8448e07f94622e", size = 12062394, upload-time = "2026-01-07T14:24:39.048Z" }
 wheels = [
@@ -1353,13 +1353,13 @@ resolution-markers = [
     "python_full_version < '3.11' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 dependencies = [
-    { name = "flatbuffers", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "packaging", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "sympy", marker = "python_full_version < '3.11' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "flatbuffers", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "packaging", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "protobuf", version = "7.35.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "sympy", marker = "python_full_version < '3.11' or python_full_version >= '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/15/41/3253db975a90c3ce1d475e2a230773a21cd7998537f0657947df6fb79861/onnxruntime-1.24.3-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:3e6456801c66b095c5cd68e690ca25db970ea5202bd0c5b84a2c3ef7731c5a3c", size = 17332766, upload-time = "2026-03-05T17:18:59.714Z" },
@@ -1390,15 +1390,15 @@ resolution-markers = [
     "(python_full_version == '3.12.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.12.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "(python_full_version == '3.11.*' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version == '3.11.*' and sys_platform != 'darwin' and sys_platform != 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra != 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 dependencies = [
@@ -1435,16 +1435,16 @@ name = "onnxscript"
 version = "0.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ml-dtypes", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "ml-dtypes" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra != 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.11.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (python_full_version == '3.12.*' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.13' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.13' and extra != 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "onnx-ir", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "packaging", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-rknn'" },
+    { name = "onnx", version = "1.22.0", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-12-immich-model-export' or extra != 'extra-12-immich-model-rknn'" },
+    { name = "onnx-ir" },
+    { name = "packaging" },
+    { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c4/3a/4d79bce3f460e0df7fed54a92ce80827f25da66511da368bb00783ad8d20/onnxscript-0.7.1.tar.gz", hash = "sha256:309fb86484b11fa4ded90dba580e0d63f1a0827588e521cecaf2eeddb46d6e86", size = 618160, upload-time = "2026-06-29T23:33:21.526Z" }
 wheels = [
@@ -1456,16 +1456,16 @@ name = "open-clip-torch"
 version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ftfy", marker = "python_full_version < '3.13'" },
-    { name = "huggingface-hub", marker = "python_full_version < '3.13'" },
-    { name = "regex", marker = "python_full_version < '3.13'" },
-    { name = "safetensors", marker = "python_full_version < '3.13'" },
-    { name = "timm", marker = "python_full_version < '3.13'" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "tqdm", marker = "python_full_version < '3.13'" },
+    { name = "ftfy" },
+    { name = "huggingface-hub" },
+    { name = "regex" },
+    { name = "safetensors" },
+    { name = "timm" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "tqdm" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/4a/1f/2bc9795047fa2c1ad2567ef78ce6dfc9a7b763fa534acee09a94da2a5b8f/open_clip_torch-3.3.0.tar.gz", hash = "sha256:904b1a9f909df8281bb3de60ab95491cd2994a509177ea4f9d6292a84fe24d6d", size = 1503380, upload-time = "2026-02-27T00:32:46.74Z" }
 wheels = [
@@ -1477,7 +1477,7 @@ name = "opencv-python"
 version = "4.11.0.86"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" } },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/17/06/68c27a523103dad5837dc5b87e71285280c4f098c60e4fe8a8db6486ab09/opencv-python-4.11.0.86.tar.gz", hash = "sha256:03d60ccae62304860d232272e4a4fda93c39d595780cb40b161b310244b736a4", size = 95171956, upload-time = "2025-01-16T13:52:24.737Z" }
 wheels = [
@@ -1602,12 +1602,12 @@ source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
+    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.12.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
-    "python_full_version == '3.11.*' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
     "python_full_version < '3.11' and extra != 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/da/01/9ef0afd7999eb9badb3a768b4aedd78c86d4c65cfaf1958ab276199e76b4/protobuf-7.35.1.tar.gz", hash = "sha256:ce115a26fe0c39a2c29973d914d327e516a6455464489fe3cd1e51a1b354f81a", size = 458717, upload-time = "2026-06-11T21:55:40.257Z" }
@@ -1648,7 +1648,7 @@ name = "pycocoevalcap"
 version = "1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycocotools", marker = "python_full_version < '3.13'" },
+    { name = "pycocotools" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ae/d7/6b77c7cddc3832ec4c551633c787aeeda168cc2e0ff173649ce145f1b85c/pycocoevalcap-1.2.tar.gz", hash = "sha256:7857f4d596ca2fa0b1a9a3c2067588a4257556077b7ad614d00b2b7b8f57cdde", size = 104309308, upload-time = "2020-11-18T12:03:42.138Z" }
 wheels = [
@@ -1660,7 +1660,7 @@ name = "pycocotools"
 version = "2.0.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
@@ -1710,7 +1710,7 @@ name = "python-dateutil"
 version = "2.9.0.post0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "six", marker = "python_full_version < '3.13'" },
+    { name = "six" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/0c8b6ad9f17a802ee498c46e004a0eb49bc148f2fd230864601a86dcf6db/python-dateutil-2.9.0.post0.tar.gz", hash = "sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3", size = 342432, upload-time = "2024-03-01T18:36:20.211Z" }
 wheels = [
@@ -1731,7 +1731,7 @@ name = "python-slugify"
 version = "8.0.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "text-unidecode", marker = "python_full_version < '3.13'" },
+    { name = "text-unidecode" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/87/c7/5e1547c44e31da50a460df93af11a535ace568ef89d7a811069ead340c4a/python-slugify-8.0.4.tar.gz", hash = "sha256:59202371d1d05b54a9e7720c5e038f928f45daaffe41dd10822f3907b937c856", size = 10921, upload-time = "2024-02-08T18:32:45.488Z" }
 wheels = [
@@ -1921,10 +1921,10 @@ name = "requests"
 version = "2.34.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "certifi", marker = "python_full_version < '3.13'" },
-    { name = "charset-normalizer", marker = "python_full_version < '3.13'" },
-    { name = "idna", marker = "python_full_version < '3.13'" },
-    { name = "urllib3", marker = "python_full_version < '3.13'" },
+    { name = "certifi" },
+    { name = "charset-normalizer" },
+    { name = "idna" },
+    { name = "urllib3" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed", size = 142856, upload-time = "2026-05-14T19:25:27.735Z" }
 wheels = [
@@ -1936,8 +1936,8 @@ name = "rich"
 version = "15.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "markdown-it-py", marker = "python_full_version < '3.13'" },
-    { name = "pygments", marker = "python_full_version < '3.13'" },
+    { name = "markdown-it-py" },
+    { name = "pygments" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", hash = "sha256:edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", size = 230680, upload-time = "2026-04-12T08:24:00.75Z" }
 wheels = [
@@ -1949,21 +1949,21 @@ name = "rknn-toolkit2"
 version = "2.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "fast-histogram", marker = "python_full_version < '3.13'" },
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
-    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
-    { name = "onnxoptimizer", marker = "python_full_version < '3.13'" },
-    { name = "onnxruntime", version = "1.24.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "fast-histogram" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" } },
+    { name = "onnx", version = "1.17.0", source = { registry = "https://pypi.org/simple" } },
+    { name = "onnxoptimizer" },
+    { name = "onnxruntime", version = "1.24.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "onnxruntime", version = "1.26.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "opencv-python", marker = "python_full_version < '3.13'" },
-    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13'" },
-    { name = "psutil", marker = "python_full_version < '3.13'" },
-    { name = "ruamel-yaml", marker = "python_full_version < '3.13'" },
-    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "opencv-python" },
+    { name = "protobuf", version = "3.20.3", source = { registry = "https://pypi.org/simple" } },
+    { name = "psutil" },
+    { name = "ruamel-yaml" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.2.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.2.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "tqdm", marker = "python_full_version < '3.13'" },
+    { name = "torch", version = "2.2.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.2.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "tqdm" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/79/d5f886bd0bbf455c3aa62073191fde1cb9a98a253cee885d57123ffa76f1/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:73d0bb55d30ee00bbd9603331a4118da73a4e12fa9d9196200460d07d67c6a12", size = 37641091, upload-time = "2025-04-09T09:51:40.248Z" },
@@ -2108,10 +2108,10 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
 ]
 dependencies = [
-    { name = "joblib", marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "threadpoolctl", marker = "python_full_version < '3.11'" },
+    { name = "joblib", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
+    { name = "threadpoolctl", marker = "python_full_version < '3.11' or python_full_version >= '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/98/c2/a7855e41c9d285dfe86dc50b250978105dce513d6e459ea66a6aeb0e1e0c/scikit_learn-1.7.2.tar.gz", hash = "sha256:20e9e49ecd130598f1ca38a1d85090e1a600147b9c02fa6f15d69cb53d968fda", size = 7193136, upload-time = "2025-09-09T08:21:29.075Z" }
 wheels = [
@@ -2196,8 +2196,8 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra != 'extra-12-immich-model-rknn'",
 ]
 dependencies = [
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-rknn') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0f/37/6964b830433e654ec7485e45a00fc9a27cf868d622838f6b6d9c5ec0d532/scipy-1.15.3.tar.gz", hash = "sha256:eae3cf522bc7df64b42cad3925c876e1b0b6c35c1337c93e12c0f366f55b0eaf", size = 59419214, upload-time = "2025-05-08T16:13:05.955Z" }
 wheels = [
@@ -2349,11 +2349,11 @@ wheels = [
 
 [[package]]
 name = "setuptools"
-version = "80.10.2"
+version = "83.0.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/76/95/faf61eb8363f26aa7e1d762267a8d602a1b26d4f3a1e758e92cb3cb8b054/setuptools-80.10.2.tar.gz", hash = "sha256:8b0e9d10c784bf7d262c4e5ec5d4ec94127ce206e8738f29a437945fbc219b70", size = 1200343, upload-time = "2026-01-25T22:38:17.252Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/b8/f1f62a5e3c0ad2ff1d189590bfa4c46b4f3b6e49cef6f26c6ee4e575394d/setuptools-80.10.2-py3-none-any.whl", hash = "sha256:95b30ddfb717250edb492926c92b5221f7ef3fbcc2b07579bcd4a27da21d0173", size = 1064234, upload-time = "2026-01-25T22:38:15.216Z" },
+    { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
 ]
 
 [[package]]
@@ -2379,7 +2379,7 @@ name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "mpmath", marker = "python_full_version < '3.13' or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "mpmath" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
@@ -2418,13 +2418,13 @@ name = "timm"
 version = "1.0.28"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "huggingface-hub", marker = "python_full_version < '3.13'" },
-    { name = "pyyaml", marker = "python_full_version < '3.13'" },
-    { name = "safetensors", marker = "python_full_version < '3.13'" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "huggingface-hub" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "torchvision", version = "0.28.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/35/03/e41389ac641747bfec48d016fde8be1eade1901e6f2c1aedcb0c8cb4b5d9/timm-1.0.28.tar.gz", hash = "sha256:3789d313fdd5541a327b60180d70dbb4bdec73db8ff0655e413db3c3d134a9a4", size = 2451413, upload-time = "2026-07-11T17:24:32.615Z" }
 wheels = [
@@ -2436,7 +2436,7 @@ name = "tokenizers"
 version = "0.22.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "huggingface-hub", marker = "python_full_version < '3.13'" },
+    { name = "huggingface-hub" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/73/6f/f80cfef4a312e1fb34baf7d85c72d4411afde10978d4657f8cdd811d3ccc/tokenizers-0.22.2.tar.gz", hash = "sha256:473b83b915e547aa366d1eee11806deaf419e17be16310ac0a14077f1e28f917", size = 372115, upload-time = "2026-01-05T10:45:15.988Z" }
 wheels = [
@@ -2510,13 +2510,13 @@ resolution-markers = [
     "python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux'",
 ]
 dependencies = [
-    { name = "filelock", marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'darwin')" },
-    { name = "fsspec", marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'darwin')" },
-    { name = "jinja2", marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'darwin')" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "filelock", marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'" },
+    { name = "fsspec", marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'" },
+    { name = "jinja2", marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "sympy", marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'darwin')" },
-    { name = "typing-extensions", marker = "(python_full_version < '3.13' and platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform == 'darwin')" },
+    { name = "sympy", marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'" },
+    { name = "typing-extensions", marker = "(platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux') or sys_platform == 'darwin'" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.2.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:19e89763bdd9df0bf5e39462e9410c612a7a46aff72ea285b97929ac2045123f", upload-time = "2024-01-29T18:35:51Z" },
@@ -2543,13 +2543,13 @@ resolution-markers = [
     "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux')",
 ]
 dependencies = [
-    { name = "filelock", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
-    { name = "fsspec", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
-    { name = "jinja2", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "filelock", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "fsspec", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "jinja2", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and python_full_version < '3.13' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_machine != 'aarch64' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and platform_python_implementation != 'CPython' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and sys_platform != 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (platform_machine == 'aarch64' and platform_python_implementation == 'CPython' and sys_platform == 'linux' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "sympy", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
-    { name = "typing-extensions", marker = "(python_full_version < '3.13' and platform_machine != 'aarch64' and sys_platform == 'linux') or (python_full_version < '3.13' and platform_python_implementation != 'CPython' and sys_platform == 'linux') or (python_full_version < '3.13' and sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "sympy", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
+    { name = "typing-extensions", marker = "(platform_machine != 'aarch64' and sys_platform == 'linux') or (platform_python_implementation != 'CPython' and sys_platform == 'linux') or (sys_platform != 'darwin' and sys_platform != 'linux')" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.2.0%2Bcpu-cp310-cp310-linux_x86_64.whl", hash = "sha256:5f907293f5a58619c1c520380f17641f76400a136474a4b1a66c363d2563fe5e", upload-time = "2024-01-29T18:34:31Z" },
@@ -2570,14 +2570,14 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
 ]
 dependencies = [
-    { name = "filelock", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "fsspec", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "jinja2", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "filelock", marker = "sys_platform == 'darwin'" },
+    { name = "fsspec", marker = "sys_platform == 'darwin'" },
+    { name = "jinja2", marker = "sys_platform == 'darwin'" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "setuptools", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "sympy", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
+    { name = "setuptools", marker = "sys_platform == 'darwin'" },
+    { name = "sympy", marker = "sys_platform == 'darwin'" },
+    { name = "typing-extensions", marker = "sys_platform == 'darwin'" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:94f0de129916f77b8dc2c7a8eff644cfeddfe59e39c9f55e9f6e17543410281d", upload-time = "2026-07-08T12:26:07Z" },
@@ -2596,14 +2596,14 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform != 'darwin'",
 ]
 dependencies = [
-    { name = "filelock", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "fsspec", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "jinja2", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "filelock", marker = "sys_platform != 'darwin'" },
+    { name = "fsspec", marker = "sys_platform != 'darwin'" },
+    { name = "jinja2", marker = "sys_platform != 'darwin'" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version < '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "setuptools", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "sympy", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
+    { name = "setuptools", marker = "sys_platform != 'darwin'" },
+    { name = "sympy", marker = "sys_platform != 'darwin'" },
+    { name = "typing-extensions", marker = "sys_platform != 'darwin'" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp310-cp310-linux_s390x.whl", hash = "sha256:0555fde6108ca90247ae33d4e1237cbae475c86a223bb2f0f91d9addf1f611bd", upload-time = "2026-07-08T19:27:11Z" },
@@ -2637,11 +2637,11 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform == 'darwin'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version != '3.11.*' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version != '3.12.*' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform != 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pillow", marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
-    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "python_full_version < '3.13' and sys_platform == 'darwin'" },
+    { name = "pillow", marker = "sys_platform == 'darwin'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torchvision-0.28.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:2a1ef4b6f4bf5828b48cfad97372c8982db906830884b2868ba5c3df937a7d81", upload-time = "2026-07-08T12:26:40Z" },
@@ -2660,11 +2660,11 @@ resolution-markers = [
     "python_full_version < '3.11' and sys_platform != 'darwin'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.11' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.13' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version != '3.11.*' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and sys_platform != 'darwin' and extra == 'extra-12-immich-model-export') or (python_full_version != '3.12.*' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn') or (sys_platform == 'darwin' and extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pillow", marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
-    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "python_full_version < '3.13' and sys_platform != 'darwin'" },
+    { name = "pillow", marker = "sys_platform != 'darwin'" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
 ]
 wheels = [
     { url = "https://download-r2.pytorch.org/whl/cpu/torchvision-0.28.0%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:7d81da2804da52c9788f2d5a8d0aaddcea9fce6eb5d7c6e19a32b40b4ed0b75a", upload-time = "2026-07-08T12:26:39Z" },
@@ -2686,7 +2686,7 @@ name = "tqdm"
 version = "4.68.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "python_full_version < '3.13' and sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ae/5f/57ff8b434839e70dab45601284ea413e947a63799891b7553e5960a793a8/tqdm-4.68.4.tar.gz", hash = "sha256:19829c9673638f2a0b8617da4cdcb927e831cd88bcfcb6e78d42a4d1af131520", size = 792418, upload-time = "2026-07-07T09:58:18.369Z" }
 wheels = [
@@ -2707,17 +2707,17 @@ name = "transformers"
 version = "5.12.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "huggingface-hub", marker = "python_full_version < '3.13'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "huggingface-hub" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "packaging", marker = "python_full_version < '3.13'" },
-    { name = "pyyaml", marker = "python_full_version < '3.13'" },
-    { name = "regex", marker = "python_full_version < '3.13'" },
-    { name = "safetensors", marker = "python_full_version < '3.13'" },
-    { name = "tokenizers", marker = "python_full_version < '3.13'" },
-    { name = "tqdm", marker = "python_full_version < '3.13'" },
-    { name = "typer", marker = "python_full_version < '3.13'" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "regex" },
+    { name = "safetensors" },
+    { name = "tokenizers" },
+    { name = "tqdm" },
+    { name = "typer" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/aa/7c/8240f612819718100a9346dc28dea6a11370c3ca9c8c6eabadd3dea4ef29/transformers-5.12.1.tar.gz", hash = "sha256:679ee731c8225347889ad4fb3b2c926a62e9da3b7d284e9d12c791da7272466b", size = 8924054, upload-time = "2026-06-15T17:27:50.604Z" }
 wheels = [
@@ -2729,10 +2729,10 @@ name = "typer"
 version = "0.26.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "annotated-doc", marker = "python_full_version < '3.13'" },
-    { name = "colorama", marker = "python_full_version < '3.13' and sys_platform == 'win32'" },
-    { name = "rich", marker = "python_full_version < '3.13'" },
-    { name = "shellingham", marker = "python_full_version < '3.13'" },
+    { name = "annotated-doc" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "rich" },
+    { name = "shellingham" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7c/f7/68adc395201b20b872d68e975386832e8005ffeacedd43a1d837a32815be/typer-0.26.8.tar.gz", hash = "sha256:c244a6bd558886fe3f8780efb6bdd28bb9aff005a94eedebaa5cb32926fe2f7e", size = 202097, upload-time = "2026-06-26T09:22:45.705Z" }
 wheels = [
@@ -2771,11 +2771,11 @@ name = "webdataset"
 version = "1.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "braceexpand", marker = "python_full_version < '3.13'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
+    { name = "braceexpand" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-12-immich-model-export') or (python_full_version >= '3.13' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.11.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
     { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version == '3.12.*' and extra == 'extra-12-immich-model-export') or (extra == 'extra-12-immich-model-export' and extra == 'extra-12-immich-model-rknn')" },
-    { name = "pyyaml", marker = "python_full_version < '3.13'" },
+    { name = "pyyaml" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/5a/3a/68800d92e065cf4750ebecf973b13979c0c929b439e1293012938862038d/webdataset-1.0.2.tar.gz", hash = "sha256:7f0498be827cfa46cc5430a58768a24e2c6a410676a61be1838f53d61afdaab4", size = 80090, upload-time = "2025-06-19T23:26:21.945Z" }
 wheels = [
