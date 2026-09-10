@@ -5,7 +5,7 @@ description = "Export Immich's CLIP and face models to ONNX and compile them for
 readme = "README.md"
 # <3.13 held back by the rknn extra's toolkit wheels; the torch-free core (immich_model.runtime
 # and the per-EP lowerings it plans) is what immich_ml consumes and must cover its 3.13 runtime.
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.14,<3.15"
 # The torch-free core: `immich_model.runtime` plus the onnx lowerings.
 # The exporter CLI and the model sources live behind the extras below.
 dependencies = [
