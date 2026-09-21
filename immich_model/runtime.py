@@ -2,45 +2,36 @@
 sharing the source's weight sidecar, not an in-memory patch: CoreML's compiled-model cache keys on file path."""
 
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from importlib import import_module
 from importlib.metadata import version
 from pathlib import Path
+from threading import RLock
+from types import ModuleType
+from typing import TYPE_CHECKING, Any
 
-import onnx_ir as ir
-from onnx_ir.passes.common import DeduplicateInitializersPass, RemoveUnusedNodesPass, TopologicalSortPass
-from onnxscript.rewriter import RewritePass
+_importing = RLock()
 
-from .onnx._ir import CanonicalizeConstantsPass, ReinferShapesPass, save_with_external_data
-from .onnx.lowering import (
-    BroadcastShapeWorkaroundPass,
-    DecomposeAttentionPass,
-    DecomposeGeluPass,
-    DecomposePReluPass,
-    DecomposeReduceL2Pass,
-    FoldConstantGatherElements,
-    FuseGreedyCtcTopKPass,
-    FuseHardSwishPass,
-    FuseSkipLayerNormPass,
-    HostCtcDecodePass,
-    NchwImageInputPass,
-    PatchEmbedToMatMulPass,
-    SymmetrizeConvPadsPass,
-    UnpackScrfdHeads,
-)
-from .rknn._onnx import (
-    FloatifyNotEqual,
-    FloatifyPadKeep,
-    FloatifyPadMaskPass,
-    FloatImageInputPass,
-    FoldConcatIntoConv,
-    OpaqueZeroMul,
-    PinOpsetPass,
-    SeqMajorLogitsPass,
-    SplitLargeConvReduction,
-    SplitLargeReduction,
-    Uint8ImageInputPass,
-)
+
+class _Lazy(ModuleType):
+    """A module imported when first used, so that planning, which reads names and gates, imports no pass."""
+
+    def __getattr__(self, name: str) -> Any:
+        with _importing:  # threads that enter one package at different depths deadlock the import system
+            return getattr(import_module(self.__name__, __package__), name)
+
+
+if TYPE_CHECKING:
+    import onnx_ir as ir
+    from onnx_ir.passes import common
+    from onnxscript import rewriter
+
+    from .onnx import _ir, lowering
+    from .rknn import _onnx as rknn
+else:
+    ir, common, rewriter = _Lazy("onnx_ir"), _Lazy("onnx_ir.passes.common"), _Lazy("onnxscript.rewriter")
+    _ir, lowering, rknn = _Lazy(".onnx._ir"), _Lazy(".onnx.lowering"), _Lazy(".rknn._onnx")
 
 RKNPU = "RKNPU"  # the one target that is not an ORT execution provider: its rows run in `rknn compile`
 
@@ -59,7 +50,7 @@ class Rewrite:
     name: str
     # target -> what would retire the row there; held as data so it cannot drift off its row
     gates: Mapping[str, str]
-    transform: ir.passes.PassBase
+    transform: Callable[[], "ir.passes.PassBase"]  # made when a plan is applied
 
     def applies(self, ctx: RewriteContext) -> bool:
         return ctx.target in self.gates
@@ -82,7 +73,7 @@ REGISTRY = (
         gates={
             RKNPU: "a librknnrt with an int32 Equal kernel, which is what the whole mask island dies on",
         },
-        transform=FloatifyPadMaskPass(),
+        transform=lambda: rknn.FloatifyPadMaskPass(),
     ),
     Rewrite(
         name="decompose_attention",
@@ -95,7 +86,7 @@ REGISTRY = (
             "NvTensorRTRTXExecutionProvider": "nothing version-shaped: 10.13 through 11.1 all fail identically",
             RKNPU: "an rknn-toolkit2 that parses the op at the opset it lives in; the chain IS its sdpa matcher's",
         },
-        transform=DecomposeAttentionPass(),
+        transform=lambda: lowering.DecomposeAttentionPass(),
     ),
     Rewrite(
         name="broadcast_shape_workaround",
@@ -103,7 +94,7 @@ REGISTRY = (
             # two upstream bugs, both hit, so both edits are required
             "MIGraphXExecutionProvider": "a MIGraphX release carrying fixes for both upstream bugs",
         },
-        transform=BroadcastShapeWorkaroundPass(),
+        transform=lambda: lowering.BroadcastShapeWorkaroundPass(),
     ),
     Rewrite(
         name="decompose_reduce_l2",
@@ -111,14 +102,14 @@ REGISTRY = (
             # the release EP registers no ReduceL2 builder, so the norm and its Casts fall to a CPU partition
             "CoreMLExecutionProvider": "an ORT release carrying the upstreamed CoreML ReduceL2 builder",
         },
-        transform=DecomposeReduceL2Pass(),
+        transform=lambda: lowering.DecomposeReduceL2Pass(),
     ),
     Rewrite(
         name="decompose_prelu",
         gates={
             "MIGraphXExecutionProvider": "prelu joining MIGraphX's MLIR pointwise allowlist",
         },
-        transform=DecomposePReluPass(),
+        transform=lambda: lowering.DecomposePReluPass(),
     ),
     Rewrite(
         name="symmetrize_conv_pads",
@@ -126,7 +117,7 @@ REGISTRY = (
             # asymmetric padding makes MIGraphX insert launch-bound pad kernels around the conv
             "MIGraphXExecutionProvider": "a MIGraphX conv lowering that takes asymmetric padding, as its pooling does",
         },
-        transform=SymmetrizeConvPadsPass(),
+        transform=lambda: lowering.SymmetrizeConvPadsPass(),
     ),
     Rewrite(
         # never the NVIDIA backends: a middle-axis Split costs more there than the packed head does
@@ -136,7 +127,7 @@ REGISTRY = (
             "channels as over three narrow branches",
             RKNPU: "an RKNPU that places the head's row flatten on the NPU rather than the host",
         },
-        transform=RewritePass([UnpackScrfdHeads.rule()]),
+        transform=lambda: rewriter.RewritePass([lowering.UnpackScrfdHeads.rule()]),
     ),
     Rewrite(
         name="greedy_ctc_topk",
@@ -145,7 +136,7 @@ REGISTRY = (
             "TensorrtExecutionProvider": "nothing: already neutral, Myelin fuses ArgMax->TopK itself",
             "NvTensorRTRTXExecutionProvider": "nothing: already neutral, same Myelin fusion",
         },
-        transform=FuseGreedyCtcTopKPass(),
+        transform=lambda: lowering.FuseGreedyCtcTopKPass(),
     ),
     Rewrite(
         name="hard_swish",
@@ -154,7 +145,7 @@ REGISTRY = (
             "CUDAExecutionProvider": "an ORT release whose own optimizers fuse the pair before the EP sees it",
             "OpenVINOExecutionProvider": "an OpenVINO release registering HardSigmoidDecomposition on x86",
         },
-        transform=FuseHardSwishPass(),
+        transform=lambda: lowering.FuseHardSwishPass(),
     ),
     Rewrite(
         # never CoreML: im2col consumes the layout Transpose nchw_image_input matches on
@@ -166,7 +157,7 @@ REGISTRY = (
             "NvTensorRTRTXExecutionProvider": "the same cliff clearing, here a batch-invariant `correlation` layer",
             "OpenVINOExecutionProvider": "intel_gpu fixing its patchify-conv kernels",
         },
-        transform=PatchEmbedToMatMulPass(),
+        transform=lambda: lowering.PatchEmbedToMatMulPass(),
     ),
     Rewrite(
         name="im2col_patchify_ragged",
@@ -174,7 +165,7 @@ REGISTRY = (
             # ragged grids drop an edge, so the body slices to the tiling sub-region first
             "OpenVINOExecutionProvider": "an intel_gpu release whose selector stops preferring os_iyx_osv32 here",
         },
-        transform=PatchEmbedToMatMulPass(crop_ragged=True),
+        transform=lambda: lowering.PatchEmbedToMatMulPass(crop_ragged=True),
     ),
     Rewrite(
         # ahead of the input rows, which delete the layout Transpose it reads its NHWC view from
@@ -182,7 +173,7 @@ REGISTRY = (
         gates={
             RKNPU: "an RKNPU conv lowering that stops quadrant-splitting a kernel==stride patch conv",
         },
-        transform=PatchEmbedToMatMulPass(batch_dynamic=False),
+        transform=lambda: lowering.PatchEmbedToMatMulPass(batch_dynamic=False),
     ),
     Rewrite(
         name="skip_layer_norm",
@@ -193,7 +184,7 @@ REGISTRY = (
             "CUDAExecutionProvider": "an ORT SkipLayerNormFusion that emits the sum on output 3 rather than bailing",
             # never OpenVINO: it implements output 0 only, and the 4-output form is what pre-norm towers need
         },
-        transform=FuseSkipLayerNormPass(),
+        transform=lambda: lowering.FuseSkipLayerNormPass(),
     ),
     Rewrite(
         name="nchw_image_input",
@@ -201,7 +192,7 @@ REGISTRY = (
             # CoreML declines the uint8 Cast and its float NHWC input path is slow; the caller transposes
             "CoreMLExecutionProvider": "a CoreML EP whose float NHWC rank-4 input path stops being the slow one",
         },
-        transform=NchwImageInputPass(),
+        transform=lambda: lowering.NchwImageInputPass(),
     ),
     Rewrite(
         # carries the set's static-shape precondition: on a symbolic graph it declines, silently
@@ -209,7 +200,7 @@ REGISTRY = (
         gates={
             RKNPU: "an rknn.load_onnx that takes a uint8 graph input, leaving the preprocess where it is",
         },
-        transform=Uint8ImageInputPass(),
+        transform=lambda: rknn.Uint8ImageInputPass(),
     ),
     Rewrite(
         # declines outright once the uint8 row has retyped the input, so the two are exclusive by contract
@@ -217,7 +208,7 @@ REGISTRY = (
         gates={
             RKNPU: "the same rknn.load_onnx that takes a uint8 graph input",
         },
-        transform=FloatImageInputPass(),
+        transform=lambda: rknn.FloatImageInputPass(),
     ),
     Rewrite(
         name="host_ctc_decode",
@@ -225,49 +216,49 @@ REGISTRY = (
             # the only backend where the in-graph greedy-CTC head loses to a host decode at every batch
             "OpenVINOExecutionProvider": "ArgMax+ReduceMax costing less than the 18k-class readback",
         },
-        transform=HostCtcDecodePass(),
+        transform=lambda: lowering.HostCtcDecodePass(),
     ),
     Rewrite(
         name="raw_ctc_logits",
         gates={
             RKNPU: "an exSoftmax13 correct past 8192 classes on C, where the toolkit places it at any size",
         },
-        transform=ir.passes.Sequential(HostCtcDecodePass(), SeqMajorLogitsPass()),
+        transform=lambda: ir.passes.Sequential(lowering.HostCtcDecodePass(), rknn.SeqMajorLogitsPass()),
     ),
     Rewrite(
         name="floatify_not_equal",
         gates={
             RKNPU: "the same librknnrt int32 Equal kernel floatify_pad_mask waits on",
         },
-        transform=RewritePass([FloatifyNotEqual.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.FloatifyNotEqual.rule()]),
     ),
     Rewrite(
         name="floatify_pad_keep",
         gates={
             RKNPU: "an rknn-toolkit2 fold_constant that compares two Gathers' tables before merging them",
         },
-        transform=RewritePass([FloatifyPadKeep.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.FloatifyPadKeep.rule()]),
     ),
     Rewrite(
         name="opaque_zero_mul",
         gates={
             RKNPU: "an rknn-toolkit2 whose SDPA matcher survives fold_constant collapsing the batch zeros",
         },
-        transform=RewritePass([OpaqueZeroMul.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.OpaqueZeroMul.rule()]),
     ),
     Rewrite(
         name="fold_gather_elements",
         gates={
             RKNPU: "an rknn-toolkit2 whose _p_gatherelements_to_einsum handles the rank-2 form",
         },
-        transform=RewritePass([FoldConstantGatherElements.rule()]),
+        transform=lambda: rewriter.RewritePass([lowering.FoldConstantGatherElements.rule()]),
     ),
     Rewrite(
         name="decompose_gelu",
         gates={
             RKNPU: "an rknn-toolkit2 that ingests Gelu at the opset it pins, and a Tanh that is not a LUT",
         },
-        transform=DecomposeGeluPass(),
+        transform=lambda: lowering.DecomposeGeluPass(),
     ),
     Rewrite(
         # last of the rewrites, so the MatMuls the two decompositions and im2col leave it all count
@@ -275,7 +266,7 @@ REGISTRY = (
         gates={
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 1536-byte weight tile",
         },
-        transform=RewritePass([SplitLargeReduction.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.SplitLargeReduction.rule()]),
     ),
     Rewrite(
         # before the split row, which then sees branch-sized reductions rather than the concatenated one
@@ -283,14 +274,14 @@ REGISTRY = (
         gates={
             RKNPU: "an RKNPU whose concatenate costs less than the conv it feeds",
         },
-        transform=RewritePass([FoldConcatIntoConv.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.FoldConcatIntoConv.rule()]),
     ),
     Rewrite(
         name="split_large_conv_reduction",
         gates={
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 6144-byte conv weight tile",
         },
-        transform=RewritePass([SplitLargeConvReduction.rule()]),
+        transform=lambda: rewriter.RewritePass([rknn.SplitLargeConvReduction.rule()]),
     ),
     Rewrite(
         # its own row, not a target on the RKNPU one: the two thresholds are independently derived
@@ -299,14 +290,16 @@ REGISTRY = (
             "CoreMLExecutionProvider": "an ANE whose matmul throughput stops falling away past a 3584-deep "
             "contraction, or a shipped tower whose fc2 is narrower than that",
         },
-        transform=RewritePass([SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]),
+        transform=lambda: rewriter.RewritePass(
+            [rknn.SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]
+        ),
     ),
     Rewrite(
         name="pin_opset",
         gates={
             RKNPU: "an rknn-toolkit2 that ingests the opset the exporter writes",
         },
-        transform=PinOpsetPass(19),
+        transform=lambda: rknn.PinOpsetPass(19),
     ),
     Rewrite(
         # sorted first: floatify_pad_mask appends its island at the end of a graph it feeds in the middle
@@ -314,7 +307,7 @@ REGISTRY = (
         gates={
             RKNPU: "nothing: a graph the rows have edited has to say what it now computes",
         },
-        transform=ir.passes.Sequential(TopologicalSortPass(), ReinferShapesPass()),
+        transform=lambda: ir.passes.Sequential(common.TopologicalSortPass(), _ir.ReinferShapesPass()),
     ),
 )
 
@@ -337,15 +330,18 @@ def apply_rewrites(src_path: Path, plan: RewritePlan, out_dir: Path | None = Non
         return src_path
     model = ir.load(src_path)
     # Sequential, not any(): a short-circuit silently drops every rewrite after the first that matches
-    if not ir.passes.Sequential(*(rewrite.transform for rewrite in plan.rewrites))(model).modified:
+    if not ir.passes.Sequential(*(rewrite.transform() for rewrite in plan.rewrites))(model).modified:
         return src_path
     ir.passes.Sequential(
-        CanonicalizeConstantsPass(), RemoveUnusedNodesPass(), DeduplicateInitializersPass(), TopologicalSortPass()
+        _ir.CanonicalizeConstantsPass(),
+        common.RemoveUnusedNodesPass(),
+        common.DeduplicateInitializersPass(),
+        common.TopologicalSortPass(),
     )(model)
 
     tmp = out_path.with_suffix(".tmp")  # same dir: keeps sidecar refs valid, makes replace atomic
     if standalone:
-        save_with_external_data(model, tmp)
+        _ir.save_with_external_data(model, tmp)
     else:
         ir.save(model, tmp)
     tmp.replace(out_path)

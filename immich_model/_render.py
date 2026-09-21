@@ -31,6 +31,8 @@ _GENERATED_VALUE = re.compile(r"val_\d+")
 def plans() -> str:
     """Target -> the rewrites runtime.REGISTRY plans for it, in the order they run, and the settings the
     RKNPU compiler is given for every model, which no per-model rendering is the place to report."""
+    for rewrite in REGISTRY:
+        rewrite.transform()  # a row is made only when a plan is applied, so one that cannot be made fails here
     lines = [f"REWRITE_SET_VERSION {REWRITE_SET_VERSION}"]
     for target in _targets():
         # ort_version reaches the digest, never a gate, so any value renders the same plan
