@@ -44,6 +44,7 @@ RKNPU
     raw_ctc_logits
     floatify_not_equal
     floatify_pad_keep
+    host_token_embedding
     opaque_zero_mul
     fold_gather_elements
     decompose_gelu

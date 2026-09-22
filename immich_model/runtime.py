@@ -240,6 +240,13 @@ REGISTRY = (
         transform=lambda: rewriter.RewritePass([rknn.FloatifyPadKeep.rule()]),
     ),
     Rewrite(
+        name="host_token_embedding",
+        gates={
+            RKNPU: "an rknn-toolkit2 that doesn't stream the entire token embedding table",
+        },
+        transform=lambda: rknn.HostTokenEmbeddingPass(),
+    ),
+    Rewrite(
         name="opaque_zero_mul",
         gates={
             RKNPU: "an rknn-toolkit2 whose SDPA matcher survives fold_constant collapsing the batch zeros",

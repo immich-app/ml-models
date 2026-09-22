@@ -3,7 +3,7 @@
 import json
 import math
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import onnx_ir as ir
@@ -392,6 +392,31 @@ class FloatifyPadKeep(RewriteRuleClassBase):
         pad = float(np.flatnonzero(table.const_value.numpy() == 0.0)[0])
         delta = op.Sub(op.Cast(ids, to=int(ir.DataType.FLOAT)), const(pad))
         return op.Clip(op.Abs(delta), const(0.0), const(1.0))
+
+
+def token_gather(graph: ir.Graph) -> ir.Node | None:
+    uses = (use for ids in graph.inputs if ids.dtype is not None and ids.dtype.is_integer() for use in ids.uses())
+    gathers = (use.node for use in uses if use.node.op_type == "Gather" and use.idx == 1)
+    return next((node for node in gathers if (table := node.inputs[0]) and len(table.shape or ()) == 2), None)
+
+
+class HostTokenEmbeddingPass(ir.passes.InPlacePass):
+    """Take the token rows as an input and remove from the embedding table from the graph."""
+
+    def call(self, model: ir.Model) -> ir.passes.PassResult:
+        gather = token_gather(model.graph)
+        if gather is None:
+            return ir.passes.PassResult(model, False)
+        table, ids = cast(list[ir.Value], gather.inputs)  # a Gather has both
+        rows = ir.Shape([*(ids.shape or ()), *(table.shape or ())[1:]])
+        embeds = ir.Value(name="token_embeds", type=table.type, shape=rows)
+        gather.outputs[0].replace_all_uses_with(embeds)
+        model.graph.inputs.append(embeds)
+        model.graph.remove(gather, safe=True)
+        # the table goes with the rewrite's dead-code sweep; the ids stay for the towers that also pool or mask by them
+        for unused in [value for value in model.graph.inputs if not value.uses()]:
+            model.graph.inputs.remove(unused)
+        return ir.passes.PassResult(model, True)
 
 
 class OpaqueZeroMul(RewriteRuleClassBase):
