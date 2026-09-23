@@ -98,7 +98,7 @@ jobs:
 
   upload:
     if: ${{ inputs.environment && needs.export.outputs.changed }}
-    runs-on: ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner == 'ubuntu-latest' && 'ubuntu-latest' || 'pokedex-general' }}
     needs: export
     environment: ${{ inputs.environment }}
     steps:
