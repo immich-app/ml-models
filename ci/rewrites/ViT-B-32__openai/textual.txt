@@ -100,14 +100,15 @@ RKNPU static
     +12 Mul
     +12 Softmax axis=-1
     +12 Transpose perm=(0, 1, 3, 2)
-    494 nodes, weights c460266a69f3
-    contract {"dims":[{}]}
+    -1 Gather axis=0
+    493 nodes, weights 4527611d6749
+    contract {"dims":[{}],"embedding":"token_embedding.weight_fp16"}
     opset 19
     DecomposeAttention, _FlipCausalAttention x168 e3c7aa4c
     SplitLargeReduction x132 d3b9957d
     _EotOneHotSelect x3 b5dd8d0a
     _EotSelectBeforeLayerNorm, _EotOneHotSelect x1 9780cd73
-    _Fp16TokenEmbedding x2 777a3503
+    _Fp16TokenEmbedding x1 ee8d996d
     unstamped x188 694b0bba
 
 TensorrtExecutionProvider
