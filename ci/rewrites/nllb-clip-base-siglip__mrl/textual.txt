@@ -107,19 +107,19 @@ RKNPU static
     +12 Mul
     +12 Softmax axis=-1
     +12 Transpose perm=(0, 1, 3, 2)
+    -2 Gather axis=0
     +1 Abs
     +1 Cast to=1
     +1 Clip
-    -1 Gather axis=0
     +1 Sub
-    884 nodes, weights 50d734f94c0b
-    contract {"dims":[{}]}
+    883 nodes, weights 4951d39f6536
+    contract {"dims":[{}],"embedding":"text.transformer.embed_tokens.weight_fp16"}
     opset 19
     DecomposeAttention x168 e5e34075
     FloatifyPadKeep x4 49f1d7fc
     SplitLargeReduction x576 de19bfa3
     _ConstantifyReshapeTarget x1 018d14a3
-    _FoldEmbeddingScale, _Fp16TokenEmbedding, _Fp16TokenEmbedding x2 52890805
+    _FoldEmbeddingScale, _Fp16TokenEmbedding, _Fp16TokenEmbedding x1 ee8d996d
     _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 03ddb995
     _SelectBeforeLayerNorm x1 06a4559b
     unstamped x131 870d5eef

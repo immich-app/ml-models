@@ -11,7 +11,7 @@ import onnx_ir as ir
 
 from .constants import RKNN_SOCS, dim_sets_of, max_dims
 from .rknn._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config
-from .rknn.compile import _pin, contract
+from .rknn.compile import _pin, contract, host_embedding
 from .runtime import (
     REGISTRY,
     REWRITE_SET_VERSION,
@@ -31,6 +31,8 @@ _GENERATED_VALUE = re.compile(r"val_\d+")
 def plans() -> str:
     """Target -> the rewrites runtime.REGISTRY plans for it, in the order they run, and the settings the
     RKNPU compiler is given for every model, which no per-model rendering is the place to report."""
+    for rewrite in REGISTRY:
+        rewrite.transform()  # a row is made only when a plan is applied, so one that cannot be made fails here
     lines = [f"REWRITE_SET_VERSION {REWRITE_SET_VERSION}"]
     for target in _targets():
         # ort_version reaches the digest, never a gate, so any value renders the same plan
@@ -135,7 +137,7 @@ def rewrites(path: Path) -> str:
                     lines += [f"    config {config}"]
                 if target == RKNPU:
                     # the label pins MaxShape only, so dropping a narrower canvas would move nothing else
-                    lines += [f"    contract {contract(dim_sets_of(path)[index].dims)}"]
+                    lines += [f"    contract {contract(dim_sets_of(path)[index].dims, host_embedding(path))}"]
                     # pin_opset decides what rknn.load_onnx ingests, and the graph rendering shows the export's
                     lines += [f"    opset {ir.load(out).opset_imports['']}"]
                 lines += [f"    {rule} x{count} {wiring[rule]}" for rule, count in sorted(stamps.items())]

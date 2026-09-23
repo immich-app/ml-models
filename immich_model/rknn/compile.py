@@ -9,26 +9,37 @@ from typing import Any, cast
 from ..constants import RKNN_SOCS, SUBMODELS, dim_sets_of, dims_label, max_dims, variant_dir
 from ..onnx._ir import ReinferShapesPass
 from ..runtime import RKNPU, RewriteContext, apply_rewrites, plan_rewrites
-from ._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config
+from ._onnx import DO_QUANTIZATION, RKNN_CONFIG, rknn_config, token_gather
+
+Group = Sequence[Mapping[str, int]]
 
 
-def contract(group: Sequence[Mapping[str, int]]) -> str:
+def contract(group: Group, embedding: str | None = None) -> str:
     """What a binary declares it serves, carried in `custom_string` and read back with `rknn_query`."""
     widest = max_dims(group)
     ordered = [widest, *(dims for dims in group if dims != widest)]
-    return json.dumps({"dims": [dict(dims) for dims in ordered]}, separators=(",", ":"))
+    declared = {"dims": [dict(dims) for dims in ordered]} | ({"embedding": embedding} if embedding else {})
+    return json.dumps(declared, separators=(",", ":"))
+
+
+def host_embedding(source: Path) -> str | None:
+    import onnx_ir as ir
+
+    gather = token_gather(ir.load(source).graph)
+    return gather.inputs[0].name if gather is not None and gather.inputs[0] is not None else None
 
 
 def _export_platform(
     onnx_path: Path,
     output_dir: Path,
     target_platform: str,
-    group: Sequence[Mapping[str, int]],
+    group: Group,
     inputs: list[str],
     shapes: list[list[list[int]]],
     config_extras: dict[str, Any] | None = None,
     disable_rules: Sequence[str] = (),
     variant: str = "",
+    embedding: str | None = None,
 ) -> None:
     from rknn.api import RKNN
 
@@ -45,7 +56,7 @@ def _export_platform(
     rknn = RKNN(verbose=False)
     rknn.config(
         target_platform=target_platform,
-        custom_string=contract(group),
+        custom_string=contract(group, embedding),
         # MaxShape is dynamic_input[0], and eval_perf/eval_memory only ever report that one. A single shape
         # has nothing to be dynamic about; asking anyway drops toolkit passes and only slows the compile.
         **({"dynamic_input": shapes} if len(shapes) > 1 else {}),
@@ -63,7 +74,7 @@ def _export_platform(
         json.dumps(
             {
                 "nodes": len(list(ir.traversal.RecursiveGraphIterator(prepared.graph))),
-                "contract": contract(group),
+                "contract": contract(group, embedding),
                 "input": {"name": inputs[0], "shapes": [shape[0] for shape in shapes]},
             }
         )
@@ -78,12 +89,13 @@ def _export_platforms(
 ) -> None:
     source = input_dir / "model.onnx"
     sets = dim_sets_of(source)
+    embedding = host_embedding(source)
     for group in sets:
         variant = variant_dir(sets, group.dims[0])
         socs = []
         for soc in target_socs or RKNN_SOCS:
             model_path = output_dir / "rknpu" / soc / variant / "model.rknn"
-            missing = stale(model_path, contract(group.dims))
+            missing = stale(model_path, contract(group.dims, embedding))
             if cache and not missing:
                 print(f"{model_path} already exists, skipping")
                 continue
@@ -91,7 +103,7 @@ def _export_platforms(
             socs.append(soc)
         if not socs:
             continue
-        _export_set(source, output_dir, socs, group.dims, variant)
+        _export_set(source, output_dir, socs, group.dims, variant, embedding)
 
 
 def _build(tx: Connection, args: tuple[Any, ...]) -> None:
@@ -103,7 +115,7 @@ def _build(tx: Connection, args: tuple[Any, ...]) -> None:
 
 
 def _export_set(
-    source: Path, output_dir: Path, socs: list[str], group: Sequence[Mapping[str, int]], variant: str
+    source: Path, output_dir: Path, socs: list[str], group: Group, variant: str, embedding: str | None
 ) -> None:
     with tempfile.TemporaryDirectory() as work_dir:
         # spec and DMA config come off the PREPARED graph, which is the one that retired the shift
@@ -112,14 +124,14 @@ def _export_set(
         widest = max_dims(group)
         rest = [dims for dims in group if dims != widest]
         onnx_path = _prepare(source, work / "max", widest)
-        config_extras = rknn_config(onnx_path)
+        extras = rknn_config(onnx_path)
         inputs, max_shape = _input_spec(onnx_path)
         ordered = [max_shape] + [_input_spec(_prepare(source, work / dims_label(c), c))[1] for c in rest]
 
         def attempt(soc: str, disable_rules: Sequence[str]) -> None:
             ctx = get_context("fork")
             rx, tx = ctx.Pipe(duplex=False)
-            args = (onnx_path, output_dir, soc, group, inputs, ordered, config_extras, disable_rules, variant)
+            args = (onnx_path, output_dir, soc, group, inputs, ordered, extras, disable_rules, variant, embedding)
             child = ctx.Process(target=_build, args=(tx, args))  # ensure no residual memory usage
             child.start()
             tx.close()

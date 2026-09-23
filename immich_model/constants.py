@@ -123,30 +123,34 @@ class UncoveredDims(RuntimeError):
     """A graph leaves a non-batch dim free that no declared set names."""
 
 
+FACE_DETECTION_SIZE = 640
+OCR_DETECTION_RATIOS = (1, 4 / 3, 3 / 2, 2)
+OCR_DETECTION_SIZES = (736, 1088, 1440)
+OCR_RECOGNITION_WIDTHS = (224, 320, 448, 640, 1280, 2048)
+
+
+def ocr_canvases(size: int) -> list[dict[str, int]]:
+    return [
+        {"height": height, "width": width}
+        for height, width in dict.fromkeys(
+            chain.from_iterable(
+                ((math.ceil(ratio * size / 32) * 32, size), (size, math.ceil(ratio * size / 32) * 32))
+                for ratio in OCR_DETECTION_RATIOS
+            )
+        )
+    ]
+
+
 def declared_dims(task: ModelTask, submodel: Submodel) -> list[DimSet]:
     """The sets this (task, submodel) deploys at, without opening any graph. RKNPU fixes its shapes at
     compile time, one set being one binary."""
     match task, submodel:
         case ModelTask.OCR, Submodel.DETECTION:
-            return [
-                DimSet(
-                    [
-                        {"height": height, "width": width}
-                        for height, width in dict.fromkeys(
-                            chain.from_iterable(
-                                ((math.ceil(ratio * size / 32) * 32, size), (size, math.ceil(ratio * size / 32) * 32))
-                                for ratio in (1, 4 / 3, 3 / 2, 2)
-                            )
-                        )
-                    ],
-                    f"res{size}",
-                )
-                for size in (736, 1088, 1440)
-            ]
+            return [DimSet(ocr_canvases(size), f"res{size}") for size in OCR_DETECTION_SIZES]
         case ModelTask.OCR, Submodel.RECOGNITION:
-            return [DimSet([{"width": size} for size in (224, 320, 448, 640, 1280, 2048)])]
+            return [DimSet([{"width": width} for width in OCR_RECOGNITION_WIDTHS])]
         case ModelTask.FACIAL_RECOGNITION, Submodel.DETECTION:
-            return [DimSet([{"height": 640, "width": 640}])]
+            return [DimSet([{"height": FACE_DETECTION_SIZE, "width": FACE_DETECTION_SIZE}])]
         case _:
             return [DimSet([{}])]
 

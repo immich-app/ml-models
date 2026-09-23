@@ -12,8 +12,8 @@ dependencies = [
   "numpy>=1.26",
   "onnx>=1.16.1",
   "onnx-ir>=0.2.1",
-  "onnxruntime>=1.18.2",
   "onnxscript>=0.7.0",
+  "safetensors>=0.7,<0.8", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
 ]
 
 [project.optional-dependencies]
@@ -23,9 +23,9 @@ export = [
   "tenacity>=9.0.0",
   "kaggle>=1.7.4.2",
   "ml-dtypes>=0.5.0",
+  "onnxruntime>=1.18.2",
   "open-clip-torch>=2.31.0",
   "multilingual-clip>=1.0.10",
-  "safetensors>=0.7,<0.8", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
   "transformers>=4.49.0",
   "clip-benchmark",
   "numpy>=2.1.0",
@@ -33,9 +33,9 @@ export = [
   "torchvision",
 ]
 rknn = [
+  "onnxruntime>=1.18.2",
   "rknn-toolkit2>=2.3.0",
   "pyyaml>=6",
-  "safetensors>=0.7,<0.8",
   "setuptools<81",
   "torch",
   "typer>=0.15.2",

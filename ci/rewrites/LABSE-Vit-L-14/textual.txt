@@ -106,15 +106,16 @@ RKNPU static
     -12 Gelu approximate=none
     +12 Softmax axis=-1
     +12 Transpose perm=(0, 1, 3, 2)
-    622 nodes, weights c1b2feb7b330
-    contract {"dims":[{}]}
+    -1 Gather axis=0
+    621 nodes, weights 1c015133beef
+    contract {"dims":[{}],"embedding":"transformer.embeddings.word_embeddings.weight_fp16"}
     opset 19
     DecomposeAttention x168 41dfedfa
     DecomposeGelu x60 0b43d613
     SplitLargeReduction x204 a55486b0
     _AdditivePadMask, _BroadcastMaskRebuild, _BroadcastMaskRebuild, _BroadcastMaskRebuild x5 1ae3bf22
     _FloatMaskCount x3 ccfe7631
-    _Fp16TokenEmbedding x2 871722a1
+    _Fp16TokenEmbedding x1 ee8d996d
     unstamped x180 33decfc9
 
 TensorrtExecutionProvider
