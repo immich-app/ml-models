@@ -6,25 +6,27 @@ CUDAExecutionProvider
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)
-    216 nodes, weights 9baeda5351d0
-    FuseBatchNormIntoConv x82 e269b1c6
+    216 nodes, weights aebda7709ee4
+    FuseBatchNormIntoConv x81 fa780261
     FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
     _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
-    _FoldBiasAdd x6 fff058bc
-    unstamped x111 714b42e5
+    _FoldBiasAdd x4 f0f7fd3e
+    _SubpixelDbHead, _FoldBiasAdd, _FoldBiasAdd, FuseBatchNormIntoConv x9 b0f1b435
+    unstamped x105 9aaf9829
 
 MIGraphXExecutionProvider
     -2 Conv auto_pad=SAME_UPPER dilations=(1, 1) group=1 kernel_shape=(2, 2) strides=(1, 1)
     +2 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(1, 1)
-    217 nodes, weights 76826f1f1013
-    FuseBatchNormIntoConv x80 f811511a
+    217 nodes, weights a8b136ee54b2
+    FuseBatchNormIntoConv x79 ebcee243
     FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
     SymmetrizeConvPads, FuseBatchNormIntoConv x2 0681b679
     _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
-    _FoldBiasAdd x6 fff058bc
-    unstamped x112 823f9e9e
+    _FoldBiasAdd x4 f0f7fd3e
+    _SubpixelDbHead, _FoldBiasAdd, _FoldBiasAdd, FuseBatchNormIntoConv x9 b0f1b435
+    unstamped x106 b0dc9964
 
 NvTensorRTRTXExecutionProvider
     unchanged
@@ -43,18 +45,19 @@ RKNPU height=1472 width=736
     +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    390 nodes, weights be31199e4857
+    390 nodes, weights 0505ae709c27
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     contract {"dims":[{"height":1472,"width":736},{"height":736,"width":736},{"height":992,"width":736},{"height":736,"width":992},{"height":1120,"width":736},{"height":736,"width":1120},{"height":736,"width":1472}]}
     opset 19
     FoldConcatIntoConv, FuseBatchNormIntoConv x88 18ed6894
-    FuseBatchNormIntoConv x74 0d776a88
+    FuseBatchNormIntoConv x73 a39912af
     FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
-    SplitLargeConvReduction x112 4a2f750c
+    SplitLargeConvReduction x112 e3e37a07
     _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
-    _FoldBiasAdd x6 eb017eb5
-    unstamped x93 e8b9902a
+    _FoldBiasAdd x4 52143e81
+    _SubpixelDbHead, _FoldBiasAdd, _FoldBiasAdd, FuseBatchNormIntoConv x9 b0f1b435
+    unstamped x87 e3291010
 
 RKNPU height=2176 width=1088
     +72 Add
@@ -67,18 +70,19 @@ RKNPU height=2176 width=1088
     +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    390 nodes, weights be31199e4857
+    390 nodes, weights 0505ae709c27
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     contract {"dims":[{"height":2176,"width":1088},{"height":1088,"width":1088},{"height":1472,"width":1088},{"height":1088,"width":1472},{"height":1632,"width":1088},{"height":1088,"width":1632},{"height":1088,"width":2176}]}
     opset 19
     FoldConcatIntoConv, FuseBatchNormIntoConv x88 18ed6894
-    FuseBatchNormIntoConv x74 0d776a88
+    FuseBatchNormIntoConv x73 a39912af
     FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
-    SplitLargeConvReduction x112 4a2f750c
+    SplitLargeConvReduction x112 e3e37a07
     _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
-    _FoldBiasAdd x6 eb017eb5
-    unstamped x93 e8b9902a
+    _FoldBiasAdd x4 52143e81
+    _SubpixelDbHead, _FoldBiasAdd, _FoldBiasAdd, FuseBatchNormIntoConv x9 b0f1b435
+    unstamped x87 e3291010
 
 RKNPU height=2880 width=1440
     +72 Add
@@ -91,18 +95,19 @@ RKNPU height=2880 width=1440
     +1 Conv dilations=(1, 1) group=1 kernel_shape=(3, 3) pads=(1, 1, 1, 1) strides=(2, 2)
     -1 Sub
     -1 Transpose perm=(0, 3, 1, 2)
-    390 nodes, weights be31199e4857
+    390 nodes, weights 0505ae709c27
     config {'mean_values': [[127.5, 127.5, 127.5]], 'std_values': [[1.0, 1.0, 1.0]]}
     contract {"dims":[{"height":2880,"width":1440},{"height":1440,"width":1440},{"height":1920,"width":1440},{"height":1440,"width":1920},{"height":2176,"width":1440},{"height":1440,"width":2176},{"height":1440,"width":2880}]}
     opset 19
     FoldConcatIntoConv, FuseBatchNormIntoConv x88 18ed6894
-    FuseBatchNormIntoConv x74 0d776a88
+    FuseBatchNormIntoConv x73 a39912af
     FuseBatchNormIntoConv, _FoldBiasAdd x4 b91a3035
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 1790608a
-    SplitLargeConvReduction x112 4a2f750c
+    SplitLargeConvReduction x112 e3e37a07
     _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 4a5f8b7f
-    _FoldBiasAdd x6 eb017eb5
-    unstamped x93 e8b9902a
+    _FoldBiasAdd x4 52143e81
+    _SubpixelDbHead, _FoldBiasAdd, _FoldBiasAdd, FuseBatchNormIntoConv x9 b0f1b435
+    unstamped x87 e3291010
 
 TensorrtExecutionProvider
     unchanged
