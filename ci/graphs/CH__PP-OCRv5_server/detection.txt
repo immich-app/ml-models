@@ -433,7 +433,7 @@
    val_2 = Concat <axis: int = 1> (val_1, "p2o.pd_op.relu.58.0")
    val_3 = Conv <kernel_shape: ints = [3, 3], pads: ints = [1, 1, 1, 1]> (val_2, subpixel_wide_w, subpixel_wide_b)
    val_4 = Relu (val_3)
-   val_5 = Conv <group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0]> (val_4, subpixel_narrow_w, subpixel_narrow_b)
+   val_5 = Conv <kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0]> (val_4, subpixel_narrow_w, subpixel_narrow_b)
    val_6 = Sigmoid (val_5)
    val_7 = Add (val_1, val_6)
    "Add.167" = DepthToSpace <blocksize: int = 2> (val_7)
@@ -669,7 +669,7 @@ p2o.pd_op.conv2d.79.0_bias FLOAT[32] 38723a2e5e8a
 p2o.pd_op.conv2d.89.0_bias FLOAT[64] 4761b58748c8
 p2o.pd_op.conv2d.90.0_bias FLOAT[32] 38723a2e5e8a
 subpixel_narrow_b FLOAT[4] 4d228fb6dc9a
-subpixel_narrow_w FLOAT[4,64,1,1] 61cacca266a1
+subpixel_narrow_w FLOAT[4,256,1,1] 31a6598992d3
 subpixel_shrink_b FLOAT[4] af73f61c8e57
 subpixel_shrink_w FLOAT[4,64,1,1] 7b36290912fa
 subpixel_wide_b FLOAT[256] 63aeafc9ba1f

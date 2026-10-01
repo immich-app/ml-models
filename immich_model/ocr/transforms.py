@@ -872,8 +872,9 @@ class _SubpixelDbHead(RewriteRuleClassBase):
             phases[a * 2 + b, :, 4:, row + 1, col + 1] += wide[:, 1:, dy, dx]
         wide_w, wide_b = init("wide_w", phases.reshape(-1, *phases.shape[2:])), init("wide_b", phased(b3))
         refined = op.Relu(op.Conv(op.Concat(shrink, f, axis=1), wide_w, wide_b, kernel_shape=[3, 3], pads=[1, 1, 1, 1]))
-        narrow_w, narrow_b = init("narrow_w", phased(w1)), init("narrow_b", phased(b1))
-        narrow = op.Conv(refined, narrow_w, narrow_b, kernel_shape=[1, 1], pads=zero, group=4)
+        # dense with block-diagonal weights, not grouped: ORT leaves NCHWc on x86 around it and RKNPU splits it
+        narrow_w = init("narrow_w", np.kron(np.eye(4), array(w1).reshape(1, -1)).reshape(4, -1, 1, 1))
+        narrow = op.Conv(refined, narrow_w, init("narrow_b", phased(b1)), kernel_shape=[1, 1], pads=zero)
         return op.DepthToSpace(op.Add(shrink, op.Sigmoid(narrow)), blocksize=2)
 
 
