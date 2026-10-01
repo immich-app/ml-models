@@ -1,7 +1,6 @@
 """The RKNPU-only rewrite rows and the `rknn.config` extras derived beside them; no toolkit import needed."""
 
 import json
-import math
 from pathlib import Path
 from typing import Any, cast
 
@@ -10,6 +9,7 @@ import onnx_ir as ir
 from onnxscript.rewriter.pattern import MatchResult, RewriteRuleClassBase
 
 from ..onnx._ir import make_init, make_node, sole_consumer
+from ..onnx.lowering import cannot_sum, sum_partials
 
 # the mean the DMA now owes the graph, carried on the graph so the compiler reads both off one file
 _DMA_MEAN = "rknn_input_mean"
@@ -110,211 +110,9 @@ class FloatImageInputPass(ir.passes.InPlacePass):
         return ir.passes.PassResult(model, True)
 
 
-class _SplitReduction(RewriteRuleClassBase):
-    """Split a contraction whose fp16 weight column outgrows ``threshold_bytes`` into summed sub-contractions."""
-
-    def __init__(
-        self, *, threshold_bytes: int = 1536, subtile_bytes: int = 1024, elem_bytes: int = 2, name: str | None = None
-    ) -> None:
-        super().__init__(name=name)
-        assert subtile_bytes <= threshold_bytes, (
-            "sub-filters must fall under the split threshold (else non-terminating)"
-        )
-        self._threshold = threshold_bytes
-        self._subtile = subtile_bytes
-        self._elem = elem_bytes
-
-    @staticmethod
-    def _rows(tensor: ir.TensorProtocol, lo: int, hi: int, name: str) -> ir.TensorProtocol:
-        """Rows [lo, hi) of a 2-D weight: a view of the parent's bytes where it provably stores exactly its own
-        elements contiguously on disk, and a copy otherwise."""
-        columns = int(tensor.shape[1])
-        itemsize = tensor.dtype.itemsize
-        stride = columns * int(itemsize)
-        if (
-            isinstance(tensor, ir.ExternalTensor)
-            and tensor.offset is not None
-            and float(itemsize).is_integer()
-            and tensor.length == int(tensor.shape[0]) * stride
-        ):
-            return ir.ExternalTensor(
-                location=tensor.location,
-                offset=tensor.offset + lo * stride,
-                length=(hi - lo) * stride,
-                dtype=tensor.dtype,
-                shape=ir.Shape((hi - lo, columns)),
-                name=name,
-                base_dir=tensor.base_dir,
-            )
-        return ir.tensor(np.ascontiguousarray(tensor.numpy()[lo:hi]), name=name)
-
-    def _split(self, op: Any, x: Any, c_in: int, piece: Any) -> Any:
-        """The sum of ``piece(i, slice of x, lo, hi)`` over the sub-reductions of a ``c_in``-deep contraction."""
-        splits = -(-c_in * self._elem // self._subtile)
-        axis = len(x.shape) - 1
-        bounds = [round(i * c_in / splits) for i in range(splits + 1)]
-        total: Any = None
-        for i in range(splits):
-            lo, hi = bounds[i], bounds[i + 1]
-            part = op.Slice(
-                x,
-                op.Constant(value=ir.tensor(np.array([lo], np.int64))),
-                op.Constant(value=ir.tensor(np.array([hi], np.int64))),
-                op.Constant(value=ir.tensor(np.array([axis], np.int64))),
-            )
-            total = piece(i, part, lo, hi) if total is None else op.Add(total, piece(i, part, lo, hi))
-        return total
-
-
-class SplitLargeReduction(_SplitReduction):
-    """Split a MatMul whose fp16 weight column outgrows the RKNPU's high-utilization band into
-    channel-parallel sub-MatMuls. ``threshold_bytes`` is the top of that band, NOT the userguide's knee."""
-
-    def pattern(self, op: Any, x: Any, w: Any) -> Any:
-        return op.MatMul(x, w, _outputs=["reduction"])
-
-    def check(self, context: Any, x: Any, w: Any, reduction: Any) -> MatchResult:
-        result = MatchResult()
-        weight = w.const_value
-        if weight is None or len(weight.shape) != 2:
-            return result.fail("weight is not a 2-D constant")
-        if int(weight.shape[0]) * self._elem <= self._threshold:
-            return result.fail("filter is inside the high-utilization band")
-        if x.shape is None:
-            return result.fail("reduction input has no static rank")
-        return result
-
-    def rewrite(self, op: Any, x: Any, w: Any, reduction: Any) -> Any:
-        weight = w.const_value
-        base = w.name or reduction.name
-        return self._split(
-            op,
-            x,
-            int(weight.shape[0]),
-            lambda i, part, lo, hi: op.MatMul(
-                part, op.initializer(self._rows(weight, lo, hi, f"{base}_split{i}"), name=f"{base}_split{i}")
-            ),
-        )
-
-
-class SplitLargeGemmReduction(_SplitReduction):
-    """The same split for a 2-D Gemm, the form a classifier head keeps its weight and bias in; the bias rides the
-    first sub-Gemm."""
-
-    def pattern(self, op: Any, x: Any, w: Any, b: Any) -> Any:
-        return op.Gemm(x, w, b, _allow_other_attributes=True, _outputs=["reduction"])
-
-    def check(self, context: Any, x: Any, w: Any, b: Any, reduction: Any) -> MatchResult:
-        result = MatchResult()
-        gemm = reduction.producer()
-        attributes = gemm.attributes
-        if attributes.get_float("alpha", 1.0) != 1.0 or attributes.get_float("beta", 1.0) != 1.0:
-            return result.fail("a scaled Gemm")
-        if attributes.get_int("transA", 0):
-            return result.fail("a transposed reduction input")
-        weight = w.const_value
-        if weight is None or len(weight.shape) != 2:
-            return result.fail("weight is not a 2-D constant")
-        if int(weight.shape[1 if attributes.get_int("transB", 0) else 0]) * self._elem <= self._threshold:
-            return result.fail("filter is inside the high-utilization band")
-        if x.shape is None:
-            return result.fail("reduction input has no static rank")
-        return result
-
-    def rewrite(self, op: Any, x: Any, w: Any, b: Any, reduction: Any) -> Any:
-        weight = w.const_value
-        transposed = reduction.producer().attributes.get_int("transB", 0)
-        base = w.name or reduction.name
-
-        def piece(i: int, part: Any, lo: int, hi: int) -> Any:
-            name = f"{base}_split{i}"
-            # a transposed weight's sub-reduction is a column range, which no byte range of the parent holds
-            rows = (
-                ir.tensor(np.ascontiguousarray(weight.numpy()[:, lo:hi]), name=name)
-                if transposed
-                else self._rows(weight, lo, hi, name)
-            )
-            return op.Gemm(part, op.initializer(rows, name=name), *([b] if i == 0 else []), transB=transposed)
-
-        return self._split(op, x, int(weight.shape[1 if transposed else 0]), piece)
-
-
-# the band the RKNPU keeps its MAC array busy in; either floor alone lets a partial conv fall out the bottom
-_HIGH_UTILIZATION_BYTES = 6144
-_SUBTILE_BYTES = 4096
-_SPLIT_CHANNEL_FLOOR = 32
 _BRANCH_CHANNEL_FLOOR = 16
 # a conv with nothing to reuse its weight over is weight-streaming bound, where summing partials only adds nodes
 _REUSE_POSITIONS = 64
-
-
-def _tile_bytes(shape: Any) -> int:
-    return int(shape[1]) * int(shape[2]) * int(shape[3]) * 2  # fp16 on the NPU whatever the graph declares
-
-
-def _i64(op: Any, value: int) -> Any:
-    return op.Constant(value=ir.tensor(np.array([value], np.int64)))
-
-
-def _cannot_sum(w: Any, x: Any, conv: Any) -> str | None:
-    """Why this Conv cannot be re-expressed as partial convs summed, or None if it can."""
-    weight = w.const_value
-    if weight is None or len(weight.shape) != 4:
-        return "weight is not a 4-D constant"
-    node = conv.producer()
-    if node.attributes.get_int("group", 1) != 1:
-        return "a grouped conv does not reduce over the whole channel axis"
-    dims = x.shape
-    if dims is None or len(dims) != 4 or any(not isinstance(d, int) for d in dims[2:]):
-        return "conv input has no static spatial extent"
-    strides = node.attributes.get_ints("strides", [1, 1])
-    if math.prod(int(d) // s for d, s in zip(dims[2:], strides)) < _REUSE_POSITIONS:
-        return "too few output positions to reuse the weight over"
-    return None
-
-
-def _sum_partials(op: Any, conv: Any, weight: np.ndarray, parts: Any, base: str) -> Any:
-    """One conv per (source, channel range) of the weight, summed; the bias is per-output so it rides one."""
-    node = conv.producer()
-    bias = node.inputs[2] if len(node.inputs) > 2 else None
-    total: Any = None
-    for index, (source, lo, hi) in enumerate(parts):
-        piece = op.Conv(
-            source,
-            op.initializer(
-                ir.tensor(np.ascontiguousarray(weight[:, lo:hi]), name=f"{base}_part{index}"),
-                name=f"{base}_part{index}",
-            ),
-            *([bias] if total is None and bias is not None else []),
-            **node.attributes,
-        )
-        total = piece if total is None else op.Add(total, piece)
-    return total
-
-
-class SplitLargeConvReduction(RewriteRuleClassBase):
-    """Split a dense Conv whose weight tile outgrows the high-utilization band into partial convs summed,
-    the RKNPU stalling its MAC array on the reduction otherwise."""
-
-    def pattern(self, op: Any, x: Any, w: Any) -> Any:
-        return op.Conv(x, w, _allow_other_inputs=True, _allow_other_attributes=True, _outputs=["conv"])
-
-    def check(self, context: Any, x: Any, w: Any, conv: Any) -> MatchResult:
-        result = MatchResult()
-        if reason := _cannot_sum(w, x, conv):
-            return result.fail(reason)
-        if _tile_bytes(w.const_value.shape) <= _HIGH_UTILIZATION_BYTES:
-            return result.fail("filter is inside the high-utilization band")
-        return result
-
-    def rewrite(self, op: Any, x: Any, w: Any, conv: Any) -> Any:
-        weight = w.const_value.numpy()
-        c_in = int(weight.shape[1])
-        # a wide kernel reaches the subtile at too few channels to fill the array, so the two bounds compete
-        splits = min(-(-_tile_bytes(weight.shape) // _SUBTILE_BYTES), max(c_in // _SPLIT_CHANNEL_FLOOR, 1))
-        edges = [round(i * c_in / splits) for i in range(splits + 1)]
-        parts = [(op.Slice(x, _i64(op, lo), _i64(op, hi), _i64(op, 1)), lo, hi) for lo, hi in zip(edges, edges[1:])]
-        return _sum_partials(op, conv, weight, parts, w.name or conv.name)
 
 
 class FoldConcatIntoConv(RewriteRuleClassBase):
@@ -326,7 +124,7 @@ class FoldConcatIntoConv(RewriteRuleClassBase):
 
     def check(self, context: Any, x: Any, w: Any, cat: Any, conv: Any) -> MatchResult:
         result = MatchResult()
-        if reason := _cannot_sum(w, cat, conv):
+        if reason := cannot_sum(w, cat, conv, _REUSE_POSITIONS):
             return result.fail(reason)
         node = cat.producer()
         if node.attributes.get_int("axis", 0) != 1 or len(node.inputs) < 2:
@@ -346,7 +144,7 @@ class FoldConcatIntoConv(RewriteRuleClassBase):
         for branch in cat.producer().inputs:
             parts.append((branch, offset, offset + int(branch.shape[1])))
             offset = parts[-1][2]
-        return _sum_partials(op, conv, w.const_value.numpy(), parts, w.name or conv.name)
+        return sum_partials(op, conv, w.const_value.numpy(), parts, w.name or conv.name)
 
 
 CLASS_TILE = 2048

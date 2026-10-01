@@ -273,7 +273,9 @@ REGISTRY = (
         gates={
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 1536-byte weight tile",
         },
-        transform=lambda: rewriter.RewritePass([rknn.SplitLargeReduction.rule()]),
+        transform=lambda: rewriter.RewritePass(
+            [lowering.SplitLargeReduction.rule(threshold_bytes=1536, subtile_bytes=1024)]
+        ),
     ),
     Rewrite(
         # before the split row, which then sees branch-sized reductions rather than the concatenated one
@@ -288,7 +290,15 @@ REGISTRY = (
         gates={
             RKNPU: "an RKNPU whose MAC utilization stops falling away above a 6144-byte conv weight tile",
         },
-        transform=lambda: rewriter.RewritePass([rknn.SplitLargeConvReduction.rule()]),
+        # either floor alone lets a partial conv fall out the bottom of the band; a conv with fewer than 64 outputs to
+        # reuse its weight over is weight-streaming bound, where summing partials only adds nodes
+        transform=lambda: rewriter.RewritePass(
+            [
+                lowering.SplitLargeConvReduction.rule(
+                    threshold_bytes=6144, subtile_bytes=4096, channel_floor=32, reuse_positions=64
+                )
+            ]
+        ),
     ),
     Rewrite(
         # its own row, not a target on the RKNPU one: the two thresholds are independently derived
@@ -298,20 +308,20 @@ REGISTRY = (
             "contraction, or a shipped tower whose fc2 is narrower than that",
         },
         transform=lambda: rewriter.RewritePass(
-            [rknn.SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]
+            [lowering.SplitLargeReduction.rule(threshold_bytes=7168, subtile_bytes=2048)]
         ),
     ),
     Rewrite(
         # K below 8192 keeps intel_gpu off both the untransposed-weight FullyConnected (#36437, wrong on GPUs
-        # without XMX until #36883) and the one-kernel GEMV the 155H's borrowed 24-EU tuning table picks for it
+        # without XMX until #36883) and the one-kernel GEMV a fallback 24-EU tuning table picks for it
         name="split_fully_connected_reduction",
         gates={
             "OpenVINOExecutionProvider": "an intel_gpu whose FullyConnected tunes and reads a contraction past 8191",
         },
         transform=lambda: rewriter.RewritePass(
             [
-                rknn.SplitLargeReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
-                rknn.SplitLargeGemmReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
+                lowering.SplitLargeReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
+                lowering.SplitLargeGemmReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
             ]
         ),
     ),
