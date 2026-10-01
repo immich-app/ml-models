@@ -110,9 +110,8 @@ class FloatImageInputPass(ir.passes.InPlacePass):
         return ir.passes.PassResult(model, True)
 
 
-class SplitLargeReduction(RewriteRuleClassBase):
-    """Split a MatMul whose fp16 weight column outgrows the RKNPU's high-utilization band into
-    channel-parallel sub-MatMuls. ``threshold_bytes`` is the top of that band, NOT the userguide's knee."""
+class _SplitReduction(RewriteRuleClassBase):
+    """Split a contraction whose fp16 weight column outgrows ``threshold_bytes`` into summed sub-contractions."""
 
     def __init__(
         self, *, threshold_bytes: int = 1536, subtile_bytes: int = 1024, elem_bytes: int = 2, name: str | None = None
@@ -124,20 +123,6 @@ class SplitLargeReduction(RewriteRuleClassBase):
         self._threshold = threshold_bytes
         self._subtile = subtile_bytes
         self._elem = elem_bytes
-
-    def pattern(self, op: Any, x: Any, w: Any) -> Any:
-        return op.MatMul(x, w, _outputs=["reduction"])
-
-    def check(self, context: Any, x: Any, w: Any, reduction: Any) -> MatchResult:
-        result = MatchResult()
-        weight = w.const_value
-        if weight is None or len(weight.shape) != 2:
-            return result.fail("weight is not a 2-D constant")
-        if int(weight.shape[0]) * self._elem <= self._threshold:
-            return result.fail("filter is inside the high-utilization band")
-        if x.shape is None:
-            return result.fail("reduction input has no static rank")
-        return result
 
     @staticmethod
     def _rows(tensor: ir.TensorProtocol, lo: int, hi: int, name: str) -> ir.TensorProtocol:
@@ -163,27 +148,95 @@ class SplitLargeReduction(RewriteRuleClassBase):
             )
         return ir.tensor(np.ascontiguousarray(tensor.numpy()[lo:hi]), name=name)
 
-    def rewrite(self, op: Any, x: Any, w: Any, reduction: Any) -> Any:
-        weight = w.const_value
-        c_in = int(weight.shape[0])
+    def _split(self, op: Any, x: Any, c_in: int, piece: Any) -> Any:
+        """The sum of ``piece(i, slice of x, lo, hi)`` over the sub-reductions of a ``c_in``-deep contraction."""
         splits = -(-c_in * self._elem // self._subtile)
         axis = len(x.shape) - 1
         bounds = [round(i * c_in / splits) for i in range(splits + 1)]
-        base = w.name or reduction.name
         total: Any = None
         for i in range(splits):
             lo, hi = bounds[i], bounds[i + 1]
-            piece = op.MatMul(
-                op.Slice(
-                    x,
-                    op.Constant(value=ir.tensor(np.array([lo], np.int64))),
-                    op.Constant(value=ir.tensor(np.array([hi], np.int64))),
-                    op.Constant(value=ir.tensor(np.array([axis], np.int64))),
-                ),
-                op.initializer(self._rows(weight, lo, hi, f"{base}_split{i}"), name=f"{base}_split{i}"),
+            part = op.Slice(
+                x,
+                op.Constant(value=ir.tensor(np.array([lo], np.int64))),
+                op.Constant(value=ir.tensor(np.array([hi], np.int64))),
+                op.Constant(value=ir.tensor(np.array([axis], np.int64))),
             )
-            total = piece if total is None else op.Add(total, piece)
+            total = piece(i, part, lo, hi) if total is None else op.Add(total, piece(i, part, lo, hi))
         return total
+
+
+class SplitLargeReduction(_SplitReduction):
+    """Split a MatMul whose fp16 weight column outgrows the RKNPU's high-utilization band into
+    channel-parallel sub-MatMuls. ``threshold_bytes`` is the top of that band, NOT the userguide's knee."""
+
+    def pattern(self, op: Any, x: Any, w: Any) -> Any:
+        return op.MatMul(x, w, _outputs=["reduction"])
+
+    def check(self, context: Any, x: Any, w: Any, reduction: Any) -> MatchResult:
+        result = MatchResult()
+        weight = w.const_value
+        if weight is None or len(weight.shape) != 2:
+            return result.fail("weight is not a 2-D constant")
+        if int(weight.shape[0]) * self._elem <= self._threshold:
+            return result.fail("filter is inside the high-utilization band")
+        if x.shape is None:
+            return result.fail("reduction input has no static rank")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, reduction: Any) -> Any:
+        weight = w.const_value
+        base = w.name or reduction.name
+        return self._split(
+            op,
+            x,
+            int(weight.shape[0]),
+            lambda i, part, lo, hi: op.MatMul(
+                part, op.initializer(self._rows(weight, lo, hi, f"{base}_split{i}"), name=f"{base}_split{i}")
+            ),
+        )
+
+
+class SplitLargeGemmReduction(_SplitReduction):
+    """The same split for a 2-D Gemm, the form a classifier head keeps its weight and bias in; the bias rides the
+    first sub-Gemm."""
+
+    def pattern(self, op: Any, x: Any, w: Any, b: Any) -> Any:
+        return op.Gemm(x, w, b, _allow_other_attributes=True, _outputs=["reduction"])
+
+    def check(self, context: Any, x: Any, w: Any, b: Any, reduction: Any) -> MatchResult:
+        result = MatchResult()
+        gemm = reduction.producer()
+        attributes = gemm.attributes
+        if attributes.get_float("alpha", 1.0) != 1.0 or attributes.get_float("beta", 1.0) != 1.0:
+            return result.fail("a scaled Gemm")
+        if attributes.get_int("transA", 0):
+            return result.fail("a transposed reduction input")
+        weight = w.const_value
+        if weight is None or len(weight.shape) != 2:
+            return result.fail("weight is not a 2-D constant")
+        if int(weight.shape[1 if attributes.get_int("transB", 0) else 0]) * self._elem <= self._threshold:
+            return result.fail("filter is inside the high-utilization band")
+        if x.shape is None:
+            return result.fail("reduction input has no static rank")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, b: Any, reduction: Any) -> Any:
+        weight = w.const_value
+        transposed = reduction.producer().attributes.get_int("transB", 0)
+        base = w.name or reduction.name
+
+        def piece(i: int, part: Any, lo: int, hi: int) -> Any:
+            name = f"{base}_split{i}"
+            # a transposed weight's sub-reduction is a column range, which no byte range of the parent holds
+            rows = (
+                ir.tensor(np.ascontiguousarray(weight.numpy()[:, lo:hi]), name=name)
+                if transposed
+                else self._rows(weight, lo, hi, name)
+            )
+            return op.Gemm(part, op.initializer(rows, name=name), *([b] if i == 0 else []), transB=transposed)
+
+        return self._split(op, x, int(weight.shape[1 if transposed else 0]), piece)
 
 
 # the band the RKNPU keeps its MAC array busy in; either floor alone lets a partial conv fall out the bottom

@@ -302,6 +302,20 @@ REGISTRY = (
         ),
     ),
     Rewrite(
+        # K below 8192 keeps intel_gpu off both the untransposed-weight FullyConnected (#36437, wrong on GPUs
+        # without XMX until #36883) and the one-kernel GEMV the 155H's borrowed 24-EU tuning table picks for it
+        name="split_fully_connected_reduction",
+        gates={
+            "OpenVINOExecutionProvider": "an intel_gpu whose FullyConnected tunes and reads a contraction past 8191",
+        },
+        transform=lambda: rewriter.RewritePass(
+            [
+                rknn.SplitLargeReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
+                rknn.SplitLargeGemmReduction.rule(threshold_bytes=16382, subtile_bytes=12544),
+            ]
+        ),
+    ),
+    Rewrite(
         name="pin_opset",
         gates={
             RKNPU: "an rknn-toolkit2 that ingests the opset the exporter writes",
