@@ -36,6 +36,7 @@ def export(model_name: str, output_dir: Path, cache: bool = True) -> None:
         det_source.head_scale,
         det_source.asym_folds,
         det_source.affine_scales,
+        det_source.subpixel_heads,
     )
     det_path.parent.mkdir(parents=True, exist_ok=True)
     save_with_external_data(det, det_path)

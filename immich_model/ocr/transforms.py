@@ -8,8 +8,15 @@ from typing import Any, NamedTuple
 import numpy as np
 import onnx_ir.passes.common as common_passes
 from onnxscript import ir
-from onnxscript.rewriter import RewritePass
-from onnxscript.rewriter.pattern import MatchResult, OrValue, RewriteRuleClassBase, RewriteRuleSet, Var
+from onnxscript.rewriter import MatchContext, RewritePass
+from onnxscript.rewriter.pattern import (
+    MatchResult,
+    OpsetPatternBuilder,
+    OrValue,
+    RewriteRuleClassBase,
+    RewriteRuleSet,
+    Var,
+)
 from onnxscript.rewriter.rules.fusion._layer_norm import layer_normalization_ruleset
 
 from ..onnx._ir import (
@@ -49,6 +56,7 @@ def transform_detection(
     head_scale: int = 1,
     asym_folds: int = 0,
     affine_scales: int = 0,
+    subpixel_heads: int = 0,
 ) -> ir.Model:
     return ir.passes.Sequential(
         ConvertOpsetPass(_dsl.OPSET),
@@ -70,6 +78,7 @@ def transform_detection(
         _FoldSeResidualPass(se_residuals),
         _MergeSeBranchesPass(se_merges),
         _FoldAsymmetricConvsPass(asym_folds),
+        _SubpixelDbHeadPass(subpixel_heads),
         WrapPass(_dsl.det_preprocess, _dsl.det_postprocess),
         ReinferPass(),
         NameOutputDimsPass({"dbnet_probs": [_dsl.Batch, _dsl.Height, _dsl.Width]}),
@@ -748,6 +757,130 @@ class _RescaleDetHeadPass(ir.passes.InPlacePass):
         rescale(head.inputs[1], float(scale))
         log.info("Rescaled the head's input cone (%d values, %d entry convs) by 1/%d", len(scaled), entries, scale)
         return ir.passes.PassResult(model, True)
+
+
+def _square_conv(value: ir.Value, kernel: int, stride: int, pad: int) -> bool:
+    """Made by an ungrouped (de)convolution at unit dilation with this square kernel, stride and padding all round."""
+    node = value.producer()
+    if node is None:
+        return False
+    attributes = node.attributes
+    return (
+        list(attributes.get_ints("kernel_shape", [])) == [kernel] * 2
+        and list(attributes.get_ints("strides", [1, 1])) == [stride] * 2
+        and list(attributes.get_ints("dilations", [1, 1])) == [1, 1]
+        and list(attributes.get_ints("pads", [0] * 4)) == [pad] * 4
+        and attributes.get_int("group", 1) == 1
+        and attributes.get_string("auto_pad", "NOTSET") == "NOTSET"
+    )
+
+
+class _SubpixelDbHead(RewriteRuleClassBase):
+    """DBNet's full-resolution refinement as four sub-pixel phases at f's resolution, each a 3x3 over f's own pixels."""
+
+    def pattern(
+        self,
+        op: OpsetPatternBuilder,
+        f: Var,
+        weight: Var,
+        bias: Var,
+        roi: Var,
+        scales: Var,
+        w3: Var,
+        b3: Var,
+        w1: Var,
+        b1: Var,
+    ) -> Any:
+        shrink = op.Sigmoid(op.ConvTranspose(f, weight, bias, _outputs=["deconv"]))
+        joined = op.Concat(shrink, op.Resize(f, roi, scales, _outputs=["up"]), axis=1)
+        refined = op.Relu(op.Conv(joined, w3, b3, _outputs=["wide"]))
+        return op.Add(shrink, op.Sigmoid(op.Conv(refined, w1, b1, _outputs=["narrow"])))
+
+    def check(
+        self,
+        context: MatchContext,
+        *,
+        deconv: ir.Value,
+        up: ir.Value,
+        wide: ir.Value,
+        narrow: ir.Value,
+        weight: ir.Value,
+        bias: ir.Value,
+        scales: ir.Value,
+        w3: ir.Value,
+        b3: ir.Value,
+        w1: ir.Value,
+        b1: ir.Value,
+        **_: ir.Value,
+    ) -> MatchResult:
+        result = MatchResult()
+        if not (_square_conv(deconv, 2, 2, 0) and _square_conv(wide, 3, 1, 1) and _square_conv(narrow, 1, 1, 0)):
+            return result.fail("not a stride-2 deconv to the shrink map, then a padded 3x3 and a 1x1")
+        resize = up.producer()
+        if (
+            resize is None
+            or resize.attributes.get_string("mode", "nearest") != "nearest"
+            or resize.attributes.get_string("coordinate_transformation_mode", "half_pixel") != "asymmetric"
+            or resize.attributes.get_string("nearest_mode", "round_prefer_floor") != "floor"
+        ):
+            return result.fail("the upsample does not copy each pixel into the block below and right of it")
+        if (
+            weight.const_value is None
+            or w1.const_value is None
+            or any(value.const_value is None for value in (bias, w3, b3, b1))
+        ):
+            return result.fail("a weight or bias is not constant")
+        if weight.const_value.shape[1] != 1 or w1.const_value.shape[0] != 1:
+            return result.fail("the shrink map or the refined map is not a single channel")
+        # the only value check reads, so once everything else matched
+        if scales.const_value is None or scales.const_value.numpy().tolist() != [1, 1, 2, 2]:
+            return result.fail("the upsample does not double the spatial axes")
+        return result
+
+    def rewrite(
+        self,
+        op: Any,
+        f: ir.Value,
+        weight: ir.Value,
+        bias: ir.Value,
+        w3: ir.Value,
+        b3: ir.Value,
+        w1: ir.Value,
+        b1: ir.Value,
+        **_: ir.Value,
+    ) -> ir.Value:
+        def array(value: ir.Value) -> np.ndarray:
+            assert value.const_value is not None
+            return value.const_value.numpy()
+
+        wide = array(w3)
+
+        def init(name: str, values: np.ndarray) -> ir.Value:
+            return op.initializer(ir.tensor(values.astype(wide.dtype), name=f"subpixel_{name}"))
+
+        def phased(value: ir.Value) -> np.ndarray:  # one copy per phase, stacked on the output channels
+            return np.concatenate([array(value)] * 4)
+
+        zero = [0, 0, 0, 0]  # explicit zero pads since CoreML's parser requires them
+        # the shrink map in SpaceToDepth's channel order, as its deconv read per phase: CoreML has no SpaceToDepth
+        shrink_w = init("shrink_w", array(weight).transpose(1, 2, 3, 0).reshape(4, -1, 1, 1))
+        shrink = op.Sigmoid(op.Conv(f, shrink_w, init("shrink_b", phased(bias)), kernel_shape=[1, 1], pads=zero))
+        phases = np.zeros((4, wide.shape[0], 3 + wide.shape[1], 3, 3), np.float64)  # one rounding where taps coincide
+        for a, b, dy, dx in np.ndindex(2, 2, 3, 3):
+            (row, p), (col, q) = divmod(a + dy - 1, 2), divmod(b + dx - 1, 2)  # f's offset, the shrink map's phase
+            phases[a * 2 + b, :, p * 2 + q, row + 1, col + 1] += wide[:, 0, dy, dx]
+            phases[a * 2 + b, :, 4:, row + 1, col + 1] += wide[:, 1:, dy, dx]
+        wide_w, wide_b = init("wide_w", phases.reshape(-1, *phases.shape[2:])), init("wide_b", phased(b3))
+        refined = op.Relu(op.Conv(op.Concat(shrink, f, axis=1), wide_w, wide_b, kernel_shape=[3, 3], pads=[1, 1, 1, 1]))
+        # dense with block-diagonal weights, not grouped: ORT leaves NCHWc on x86 around it and RKNPU splits it
+        narrow_w = init("narrow_w", np.kron(np.eye(4), array(w1).reshape(1, -1)).reshape(4, -1, 1, 1))
+        narrow = op.Conv(refined, narrow_w, init("narrow_b", phased(b1)), kernel_shape=[1, 1], pads=zero)
+        return op.DepthToSpace(op.Add(shrink, op.Sigmoid(narrow)), blocksize=2)
+
+
+class _SubpixelDbHeadPass(PinnedRewritePass):
+    def __init__(self, expected: int) -> None:
+        super().__init__([_SubpixelDbHead.rule()], expected, "DBNet heads into sub-pixel phases")
 
 
 class _ElideCtcSoftmaxPass(ir.passes.InPlacePass):

@@ -16,6 +16,7 @@ class DetSource(NamedTuple):
     head_scale: int = 1  # 1 leaves the head's scale split alone
     asym_folds: int = 0
     affine_scales: int = 0
+    subpixel_heads: int = 0  # full-resolution DBNet refinements computed as four sub-pixel phases
 
     @property
     def url(self) -> str:
@@ -58,6 +59,7 @@ DET_MODELS = {
         # this neck overflows fp16 while its BN-folded head weights go subnormal; 256 splits the difference
         head_scale=256,
         asym_folds=12,
+        subpixel_heads=1,
     ),
     ("PP-OCRv6", "tiny"): DetSource(
         "onnx/PP-OCRv6/det/PP-OCRv6_det_tiny.onnx",
