@@ -15,6 +15,10 @@ on:
         options: ['testing', 'production']
         default: 'testing'
         description: 'Environment to publish to'
+      revision:
+        type: string
+        required: false
+        description: 'Export the models whose renderings changed on or since this revision'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -56,17 +60,22 @@ jobs:
     steps:
       - name: Checkout new ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # a revision's renderings are diffed against HEAD's
       - name: Determine previous ref
         id: ref
+        env:
+          REVISION: ${{ inputs.revision }}
         run: |
           ev="${{ github.event_name }}"
           if [[ "$ev" == "push" ]]; then
             ref="${{ github.event.before }}"
           elif [[ "$ev" == "pull_request" ]]; then
             ref="${{ github.event.pull_request.base.sha }}"
+          elif [[ -n "$REVISION" ]]; then
+            ref=$(git rev-parse --verify "$REVISION^") # its parent, so the revision's own changes count
           elif [[ "$ev" == "workflow_dispatch" ]]; then
-            # TODO: This will currently never diff
-            # What ref to diff against on a dispatch?
+            # without a revision a dispatch diffs against itself, so only `force` exports anything
             ref="${{ github.event.ref }}"
           fi
           echo "previous-ref=$ref" >> $GITHUB_OUTPUT
@@ -96,11 +105,24 @@ jobs:
         uses: mikefarah/yq@1b9b4ac5187171d2e5e3129be0cfa827c7f9d53d # v4.53.3
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
+      # The committed renderings are what each export is checked against, so they say which exports changed
+      - id: rendered
+        if: ${{ inputs.revision }}
+        env:
+          PREVIOUS_REF: ${{ steps.ref.outputs.previous-ref }}
+        run: |
+          changed=$(git diff --name-only "$PREVIOUS_REF" HEAD -- ci/graphs ci/rewrites ci/plans.txt)
+          models=$({ grep -oP '^ci/(graphs|rewrites)/\K[^/]+' <<< "$changed" || true; } | sort -u | jq -Rsc 'split("\n")[:-1]')
+          echo "models=$models" >> "$GITHUB_OUTPUT"
+          echo "plans=$(grep -qx ci/plans.txt <<< "$changed" && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - id: scope
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           # Editor checks warn on these being "undefined", but they get passed to the script regardless.
-          force: ${{ inputs.force || inputs.environment == 'production' }}
+          force: ${{ inputs.force || (inputs.environment == 'production' && !inputs.revision) }}
+          revision: ${{ inputs.revision }}
+          rendered: ${{ steps.rendered.outputs.models }}
+          plans: ${{ steps.rendered.outputs.plans }}
           oldModels: ${{ steps.old-models.outputs.result }}
           newModels: ${{ steps.new-models.outputs.result }}
           # rendering-only modules: hashing them would re-export the catalog for a change that cannot alter it
@@ -129,7 +151,7 @@ jobs:
       runner: ${{ matrix.runner || 'ubuntu-latest'}}
       environment: ${{ needs.configure.outputs.environment }}
       previous-ref: ${{ needs.configure.outputs.previous-ref }}
-      compile-all: ${{ inputs.force || inputs.environment == 'production' }}
+      compile-all: ${{ inputs.force || (inputs.environment == 'production' && !inputs.revision) }}
 
   # Read at the end rather than off the event payload, so labelling while the matrix runs still counts.
   labelled:

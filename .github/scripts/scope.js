@@ -4,8 +4,11 @@ module.exports = ({core}) => {
   let newModels = JSON.parse(core.getInput('newModels'));
   let oldHash = core.getInput('oldHash');
   let newHash = core.getInput('newHash');
+  // given a revision, the renderings that changed on or since it name the exports, so the code hash does not
+  let revision = core.getInput('revision');
+  let rendered = new Set(revision ? JSON.parse(core.getInput('rendered')) : []);
 
-  if (oldHash !== newHash) {
+  if (revision ? core.getBooleanInput('plans') : oldHash !== newHash) {
     force = true;
   }
   if (force) {
@@ -37,10 +40,10 @@ module.exports = ({core}) => {
     const n = newMap[key];
     const eq = equal(o, n);
 
-    if (eq) {
+    if (eq && !rendered.has(key)) {
       unchanged.push(n);
     }
-    if (!eq && n) {
+    if (n && (!eq || rendered.has(key))) {
       to_export.push(n);
     }
     // !n: deleted, which we ignore
