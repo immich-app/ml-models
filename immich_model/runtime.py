@@ -68,12 +68,20 @@ class RewritePlan:
 
 REGISTRY = (
     Rewrite(
-        # first only because it must precede decompose_attention: it anchors on the fused op's 4th input
+        # must precede decompose_attention: it anchors on the fused op's 4th input
         name="floatify_pad_mask",
         gates={
             RKNPU: "a librknnrt with an int32 Equal kernel, which is what the whole mask island dies on",
         },
         transform=lambda: rknn.FloatifyPadMaskPass(),
+    ),
+    Rewrite(
+        # must precede decompose_attention: it pins the scale on the fused op before the head is read off the widths
+        name="pad_attention_heads",
+        gates={
+            "OpenVINOExecutionProvider": "needs its XMX GPU SDPA kernel to handle unaligned head sizes",
+        },
+        transform=lambda: lowering.PadAttentionHeadsPass(multiple=16),  # the GPU SDPA's subgroup width
     ),
     Rewrite(
         name="decompose_attention",

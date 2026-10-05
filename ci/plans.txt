@@ -28,6 +28,7 @@ NvTensorRTRTXExecutionProvider
     im2col_patchify
 
 OpenVINOExecutionProvider
+    pad_attention_heads
     decompose_attention
     hard_swish
     im2col_patchify
