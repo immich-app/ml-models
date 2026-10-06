@@ -93,11 +93,14 @@ OpenVINOExecutionProvider
     -1 Reshape allowzero=1
     -1 Transpose perm=(0, 2, 1)
     -1 Transpose perm=(0, 3, 1, 2)
-    771 nodes, weights d326cee4caa5
-    DecomposeAttention x364 6347034a
+    771 nodes, weights 9059520334b0
+    DecomposeAttention, PadAttentionHeads x351 49103ec3
+    DecomposeAttention, PadAttentionHeadsPooled x13 7758cd2a
+    PadAttentionHeads x108 ce3282bd
+    PadAttentionHeadsPooled x5 89370f36
     PatchEmbedToMatMul, _ConstantifyReshapeTarget x5 132b0235
     _ScalarGatherToSlice x1 60360a10
-    unstamped x401 073aabc2
+    unstamped x288 2f0157fd
 
 RKNPU static
     +504 Slice

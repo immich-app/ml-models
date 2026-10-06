@@ -80,12 +80,15 @@ OpenVINOExecutionProvider
     +27 Mul
     +27 Softmax axis=-1
     +27 Transpose perm=(0, 1, 3, 2)
-    740 nodes, weights fda55c42238a
-    DecomposeAttention x351 446fa7fa
+    740 nodes, weights 498ca8ae1421
+    DecomposeAttention, PadAttentionHeads x338 d93a98a2
+    DecomposeAttention, PadAttentionHeadsSliced x13 96508a14
+    PadAttentionHeads x104 870572c0
+    PadAttentionHeadsSliced x5 dcd629a3
     _Fp16TokenEmbedding x2 0d702441
     _ScalarGatherToSlice, _SelectBeforeLayerNorm x1 c46fabc2
     _SelectBeforeLayerNorm x1 eba1fbae
-    unstamped x385 0d73d42a
+    unstamped x276 ddc8ed21
 
 RKNPU static
     +486 Slice
