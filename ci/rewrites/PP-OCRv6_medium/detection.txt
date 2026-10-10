@@ -2,7 +2,15 @@ CPUExecutionProvider
     unchanged
 
 CUDAExecutionProvider
-    unchanged
+    +5 GlobalAveragePool
+    -5 ReduceMean keepdims=1
+    178 nodes, weights a5d1ad352ae3
+    FuseBatchNormIntoConv, _FoldBiasAdd x4 f34c76f1
+    SpatialMeanToGlobalAveragePool x5 6686d22e
+    _FoldAsymmetricConvs, _FoldBiasAdd, _FoldBiasAdd, _FoldBiasAdd x12 5400703b
+    _FoldBiasAdd x77 a15e991b
+    _FuseErfGelu x13 837b6556
+    unstamped x67 890b34f3
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)

@@ -156,6 +156,14 @@ REGISTRY = (
         transform=lambda: lowering.FuseHardSwishPass(),
     ),
     Rewrite(
+        name="global_average_pool",
+        gates={
+            # its fp16 ReduceMean narrows the sum before dividing, so a large map's mean overflows to inf
+            "CUDAExecutionProvider": "an ORT whose CUDA ReduceMean divides before it narrows to the output type",
+        },
+        transform=lambda: rewriter.RewritePass([lowering.SpatialMeanToGlobalAveragePool.rule()]),
+    ),
+    Rewrite(
         # never CoreML: im2col consumes the layout Transpose nchw_image_input matches on
         name="im2col_patchify",
         gates={

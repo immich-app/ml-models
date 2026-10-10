@@ -6,6 +6,7 @@ CPUExecutionProvider
 CUDAExecutionProvider
     greedy_ctc_topk
     hard_swish
+    global_average_pool
     im2col_patchify
     skip_layer_norm
 

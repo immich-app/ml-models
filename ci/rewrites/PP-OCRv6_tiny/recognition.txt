@@ -2,6 +2,8 @@ CPUExecutionProvider
     unchanged
 
 CUDAExecutionProvider
+    +3 GlobalAveragePool
+    -3 ReduceMean keepdims=1 noop_with_empty_axes=0
     -2 HardSigmoid alpha=0.1666666716337204 beta=0.5
     +2 HardSwish
     -2 Mul
@@ -9,15 +11,16 @@ CUDAExecutionProvider
     -1 ReduceMax keepdims=1
     +1 Squeeze
     +1 TopK axis=2 largest=1 sorted=1
-    89 nodes, weights 6307b4e60881
+    89 nodes, weights 72883f3f0b78
     FuseBatchNormIntoConv x2 a6b06e3d
     FuseBatchNormIntoConv, _HoistBatchNormOverSqueeze x2 7e7cb29a
     FuseGreedyCtcTopK x2 cf2f64e5
     FuseHardSwish x2 f424200c
-    _FoldBiasAdd x33 b2294c37
+    SpatialMeanToGlobalAveragePool x3 06e2f11f
+    _FoldBiasAdd x33 085b8074
     _FuseErfGelu x10 094e651a
     _HoistBatchNormOverSqueeze x2 34d81872
-    unstamped x36 1a25fd6c
+    unstamped x33 622d7925
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)

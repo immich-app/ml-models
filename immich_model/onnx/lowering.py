@@ -185,6 +185,24 @@ class DecomposeReduceL2Pass(RewritePass):
             raise ir.passes.PostconditionError(f"{stuck} ReduceL2 op(s) survived the decomposition")
 
 
+class SpatialMeanToGlobalAveragePool(RewriteRuleClassBase):
+    def pattern(self, op: Any, x: Any, axes: Any) -> Any:
+        return op.ReduceMean(x, axes, _domain="", _outputs=["mean"])
+
+    def check(self, context: Any, x: Any, axes: Any, mean: Any) -> MatchResult:
+        result = MatchResult()
+        if x.shape is None or len(x.shape) != 4:
+            return result.fail("not a rank-4 NCHW input")
+        if sorted(axis % 4 for axis in _const_ints(axes) or []) != [2, 3]:
+            return result.fail("does not reduce exactly the two spatial axes")
+        if mean.producer().attributes.get_int("keepdims", 1) != 1:
+            return result.fail("drops the reduced axes, which GlobalAveragePool keeps")
+        return result
+
+    def rewrite(self, op: Any, x: Any, **_: Any) -> Any:
+        return op.GlobalAveragePool(x)
+
+
 class DecomposePRelu(RewriteRuleClassBase):
     """PRelu(x, slope) -> Relu(x) + slope*(x - Relu(x)), IEEE-exact. MIGraphX-only, for a fusion reason: its MLIR
     pointwise allowlist omits prelu and the fused module is all-or-nothing, so one PRelu evicts the bias Add too."""

@@ -15,6 +15,8 @@ CPUExecutionProvider
     unstamped x105 3c73f0d8
 
 CUDAExecutionProvider
+    +6 GlobalAveragePool
+    -6 ReduceMean keepdims=1 noop_with_empty_axes=0
     -4 Add
     -3 LayerNormalization axis=-1 epsilon=9.999999747378752e-06 stash_type=1
     +3 SkipLayerNormalization epsilon=9.999999747378752e-06
@@ -24,16 +26,17 @@ CUDAExecutionProvider
     +1 SkipLayerNormalization epsilon=9.999999974752427e-07
     +1 Squeeze
     +1 TopK axis=2 largest=1 sorted=1
-    188 nodes, weights e7e45dd78cf8
+    188 nodes, weights 6e565b247ddb
     FuseBatchNormIntoConv x3 f0034f99
     FuseGreedyCtcTopK x2 cbcd7d37
     FuseSkipLayerNorm, LayerNormBiasFusion, LayerNormFusion x4 dfce4419
     LayerNormBiasFusion, LayerNormFusion x1 2a80a1b2
+    SpatialMeanToGlobalAveragePool x6 72acf5ed
     _FlattenToSqueeze x1 5bba76a2
-    _FoldBiasAdd x59 cd1e1b9f
+    _FoldBiasAdd x59 4b12e546
     _FuseErfGelu x14 a1e48475
     _UnflattenToUnsqueeze x1 1f22e914
-    unstamped x103 f11e1c0f
+    unstamped x97 d93f97a0
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)
