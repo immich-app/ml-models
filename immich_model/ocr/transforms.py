@@ -76,6 +76,7 @@ def transform_detection(
         _FoldAffineScalePass(affine_scales),
         _RescaleDetHeadPass(head_scale),
         _FoldSeResidualPass(se_residuals),
+        _FoldSeGatePass(se_residuals),
         _MergeSeBranchesPass(se_merges),
         _FoldAsymmetricConvsPass(asym_folds),
         _SubpixelDbHeadPass(subpixel_heads),
@@ -233,11 +234,49 @@ class _FoldSeResidualPass(PinnedRewritePass):
         super().__init__(rules, expected, "SE residuals into their gate")
 
 
+class _FoldSeGate(RewriteRuleClassBase):
+    """HardSigmoid(Conv(h)) + 1 -> Clip(Conv'(h), 1, 2): the gate's affine and the residual's +1 move into the conv."""
+
+    def pattern(self, op: Any, h: Any, w: Any, b: Any, one: Any) -> Any:
+        return op.Add(op.HardSigmoid(op.Conv(h, w, b, _outputs=["up"]), _outputs=["gate"]), one)
+
+    def check(self, context: Any, h: Any, w: Any, b: Any, one: Any, up: Any, gate: Any) -> MatchResult:
+        result = MatchResult()
+        if w.const_value is None or b.const_value is None:
+            return result.fail("the conv is not constant")
+        if one.const_value is None or one.const_value.numpy().size != 1 or float(one.const_value.numpy()) != 1.0:
+            return result.fail("not the residual's +1")
+        if len(up.uses()) != 1 or len(gate.uses()) != 1:
+            return result.fail("the conv or the gate has readers outside the residual")
+        return result
+
+    def rewrite(self, op: Any, h: Any, w: Any, b: Any, one: Any, up: Any, gate: Any) -> Any:
+        sigmoid = gate.producer().attributes
+        alpha, beta = sigmoid.get_float("alpha", 0.2), sigmoid.get_float("beta", 0.5)
+        weight, bias = w.const_value.numpy(), b.const_value.numpy()
+        folded = [
+            op.initializer(ir.tensor(array.astype(weight.dtype), name=f"{up.name}_{name}"))
+            for name, array in (
+                ("weight", weight * alpha),
+                ("bias", bias * alpha + beta + 1),
+                ("low", np.array(1.0)),
+                ("high", np.array(2.0)),
+            )
+        ]
+        return op.Clip(op.Conv(h, *folded[:2], **up.producer().attributes), *folded[2:])
+
+
+class _FoldSeGatePass(PinnedRewritePass):
+    def __init__(self, expected: int) -> None:
+        rules = RewriteRuleSet([_FoldSeGate.rule()], commute=True)
+        super().__init__(rules, expected, "SE gates into their conv")
+
+
 class _SeBranch(NamedTuple):
     pool: ir.Node
     down: ir.Node
     up: ir.Node
-    gate: ir.Value  # the HardSigmoid output the block multiplies by
+    gate: ir.Node  # what the block multiplies by: a HardSigmoid, or the Clip it folds into
 
 
 def _se_branches(graph: ir.Graph) -> list[_SeBranch]:
@@ -246,14 +285,15 @@ def _se_branches(graph: ir.Graph) -> list[_SeBranch]:
         if pool.op_type != "GlobalAveragePool":
             continue
         chain, value = [], pool.outputs[0]
-        for op_type in ("Conv", "Relu", "Conv", "HardSigmoid"):
+        for op_type in ("Conv", "Relu", "Conv"):
             node = sole_consumer(value, op_type)
             if node is None:
                 break
             chain.append(node)
             value = node.outputs[0]
-        if len(chain) == 4 and all(pointwise(conv) and len(conv.inputs) > 2 for conv in (chain[0], chain[2])):
-            branches.append(_SeBranch(pool, chain[0], chain[2], value))
+        gate = (sole_consumer(value, "HardSigmoid") or sole_consumer(value, "Clip")) if len(chain) == 3 else None
+        if gate is not None and all(pointwise(conv) and len(conv.inputs) > 2 for conv in (chain[0], chain[2])):
+            branches.append(_SeBranch(pool, chain[0], chain[2], gate))
     return branches
 
 
@@ -273,12 +313,13 @@ class _MergeSeBranchesPass(ir.passes.InPlacePass):
         order = {node: i for i, node in enumerate(graph)}
         groups: dict[Any, list[_SeBranch]] = {}
         for branch in _se_branches(graph):
-            gate = branch.gate.producer()
+            gate = branch.gate
             key = (
                 const_array(branch.down.inputs[1]).shape,
                 const_array(branch.up.inputs[1]).shape,
-                gate.attributes.get_float("alpha"),
-                gate.attributes.get_float("beta"),
+                gate.op_type,
+                tuple((name, attribute.value) for name, attribute in gate.attributes.items()),
+                tuple(float(array) for bound in gate.inputs[1:] if (array := const_array(bound)) is not None),
             )
             groups.setdefault(key, []).append(branch)
 
@@ -298,13 +339,12 @@ class _MergeSeBranchesPass(ir.passes.InPlacePass):
             down = make_node("Conv", [pooled.outputs[0], *stacked[:2]], out=f"{tag}_down", **attributes)
             relu = make_node("Relu", [down.outputs[0]], out=f"{tag}_relu")
             up = make_node("Conv", [relu.outputs[0], *stacked[2:]], out=f"{tag}_up", **attributes)
-            gate = members[0].gate.producer()
+            gate = members[0].gate
             gates = make_node(
-                "HardSigmoid",
-                [up.outputs[0]],
+                gate.op_type,
+                [up.outputs[0], *(bound for bound in gate.inputs[1:] if bound is not None)],
                 out=f"{tag}_gates",
-                alpha=gate.attributes.get_float("alpha"),
-                beta=gate.attributes.get_float("beta"),
+                **{name: attribute.value for name, attribute in gate.attributes.items()},
             )
             width = const_array(members[0].up.inputs[1]).shape[0]
             sizes = make_init(graph, f"{tag}_sizes", np.full(count, width, np.int64))
@@ -312,9 +352,10 @@ class _MergeSeBranchesPass(ir.passes.InPlacePass):
             # independent siblings, so the last pool serves as everyone's insertion point
             graph.insert_after(members[-1].pool, [pooled, down, relu, up, gates, split])
             for branch, gate_out in zip(members, split.outputs):
-                gate_out.name = f"{tag}_{branch.gate.name}"
-                gate_out.shape, gate_out.type = branch.gate.shape, branch.gate.type
-                branch.gate.replace_all_uses_with(gate_out)
+                gated = branch.gate.outputs[0]
+                gate_out.name = f"{tag}_{gated.name}"
+                gate_out.shape, gate_out.type = gated.shape, gated.type
+                gated.replace_all_uses_with(gate_out)
             merged += 1
 
         log.info("Merged %d groups of sibling SE branches into grouped convs", merged)

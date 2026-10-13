@@ -110,25 +110,25 @@
       float[batch,96,1,1] "p2o.pd_op.relu.1.0"
       float[batch,24,unk__6,unk__7] "p2o.pd_op.relu.10.0"
       float[batch,24,unk__0,unk__1] "p2o.pd_op.relu.11.0"
-      float[batch,96,1,1] "se_group0_p2o.pd_op.hardsigmoid.2.0"
-      float[batch,96,1,1] "se_group0_p2o.pd_op.hardsigmoid.3.0"
-      float[batch,96,1,1] "se_group0_p2o.pd_op.hardsigmoid.4.0"
-      float[batch,96,1,1] "se_group0_p2o.pd_op.hardsigmoid.5.0"
-      float[batch,24,1,1] "se_group1_p2o.pd_op.hardsigmoid.6.0"
-      float[batch,24,1,1] "se_group1_p2o.pd_op.hardsigmoid.7.0"
-      float[batch,24,1,1] "se_group1_p2o.pd_op.hardsigmoid.8.0"
-      float[batch,24,1,1] "se_group1_p2o.pd_op.hardsigmoid.9.0"
       float[batch,1,height,width] fetch_name_0
       float[batch,96,1,1] se_group0_down
       float[batch,384,1,1] se_group0_gates
       float[batch,384,1,1] se_group0_pooled
       float[batch,96,1,1] se_group0_relu
       float[batch,384,1,1] se_group0_up
+      float[batch,96,1,1] se_group0_val_40
+      float[batch,96,1,1] se_group0_val_41
+      float[batch,96,1,1] se_group0_val_42
+      float[batch,96,1,1] se_group0_val_43
       float[batch,24,1,1] se_group1_down
       float[batch,96,1,1] se_group1_gates
       float[batch,96,1,1] se_group1_pooled
       float[batch,24,1,1] se_group1_relu
       float[batch,96,1,1] se_group1_up
+      float[batch,24,1,1] se_group1_val_44
+      float[batch,24,1,1] se_group1_val_45
+      float[batch,24,1,1] se_group1_val_46
+      float[batch,24,1,1] se_group1_val_47
       float[batch,height,width,3] tmp
       float[batch,3,height,width] tmp_0
       float[batch,16,unk__0,unk__1] val_0
@@ -162,15 +162,7 @@
       float[batch,384,unk__42,unk__43] val_34
       float[batch,384,unk__42,unk__43] val_35
       float[batch,384,unk__42,unk__43] val_36
-      float[batch,96,1,1] val_37
-      float[batch,96,1,1] val_38
-      float[batch,96,1,1] val_39
       float[batch,48,unk__6,unk__7] val_4
-      float[batch,96,1,1] val_40
-      float[batch,24,1,1] val_41
-      float[batch,24,1,1] val_42
-      float[batch,24,1,1] val_43
-      float[batch,24,1,1] val_44
       float[batch,48,unk__6,unk__7] val_5
       float[batch,48,unk__6,unk__7] val_6
       float[batch,48,unk__6,unk__7] val_7
@@ -298,16 +290,12 @@
    se_group0_down = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group0_pooled, se_group0_down1, se_group0_down2)
    se_group0_relu = Relu (se_group0_down)
    se_group0_up = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group0_relu, se_group0_up1, se_group0_up2)
-   se_group0_gates = HardSigmoid <alpha: float = 0.2, beta: float = 0.5> (se_group0_up)
-   "se_group0_p2o.pd_op.hardsigmoid.2.0", "se_group0_p2o.pd_op.hardsigmoid.3.0", "se_group0_p2o.pd_op.hardsigmoid.4.0", "se_group0_p2o.pd_op.hardsigmoid.5.0" = Split <axis: int = 1> (se_group0_gates, se_group0_sizes)
-   val_37 = Add ("se_group0_p2o.pd_op.hardsigmoid.2.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.181" = Mul ("p2o.pd_op.conv2d.23.0", val_37)
-   val_38 = Add ("se_group0_p2o.pd_op.hardsigmoid.3.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.187" = Mul ("p2o.pd_op.conv2d.26.0", val_38)
-   val_39 = Add ("se_group0_p2o.pd_op.hardsigmoid.4.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.193" = Mul ("p2o.pd_op.conv2d.29.0", val_39)
-   val_40 = Add ("se_group0_p2o.pd_op.hardsigmoid.5.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.199" = Mul ("p2o.pd_op.conv2d.32.0", val_40)
+   se_group0_gates = Clip (se_group0_up, "Add.179_low", "Add.179_high")
+   se_group0_val_40, se_group0_val_41, se_group0_val_42, se_group0_val_43 = Split <axis: int = 1> (se_group0_gates, se_group0_sizes)
+   "Add.181" = Mul ("p2o.pd_op.conv2d.23.0", se_group0_val_40)
+   "Add.187" = Mul ("p2o.pd_op.conv2d.26.0", se_group0_val_41)
+   "Add.193" = Mul ("p2o.pd_op.conv2d.29.0", se_group0_val_42)
+   "Add.199" = Mul ("p2o.pd_op.conv2d.32.0", se_group0_val_43)
    ["Resize.0"] "p2o.pd_op.nearest_interp.0.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.181", "helper.constant.1", "helper.constant.0")
    ["Add.200"] "Add.201" = Add ("Add.187", "p2o.pd_op.nearest_interp.0.0")
    ["Resize.1"] "p2o.pd_op.nearest_interp.1.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.201", "helper.constant.1", "helper.constant.0")
@@ -326,16 +314,12 @@
    se_group1_down = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group1_pooled, se_group1_down1, se_group1_down2)
    se_group1_relu = Relu (se_group1_down)
    se_group1_up = Conv <dilations: ints = [1, 1], group: int = 4, kernel_shape: ints = [1, 1], pads: ints = [0, 0, 0, 0], strides: ints = [1, 1]> (se_group1_relu, se_group1_up1, se_group1_up2)
-   se_group1_gates = HardSigmoid <alpha: float = 0.2, beta: float = 0.5> (se_group1_up)
-   "se_group1_p2o.pd_op.hardsigmoid.6.0", "se_group1_p2o.pd_op.hardsigmoid.7.0", "se_group1_p2o.pd_op.hardsigmoid.8.0", "se_group1_p2o.pd_op.hardsigmoid.9.0" = Split <axis: int = 1> (se_group1_gates, se_group1_sizes)
-   val_41 = Add ("se_group1_p2o.pd_op.hardsigmoid.6.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.211" = Mul ("p2o.pd_op.conv2d.35.0", val_41)
-   val_42 = Add ("se_group1_p2o.pd_op.hardsigmoid.7.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.217" = Mul ("p2o.pd_op.conv2d.38.0", val_42)
-   val_43 = Add ("se_group1_p2o.pd_op.hardsigmoid.8.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.223" = Mul ("p2o.pd_op.conv2d.41.0", val_43)
-   val_44 = Add ("se_group1_p2o.pd_op.hardsigmoid.9.0", "p2o.pd_op.hardsigmoid.2.0_one")
-   "Add.229" = Mul ("p2o.pd_op.conv2d.44.0", val_44)
+   se_group1_gates = Clip (se_group1_up, "Add.179_low", "Add.179_high")
+   se_group1_val_44, se_group1_val_45, se_group1_val_46, se_group1_val_47 = Split <axis: int = 1> (se_group1_gates, se_group1_sizes)
+   "Add.211" = Mul ("p2o.pd_op.conv2d.35.0", se_group1_val_44)
+   "Add.217" = Mul ("p2o.pd_op.conv2d.38.0", se_group1_val_45)
+   "Add.223" = Mul ("p2o.pd_op.conv2d.41.0", se_group1_val_46)
+   "Add.229" = Mul ("p2o.pd_op.conv2d.44.0", se_group1_val_47)
    ["Resize.3"] "p2o.pd_op.nearest_interp.3.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.211", "helper.constant.1", "helper.constant.6")
    ["Resize.4"] "p2o.pd_op.nearest_interp.4.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.217", "helper.constant.1", "helper.constant.8")
    ["Resize.5"] "p2o.pd_op.nearest_interp.5.0" = Resize <coordinate_transformation_mode: string = "asymmetric", mode: string = "nearest", nearest_mode: string = "floor"> ("Add.223", "helper.constant.1", "helper.constant.0")
@@ -350,6 +334,8 @@
 }
 
 weights:
+Add.179_high FLOAT[] d88c86f15bbe
+Add.179_low FLOAT[] e00e5eb94441
 Conv.37_folded_b_lab FLOAT[96] 0d571951a1e0
 Conv.37_folded_w_lab FLOAT[96,384,1,1] 1d0305563ea7
 Conv.40_folded_b FLOAT[96] dcfdd514912d
@@ -455,14 +441,13 @@ p2o.pd_op.depthwise_conv2d.6.0_bias_lab FLOAT[192] 01e9219938aa
 p2o.pd_op.depthwise_conv2d.7.0_bias_lab FLOAT[192] e35d55fdac89
 p2o.pd_op.depthwise_conv2d.8.0_bias_lab FLOAT[192] fd7c6cc0a8fb
 p2o.pd_op.depthwise_conv2d.9.0_bias_lab FLOAT[192] aedc2ab77e2b
-p2o.pd_op.hardsigmoid.2.0_one FLOAT[] e00e5eb94441
 se_group0_down1 FLOAT[96,96,1,1] 4c8c888b01f2
 se_group0_down2 FLOAT[96] b99146f86442
 se_group0_sizes INT64[4] 4bb249469bee
-se_group0_up1 FLOAT[384,24,1,1] 1446892243f3
-se_group0_up2 FLOAT[384] 8538540d9317
+se_group0_up1 FLOAT[384,24,1,1] 281abc75d8a7
+se_group0_up2 FLOAT[384] 6387ce48947c
 se_group1_down1 FLOAT[24,24,1,1] 01a670ee8021
 se_group1_down2 FLOAT[24] 7f8067be0db7
 se_group1_sizes INT64[4] 5c995dc6a0ef
-se_group1_up1 FLOAT[96,6,1,1] 3e47b305535b
-se_group1_up2 FLOAT[96] ed3a93d396c3
+se_group1_up1 FLOAT[96,6,1,1] cb101cf13942
+se_group1_up2 FLOAT[96] d4fea498902e
