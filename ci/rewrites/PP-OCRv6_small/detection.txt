@@ -4,12 +4,15 @@ CPUExecutionProvider
 CUDAExecutionProvider
     +5 GlobalAveragePool
     -5 ReduceMean keepdims=1
-    172 nodes, weights 6fd10d774a64
+    -4 Conv dilations=(1, 1) group=4 kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    +4 Conv dilations=(1, 1) kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    172 nodes, weights 50c112c4f3c4
     SpatialMeanToGlobalAveragePool x5 6686d22e
+    UngroupPooledConv x4 10913678
     _FoldBiasAdd x61 e8b6621a
     _FoldSeResidual x16 11481d1e
     _FuseErfGelu x13 837b6556
-    unstamped x77 58b3fea0
+    unstamped x73 60768f37
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)

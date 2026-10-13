@@ -164,6 +164,15 @@ REGISTRY = (
         transform=lambda: rewriter.RewritePass([lowering.SpatialMeanToGlobalAveragePool.rule()]),
     ),
     Rewrite(
+        # the last cuDNN with Pascal kernels computes a grouped conv over a 1x1 map wrongly on Turing GPUs without
+        # tensor cores, and the grouped form runs slower than the dense one on the others
+        name="ungroup_pooled_convs",
+        gates={
+            "CUDAExecutionProvider": "a cuDNN whose grouped 1x1 conv over a 1x1 map is right on Turing and no slower",
+        },
+        transform=lambda: rewriter.RewritePass([lowering.UngroupPooledConv.rule()]),
+    ),
+    Rewrite(
         # never CoreML: im2col consumes the layout Transpose nchw_image_input matches on
         name="im2col_patchify",
         gates={

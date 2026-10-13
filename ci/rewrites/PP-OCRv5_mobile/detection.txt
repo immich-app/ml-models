@@ -5,10 +5,13 @@ CUDAExecutionProvider
     -24 HardSigmoid alpha=0.1666666716337204 beta=0.5
     +24 HardSwish
     -24 Mul
-    144 nodes, weights d3391a68551b
+    -4 Conv dilations=(1, 1) group=4 kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    +4 Conv dilations=(1, 1) kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    144 nodes, weights ae7e4ce12bc0
     FuseBatchNormIntoConv x2 2d29c72c
     FuseBatchNormIntoConvTranspose, _FoldBiasAdd x1 01869e18
     FuseHardSwish, _DecomposeHardSwish, _DecomposeHardSwish x24 88c59ad1
+    UngroupPooledConv x4 10913678
     _FoldAffineAfterConv, _FoldAffineBeforeConv, _FoldBiasAdd x9 9586dfce
     _FoldAffineAfterConv, _FoldBiasAdd x6 556032f0
     _FoldAffineBeforeConv x1 197fa113
@@ -16,7 +19,7 @@ CUDAExecutionProvider
     _FoldAffineScaleBeforeConv, _FoldAffineAfterConv, _FoldBiasAdd x26 971d4d3a
     _FoldBiasAdd x5 f89d5e54
     _FoldSeResidual x16 528c3523
-    unstamped x51 a0e04758
+    unstamped x47 3e4e976a
 
 CoreMLExecutionProvider
     -1 Transpose perm=(0, 3, 1, 2)

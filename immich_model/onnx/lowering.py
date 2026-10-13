@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 import onnx_ir as ir
 from onnxscript.rewriter import RewritePass
-from onnxscript.rewriter.pattern import MatchResult, OrValue, RewriteRuleClassBase, RewriteRuleSet
+from onnxscript.rewriter.pattern import MatchResult, OrValue, RewriteRuleClassBase, RewriteRuleSet, Var
 
 # patch-embed conv has kernel==stride >= this; a CNN stem's 3 or 7 never reaches it
 _MIN_PATCH_STRIDE = 8
@@ -201,6 +201,37 @@ class SpatialMeanToGlobalAveragePool(RewriteRuleClassBase):
 
     def rewrite(self, op: Any, x: Any, **_: Any) -> Any:
         return op.GlobalAveragePool(x)
+
+
+class UngroupPooledConv(RewriteRuleClassBase):
+    """A grouped 1x1 Conv over a 1x1 map as the dense Conv of its block-diagonal weight."""
+
+    def pattern(self, op: Any, x: Any, w: Any) -> Any:
+        return op.Conv(x, w, Var("b", can_match_none=True), _outputs=["out"])
+
+    def check(self, context: Any, x: Any, w: Any, out: Any, b: Any = None) -> MatchResult:
+        result = MatchResult()
+        attributes = out.producer().attributes
+        if attributes.get_int("group", 1) == 1:
+            return result.fail("not grouped")
+        if list(attributes.get_ints("kernel_shape", [])) != [1, 1] or any(attributes.get_ints("pads", [0, 0, 0, 0])):
+            return result.fail("not an unpadded 1x1 kernel")
+        if x.shape is None or len(x.shape) != 4 or list(x.shape)[2:] != [1, 1]:
+            return result.fail("not over a 1x1 map")
+        if w.const_value is None:
+            return result.fail("the weight is not constant")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, out: Any, b: Any = None) -> Any:
+        attributes = out.producer().attributes
+        grouped, groups = w.const_value.numpy(), attributes.get_int("group", 1)
+        rows, width = grouped.shape[0] // groups, grouped.shape[1]
+        dense = np.zeros((grouped.shape[0], width * groups, *grouped.shape[2:]), grouped.dtype)
+        for g in range(groups):
+            dense[g * rows : (g + 1) * rows, g * width : (g + 1) * width] = grouped[g * rows : (g + 1) * rows]
+        weight = op.initializer(ir.tensor(dense, name=f"{w.name}_dense"))
+        kept = {name: attribute for name, attribute in attributes.items() if name != "group"}
+        return op.Conv(x, weight, *([] if b is None else [b]), **kept)
 
 
 class DecomposePRelu(RewriteRuleClassBase):
