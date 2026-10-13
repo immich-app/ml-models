@@ -165,10 +165,12 @@ REGISTRY = (
     ),
     Rewrite(
         # the last cuDNN with Pascal kernels computes a grouped conv over a 1x1 map wrongly on Turing GPUs without
-        # tensor cores, and the grouped form runs slower than the dense one on the others
+        # tensor cores, and the grouped form runs slower than the dense one on the others; the OpenVINO nightly the
+        # image builds against computes it wrongly on intel_gpu without XMX when its groups are narrow
         name="ungroup_pooled_convs",
         gates={
             "CUDAExecutionProvider": "a cuDNN whose grouped 1x1 conv over a 1x1 map is right on Turing and no slower",
+            "OpenVINOExecutionProvider": "an intel_gpu whose grouped 1x1 conv over a 1x1 map is right without XMX",
         },
         transform=lambda: rewriter.RewritePass([lowering.UngroupPooledConv.rule()]),
     ),

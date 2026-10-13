@@ -36,7 +36,14 @@ NvTensorRTRTXExecutionProvider
     unchanged
 
 OpenVINOExecutionProvider
-    unchanged
+    -4 Conv dilations=(1, 1) group=4 kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    +4 Conv dilations=(1, 1) kernel_shape=(1, 1) pads=(0, 0, 0, 0) strides=(1, 1)
+    172 nodes, weights ab238849aa01
+    UngroupPooledConv x4 10913678
+    _FoldBiasAdd x61 4caa5d46
+    _FoldSeResidual x16 11481d1e
+    _FuseErfGelu x13 837b6556
+    unstamped x78 c2bf72aa
 
 RKNPU height=1472 width=736
     +26 Mul

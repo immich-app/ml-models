@@ -33,6 +33,7 @@ OpenVINOExecutionProvider
     pad_attention_heads
     decompose_attention
     hard_swish
+    ungroup_pooled_convs
     im2col_patchify
     im2col_patchify_ragged
     host_ctc_decode
