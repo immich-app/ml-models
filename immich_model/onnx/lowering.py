@@ -1,5 +1,6 @@
 """Shared graph lowerings for backends that cannot ingest the exported graphs as-is; see runtime.REGISTRY."""
 
+import abc
 import math
 from collections.abc import Sequence
 from typing import Any
@@ -199,6 +200,166 @@ class DecomposePRelu(RewriteRuleClassBase):
 class DecomposePReluPass(RewritePass):
     def __init__(self) -> None:
         super().__init__([DecomposePRelu.rule()])
+
+
+class _PadHeads(RewriteRuleClassBase):
+    """Zero-pads each attention head and the out-projection rows to match; exact, as zero channels add nothing."""
+
+    def __init__(self, multiple: int) -> None:
+        super().__init__()
+        self.multiple = multiple
+
+    def _padded(self, head: int) -> int:
+        return -(-head // self.multiple) * self.multiple
+
+    def _weight(self, op: Any, value: Any, axis: int, head: int) -> Any:
+        moved = np.moveaxis(value.const_value.numpy(), axis, -1)
+        groups = moved.reshape(*moved.shape[:-1], -1, head)
+        widened = np.pad(groups, [(0, 0)] * moved.ndim + [(0, self._padded(head) - head)])
+        array = np.moveaxis(widened.reshape(*moved.shape[:-1], -1), -1, axis)
+        return op.initializer(ir.tensor(array, name=f"{value.name}_head_padded"))
+
+    def _ints(self, op: Any, values: list[int]) -> Any:
+        return op.Constant(value=ir.tensor(np.array(values, np.int64)))
+
+
+class _PadAttention(_PadHeads):
+    """3D Attention on one packed projection; the scale stays pinned to the unpadded head."""
+
+    @abc.abstractmethod
+    def _qkv(self, op: Any, packed: Any, width: int, head: int, **values: Any) -> list[Any]: ...
+
+    def _split(self, op: Any, packed: Any, width: int, count: int) -> list[Any]:
+        return list(op.Split(packed, self._ints(op, [width] * count), axis=-1, _outputs=count))
+
+    def check(self, context: Any, w: Any, b: Any, wo: Any, attn: Any, **_: Any) -> MatchResult:
+        result = MatchResult()
+        heads = attn.producer().attributes.get_int("q_num_heads")
+        if heads is None or attn.producer().attributes.get_int("kv_num_heads") != heads:
+            return result.fail("not a 3D multi-head Attention")
+        if any(value.const_value is None for value in (w, b, wo)):
+            return result.fail("projections are not constant")
+        if wo.shape[0] // heads % self.multiple == 0:
+            return result.fail("head size already aligned")
+        return result
+
+    def rewrite(
+        self, op: Any, x: Any, w: Any, b: Any, wo: Any, attn: Any, q: Any, k: Any, v: Any, **values: Any
+    ) -> Any:
+        node = attn.producer()
+        heads = node.attributes.get_int("q_num_heads")
+        head = wo.shape[0] // heads
+        width = heads * self._padded(head)
+        packed = op.Add(op.MatMul(x, self._weight(op, w, -1, head)), self._weight(op, b, -1, head))
+        qkv = self._qkv(op, packed, width, head, **values)
+        for new, old in zip(qkv, (q, k, v)):  # DecomposeAttention reads the widths
+            new.type, new.shape = old.type, ir.Shape([*old.shape[:-1], width])
+        scale = node.attributes.get_float("scale", 1 / math.sqrt(head))
+        out = op.Attention(*qkv, _name=node.name, **{**node.attributes, "scale": scale})
+        return op.MatMul(out, self._weight(op, wo, 0, head))
+
+
+class PadAttentionHeads(_PadAttention):
+    """The query is a third of the projection."""
+
+    def pattern(self, op: Any, x: Any, w: Any, b: Any, sizes: Any, wo: Any) -> Any:
+        q, k, v = op.Split(op.Add(op.MatMul(x, w), b), sizes, axis=-1, _outputs=["q", "k", "v"])
+        return op.MatMul(op.Attention(q, k, v, _outputs=["attn"]), wo)
+
+    def _qkv(self, op: Any, packed: Any, width: int, head: int, **_: Any) -> list[Any]:
+        return self._split(op, packed, width, 3)
+
+
+class PadAttentionHeadsSliced(_PadAttention):
+    """The query is a sequence slice of its third, as in a pooled last block."""
+
+    def pattern(self, op: Any, x: Any, w: Any, b: Any, sizes: Any, wo: Any, starts: Any, ends: Any, axes: Any) -> Any:
+        split, k, v = op.Split(op.Add(op.MatMul(x, w), b), sizes, axis=-1, _outputs=["split", "k", "v"])
+        q = op.Slice(split, starts, ends, axes, _outputs=["q"])
+        return op.MatMul(op.Attention(q, k, v, _outputs=["attn"]), wo)
+
+    def check(self, context: Any, axes: Any, **values: Any) -> MatchResult:
+        if not {0, 1}.issuperset(_const_ints(axes) or [-1]):
+            return MatchResult().fail("the query slice is not on the batch or sequence axis")
+        return super().check(context, **values)
+
+    def _qkv(
+        self, op: Any, packed: Any, width: int, head: int, starts: Any, ends: Any, axes: Any, **_: Any
+    ) -> list[Any]:
+        q, k, v = self._split(op, packed, width, 3)
+        return [op.Slice(q, starts, ends, axes), k, v]
+
+
+class PadAttentionHeadsPooled(_PadAttention):
+    """The query is an attention pool's constant probe."""
+
+    def pattern(self, op: Any, x: Any, w: Any, b: Any, sizes: Any, wo: Any, probe: Any, col: Any) -> Any:
+        k, v = op.Split(op.Add(op.MatMul(x, w), b), sizes, axis=-1, _outputs=["k", "v"])
+        q = op.Add(probe, col, _outputs=["q"])
+        return op.MatMul(op.Attention(q, k, v, _outputs=["attn"]), wo)
+
+    def check(self, context: Any, probe: Any, **values: Any) -> MatchResult:
+        if probe.const_value is None:
+            return MatchResult().fail("the probe is not constant")
+        return super().check(context, **values)
+
+    def _qkv(self, op: Any, packed: Any, width: int, head: int, probe: Any, col: Any, **_: Any) -> list[Any]:
+        k, v = self._split(op, packed, width, 2)
+        return [op.Add(self._weight(op, probe, -1, head), col), k, v]
+
+
+class PadPackedHeads(_PadHeads):
+    """Hand-rolled attention on a Reshape to heads; its scale is folded into the query columns."""
+
+    def pattern(self, op: Any, x: Any, w: Any, b: Any, shape: Any, sizes: Any, out_shape: Any, wo: Any) -> Any:
+        heads = op.Transpose(op.Reshape(op.Add(op.MatMul(x, w), b), shape, allowzero=0), perm=[0, 2, 1, 3])
+        q, k, v = op.Split(heads, sizes, axis=1, _outputs=3)
+        context = op.MatMul(op.Softmax(op.MatMul(q, op.Transpose(k, perm=[0, 1, 3, 2])), axis=-1), v)
+        return op.MatMul(op.Reshape(op.Transpose(context, perm=[0, 2, 1, 3]), out_shape, allowzero=0), wo)
+
+    def check(self, context: Any, w: Any, b: Any, shape: Any, out_shape: Any, wo: Any, **_: Any) -> MatchResult:
+        result = MatchResult()
+        if any(value.const_value is None for value in (w, b, shape, out_shape, wo)):
+            return result.fail("not a constant packed projection")
+        if shape.const_value.numpy()[-1] % self.multiple == 0:
+            return result.fail("head size already aligned")
+        return result
+
+    def rewrite(self, op: Any, x: Any, w: Any, b: Any, shape: Any, sizes: Any, out_shape: Any, wo: Any) -> Any:
+        target, flat = shape.const_value.numpy().tolist(), out_shape.const_value.numpy().tolist()
+        head, padded = target[-1], self._padded(target[-1])
+        packed = op.Add(op.MatMul(x, self._weight(op, w, -1, head)), self._weight(op, b, -1, head))
+        heads = op.Transpose(op.Reshape(packed, self._ints(op, [*target[:-1], padded]), allowzero=0), perm=[0, 2, 1, 3])
+        q, k, v = op.Split(heads, sizes, axis=1, _outputs=3)
+        context = op.MatMul(op.Softmax(op.MatMul(q, op.Transpose(k, perm=[0, 1, 3, 2])), axis=-1), v)
+        merged = op.Reshape(
+            op.Transpose(context, perm=[0, 2, 1, 3]),
+            self._ints(op, [*flat[:-1], flat[-1] // head * padded]),
+            allowzero=0,
+        )
+        return op.MatMul(merged, self._weight(op, wo, 0, head))
+
+
+class PadAttentionHeadsPass(RewritePass):
+    def __init__(self, multiple: int) -> None:
+        super().__init__(
+            [
+                PadAttentionHeads.rule(multiple),
+                PadAttentionHeadsSliced.rule(multiple),
+                PadAttentionHeadsPooled.rule(multiple),
+                PadPackedHeads.rule(multiple),
+            ]
+        )
+        self.multiple = multiple
+
+    def ensures(self, model: ir.Model) -> None:
+        def count(node: ir.Node) -> int:
+            if not (input := node.inputs[0]) or not (shape := input.shape) or type(dim := shape[-1]) is not int:
+                raise ir.passes.PostconditionError(f"Unexpected inputs for node {node.name}: {input}")
+            return dim // node.attributes.get_int("q_num_heads", 1) % self.multiple
+
+        if stuck := sum(count(node) != 0 for node in model.graph if node.op_type == "Attention"):
+            raise ir.passes.PostconditionError(f"{stuck} Attention op(s) kept a head off the multiple")
 
 
 class DecomposeAttention(RewriteRuleClassBase):

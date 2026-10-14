@@ -83,14 +83,15 @@ OpenVINOExecutionProvider
     -1 ReduceSum keepdims=0
     +1 Softmax axis=2
     -1 Sub
-    176 nodes, weights 1c71e1598778
+    176 nodes, weights 4122f87a0f9b
     FuseBatchNormIntoConv x3 cafd8b4b
     LayerNormBiasFusion, LayerNormFusion x5 2fcd7a68
+    PadPackedHeads x24 1275f089
     _FlattenToSqueeze x1 f6285ec7
     _FoldBiasAdd x54 a455ec75
     _FuseErfGelu x13 837b6556
     _UnflattenToUnsqueeze x1 ea488eee
-    unstamped x99 d09d18d3
+    unstamped x75 720724b1
 
 RKNPU width=2048
     +26 Mul
