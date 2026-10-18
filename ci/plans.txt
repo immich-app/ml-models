@@ -4,6 +4,7 @@ CPUExecutionProvider
     skip_layer_norm
 
 CUDAExecutionProvider
+    spatial_mean_as_global_pool
     greedy_ctc_topk
     hard_swish
     im2col_patchify

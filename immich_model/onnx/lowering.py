@@ -185,6 +185,34 @@ class DecomposeReduceL2Pass(RewritePass):
             raise ir.passes.PostconditionError(f"{stuck} ReduceL2 op(s) survived the decomposition")
 
 
+class SpatialMeanAsGlobalPool(RewriteRuleClassBase):
+    """ReduceMean(x, every axis past the channels, keepdims) -> GlobalAveragePool(x), exact. CUDA-only, a range fix:
+    the EP's fp16 ReduceMean accumulates in fp16, so a squeeze-excite mean whose channel sums past 65504 (a map of
+    ~44k pixels at 1.5) comes back inf and the whole output turns NaN, where cuDNN's pooling accumulates in fp32."""
+
+    def pattern(self, op: Any, x: Any, axes: Any) -> Any:
+        return op.ReduceMean(x, axes, _domain="", _outputs=["mean"])
+
+    def check(self, context: Any, x: Any, axes: Any, mean: Any) -> MatchResult:
+        result = MatchResult()
+        if mean.producer().attributes.get_int("keepdims", 1) != 1:
+            return result.fail("drops the reduced axes, which GlobalAveragePool keeps")
+        if x.shape is None or len(x.shape) < 3:
+            return result.fail("not a feature map of known rank")
+        rank = len(x.shape)
+        if sorted(axis % rank for axis in _const_ints(axes) or []) != list(range(2, rank)):
+            return result.fail("does not reduce exactly the spatial axes")
+        return result
+
+    def rewrite(self, op: Any, x: Any, axes: Any, mean: Any) -> Any:
+        return op.GlobalAveragePool(x)
+
+
+class SpatialMeanAsGlobalPoolPass(RewritePass):
+    def __init__(self) -> None:
+        super().__init__([SpatialMeanAsGlobalPool.rule()])
+
+
 class DecomposePRelu(RewriteRuleClassBase):
     """PRelu(x, slope) -> Relu(x) + slope*(x - Relu(x)), IEEE-exact. MIGraphX-only, for a fusion reason: its MLIR
     pointwise allowlist omits prelu and the fused module is all-or-nothing, so one PRelu evicts the bias Add too."""

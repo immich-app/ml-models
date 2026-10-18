@@ -113,6 +113,14 @@ REGISTRY = (
         transform=lambda: lowering.DecomposeReduceL2Pass(),
     ),
     Rewrite(
+        name="spatial_mean_as_global_pool",
+        gates={
+            # PP-OCR's detectors read past 736 come back all NaN without it: their squeeze-excite means overflow
+            "CUDAExecutionProvider": "an ORT whose CUDA ReduceMean accumulates fp16 in fp32",
+        },
+        transform=lambda: lowering.SpatialMeanAsGlobalPoolPass(),
+    ),
+    Rewrite(
         name="decompose_prelu",
         gates={
             "MIGraphXExecutionProvider": "prelu joining MIGraphX's MLIR pointwise allowlist",
