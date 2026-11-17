@@ -13,7 +13,7 @@ dependencies = [
   "onnx>=1.16.1",
   "onnx-ir>=0.2.1",
   "onnxscript>=0.7.0",
-  "safetensors>=0.7,<0.8", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
+  "safetensors>=0.8,<0.9", # drop ceiling once a release carries onnx/ir-py#439, which works with 0.8's TensorSpec API
 ]
 
 [project.optional-dependencies]
