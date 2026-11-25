@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           # the rendering it hands back is of this PR's own source and is committed to this PR's own head,
           # and a PR-scoped cache is readable by no other PR, so a poisoned one reaches nothing new
@@ -98,11 +98,11 @@ jobs:
           echo "environment=$environment" >> "$GITHUB_OUTPUT"
 
       - id: new-models
-        uses: mikefarah/yq@504fc38780cc46be8444ea1b72fb55919fc0bfb0 # v4.54.1
+        uses: mikefarah/yq@f2944b823f84906a127dbd29e4c2a3e60c4e550e # v4.54.3
         with:
           cmd: yq eval '.models' -o=json -I=0 ./models.yaml
       - id: old-models
-        uses: mikefarah/yq@504fc38780cc46be8444ea1b72fb55919fc0bfb0 # v4.54.1
+        uses: mikefarah/yq@f2944b823f84906a127dbd29e4c2a3e60c4e550e # v4.54.3
         with:
           cmd: yq eval '.models' -o=json -I=0 ./before/models.yaml
       # The committed renderings are what each export is checked against, so they say which exports changed
